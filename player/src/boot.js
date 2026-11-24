@@ -37,14 +37,13 @@
       return found;
     }
 
-    // Contain the screen in the stage; a frame much taller than the window fits its width
+    // Contain the screen in the stage; a frame taller than 1.5x the window fits its width
     // and scrolls in a window-high viewport (fixed layers stay at the window's top).
     function measure(id) {
       var s = proto.screens[id];
       var aw = Math.max(50, stage.clientWidth - 2 * PAD), ah = Math.max(50, stage.clientHeight - 2 * PAD);
-      var sw = aw / s.width, sh = ah / s.height, swc = Math.min(sw, 1);
-      if (sh < 0.5 * swc) return { scale: swc, w: s.width, h: Math.min(s.height, ah / swc), tall: true };
-      return { scale: Math.min(sw, sh), w: s.width, h: s.height, tall: false };
+      var v = FCP.viewFor(s.width, s.height, aw, ah);
+      return { scale: v.scale, w: s.width, h: v.tall ? Math.min(s.height, ah / v.scale) : s.height, tall: v.tall };
     }
     function applyView(v) {
       view = v;

@@ -7,5 +7,6 @@ smart.js
 scene.js
 transitions.js
 triggers.js
+view.js
 panel.js
 boot.js
