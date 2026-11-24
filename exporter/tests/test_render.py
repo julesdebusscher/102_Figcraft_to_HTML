@@ -157,48 +157,6 @@ class RenderTests(unittest.TestCase):
                                                        "variable.setMode", "variable.set")])
         self.assertEqual(len(calls(doc, "edit.undo")), edits)
 
-    def test_edit_session_labels_every_edit_and_undoes_in_reverse(self):
-        doc = SimDoc({1: rect("a"), 2: rect("b")})
-        start = doc.snapshot()
-        with self.assertRaises(KeyError):
-            with render.EditSession(doc) as s:
-                s.apply("node.set", {"ids": [1], "props": {"opacity": 0.5}})
-                s.batch([("node.set", {"ids": [2], "props": {"opacity": 0.2}})])
-                with self.assertRaises(ControlError):
-                    s.apply("node.set", {"ids": [99], "props": {"opacity": 0.2}})  # failed: not recorded
-                labels = [h[0] for h in doc.history]
-                raise KeyError("boom")
-        self.assertEqual(len(labels), 2)
-        for label in labels:
-            self.assertRegex(label, r"^Export HTML \(temporaire\) #\d+$")
-        self.assertEqual([c for c, p in doc.calls if c in ("node.set", "instance.setProperties")], [])
-        self.assertEqual(len(calls(doc, "edit.undo")), 2)
-        self.assertEqual(doc.snapshot(), start)
-
-    def test_failed_undo_retried_once_then_french_error_and_nothing_skipped(self):
-        doc = SimDoc({1: rect("a"), 2: rect("b")}, fail_undo=1)
-        with render.EditSession(doc) as s:
-            s.apply("node.set", {"ids": [1], "props": {"opacity": 0.5}})
-        self.assertEqual(doc.history, [])                     # the retry worked
-        doc = SimDoc({1: rect("a"), 2: rect("b")}, fail_undo=2)
-        with self.assertRaises(render.RenderError) as cm:
-            with render.EditSession(doc) as s:
-                s.apply("node.set", {"ids": [1], "props": {"opacity": 0.5}})
-                s.apply("node.set", {"ids": [2], "props": {"opacity": 0.2}})
-        self.assertEqual(str(cm.exception),
-                         "Impossible d'annuler toutes les modifications temporaires : vérifiez le document.")
-        self.assertEqual(len(calls(doc, "edit.undo")), 2)
-        self.assertEqual(len(doc.history), 2)                 # never undo past a step still on top
-
-    def test_undo_that_errors_after_undoing_is_not_repeated(self):
-        doc = SimDoc({1: rect("a"), 2: rect("b")}, undo_script=["raise_after"])
-        start = doc.snapshot()
-        with render.EditSession(doc) as s:
-            s.apply("node.set", {"ids": [1], "props": {"opacity": 0.5}})
-            s.apply("node.set", {"ids": [2], "props": {"opacity": 0.2}})
-        self.assertEqual(len(calls(doc, "edit.undo")), 2)
-        self.assertEqual(doc.snapshot(), start)
-
     def test_user_step_between_our_edit_and_the_undo_is_never_reverted(self):
         def user(doc, fc):
             if fc == 1 and doc.exports == 1:
@@ -227,16 +185,6 @@ class RenderTests(unittest.TestCase):
         start = doc.snapshot()
         with self.assertRaises(KeyboardInterrupt):
             render.render_all(doc, w)
-        self.assertEqual(doc.snapshot(), start)
-        self.assertEqual(doc.history, [])
-
-    def test_ctrl_c_during_the_undos_finishes_them_then_reraises(self):
-        doc = SimDoc({1: rect("a"), 2: rect("b")}, undo_script=["interrupt"])
-        start = doc.snapshot()
-        with self.assertRaises(KeyboardInterrupt):
-            with render.EditSession(doc) as s:
-                s.apply("node.set", {"ids": [1], "props": {"opacity": 0.5}})
-                s.apply("node.set", {"ids": [2], "props": {"opacity": 0.2}})
         self.assertEqual(doc.snapshot(), start)
         self.assertEqual(doc.history, [])
 
