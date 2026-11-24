@@ -48,7 +48,7 @@ class LauncherTests(unittest.TestCase):
         )
         err = p.stderr.decode("utf-8")
         self.assertEqual(p.returncode, 1)
-        self.assertIn("Impossible de joindre FigCraft.", err)
+        self.assertIn("Impossible de joindre FigCraft. Ouvrez-le avec « Ouvrir FigCraft ».", err)
         self.assertNotIn("Traceback", err)
 
     def test_version_ok_table(self):

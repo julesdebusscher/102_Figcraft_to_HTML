@@ -4,6 +4,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 CONFIG_NAME = "config.json"
@@ -61,17 +62,44 @@ def launch(path, port, file=None):
     args = [str(path), "--control", str(port)]
     if file:
         args.append(str(file))
-    return subprocess.Popen(args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    kw = {}
+    if sys.platform == "win32":
+        kw["creationflags"] = 0x00000008 | 0x00000200  # DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP
+    return subprocess.Popen(
+        args, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **kw
+    )
+
+
+def wait_ready(port, seconds=20):
+    """True once FigCraft answers on the control port."""
+    from .control import Control, ControlError, Unreachable
+
+    deadline = time.time() + seconds
+    while time.time() < deadline:
+        c = Control(port)
+        try:
+            c.request("document.inspect", {"depth": 0}, timeout_ms=5000)
+            return True
+        except (Unreachable, ControlError):
+            time.sleep(0.5)
+        finally:
+            c.close()
+    return False
 
 
 def app_version(path):
     """Ask the executable for its version ('FigCraft 0.18.1 (hash)'); None if unknown."""
+    kw = {}
+    if sys.platform == "win32":
+        kw["creationflags"] = 0x08000000  # CREATE_NO_WINDOW
     try:
         out = subprocess.run(
             [str(path), "--version"],
+            stdin=subprocess.DEVNULL,
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
             timeout=10,
+            **kw
         ).stdout.decode("utf-8", "replace")
     except (OSError, subprocess.SubprocessError):
         return None

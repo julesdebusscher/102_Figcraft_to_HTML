@@ -17,6 +17,10 @@ class ControlError(Exception):
     """A reply with ok:false (the message is FigCraft's own)."""
 
 
+class _Closed(Exception):
+    pass
+
+
 class Control:
     def __init__(self, port=DEFAULT_PORT, host="127.0.0.1"):
         self.port = port
@@ -60,23 +64,39 @@ class Control:
             msg["timeoutMs"] = int(timeout_ms)
         data = (json.dumps(msg) + "\n").encode("utf-8")
         try:
-            sock = self._connect()
-            sock.sendall(data)
-            line = self._readline(timeout_ms / 1000.0 + 10)
-        except (OSError, ConnectionError):
-            # Idle connections are closed after 60 s: reconnect once.
+            line = self._roundtrip(data, timeout_ms)
+        except _Closed:
+            # Idle connections are closed after 60 s: reconnect once, but only
+            # when the connection was closed (never after a timeout).
             self.close()
-            sock = self._connect()
             try:
-                sock.sendall(data)
-                line = self._readline(timeout_ms / 1000.0 + 10)
-            except (OSError, ConnectionError) as e:
+                line = self._roundtrip(data, timeout_ms)
+            except _Closed as e:
                 self.close()
                 raise Unreachable(str(e))
-        reply = json.loads(line.decode("utf-8"))
+        try:
+            reply = json.loads(line.decode("utf-8"))
+        except ValueError:
+            raise ControlError("Réponse illisible de FigCraft.")
+        if not isinstance(reply, dict):
+            raise ControlError("Réponse inattendue de FigCraft.")
         if not reply.get("ok"):
             raise ControlError(str(reply.get("error")))
         return reply.get("result")
+
+    def _roundtrip(self, data, timeout_ms):
+        sock = self._connect()
+        try:
+            sock.sendall(data)
+        except (ConnectionError, BrokenPipeError) as e:
+            raise _Closed(str(e))
+        try:
+            return self._readline(timeout_ms / 1000.0 + 10)
+        except socket.timeout:
+            self.close()
+            raise ControlError("FigCraft n'a pas répondu à temps.")
+        except ConnectionError as e:
+            raise _Closed(str(e))
 
     def execute(self, command, params=None, timeout_ms=60000):
         """engine.execute {command, params}."""

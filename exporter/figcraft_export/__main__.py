@@ -32,7 +32,10 @@ def _resolve_figcraft(cfg, ask=True):
         if raw and Path(raw).is_file():
             path = Path(raw)
             cfg["figcraft_path"] = str(path)
-            launcher.save_config(launcher.package_dir(), cfg)
+            try:
+                launcher.save_config(launcher.package_dir(), cfg)
+            except OSError as e:
+                _say("Avertissement : impossible d'enregistrer le chemin (%s)." % e)
         elif raw:
             _say("Fichier introuvable : %s" % raw)
     return path
@@ -47,8 +50,11 @@ def cmd_launch(args):
     if version is not None and not version_ok(version):
         return _fail(_too_old(version))
     launcher.launch(path, args.port, args.file)
-    _say("FigCraft démarre (port %d)." % args.port)
-    return 0
+    _say("FigCraft démarre (port %d)..." % args.port)
+    if launcher.wait_ready(args.port):
+        _say("FigCraft est prêt.")
+        return 0
+    return _fail("FigCraft ne répond pas après 20 secondes (port %d)." % args.port)
 
 
 def _too_old(found):
@@ -64,8 +70,7 @@ def cmd_export(args):
         control.request("document.inspect", {"depth": 0}, timeout_ms=10000)
     except Unreachable:
         return _fail(
-            "Impossible de joindre FigCraft.\n"
-            "Lancez-le d'abord avec « launch » (port %d), puis réessayez." % args.port
+            "Impossible de joindre FigCraft. Ouvrez-le avec « Ouvrir FigCraft »."
         )
     except BaseException:
         control.close()
@@ -84,6 +89,7 @@ def cmd_export(args):
 def build_parser():
     p = argparse.ArgumentParser(prog="figcraft_export")
     sub = p.add_subparsers(dest="cmd")
+    p.add_argument("--debug", action="store_true", help=argparse.SUPPRESS)
     pl = sub.add_parser("launch", help="démarre FigCraft")
     pl.add_argument("--port", type=int, default=DEFAULT_PORT)
     pl.add_argument("file", nargs="?")
@@ -98,8 +104,13 @@ def build_parser():
 def main(argv=None):
     _setup_console()
     parser = build_parser()
+    argv = list(sys.argv[1:] if argv is None else argv)
+    debug = "--debug" in argv
+    if debug:
+        argv.remove("--debug")
     try:
         args = parser.parse_args(argv)
+        args.debug = debug
     except SystemExit as e:
         return 2 if e.code else 0
     if args.cmd is None:
@@ -113,6 +124,10 @@ def main(argv=None):
         return _fail("Interrompu.")
     except OSError as e:
         return _fail("Erreur : %s" % e)
+    except Exception as e:
+        if getattr(args, "debug", False):
+            raise
+        return _fail("Erreur inattendue : %s" % e)
 
 
 if __name__ == "__main__":
