@@ -1,0 +1,133 @@
+var T = function (ms) { return { type: "dissolve", durationMs: ms || 200, easing: { type: "linear" } }; };
+function mkProto() {
+  return {
+    start: "A",
+    screens: { A: { root: "A" }, B: { root: "B" }, C: { root: "C" }, O1: { root: "O1" }, O2: { root: "O2" } },
+    nodes: {
+      A: { id: "A", children: ["inst"] },
+      inst: { id: "inst", kind: "instance", children: ["innerA"], instance: { set: "S", variant: "off", variants: { off: ["innerA"], on: ["innerB"] } } },
+      innerA: { id: "innerA", children: [] },
+      innerB: { id: "innerB", children: [] },
+      B: { id: "B", children: [] }, C: { id: "C", children: [] }, O1: { id: "O1", children: [] }, O2: { id: "O2", children: [] }
+    },
+    variables: {
+      collections: { c1: { name: "c", defaultMode: "m1", modes: { m1: "Light", m2: "Dark" } } },
+      vars: { count: { name: "count", collection: "c1", type: "number", valuesByMode: { m1: 0, m2: 5 } } }
+    }
+  };
+}
+var nav = function (d, ms) { return { type: "navigate", dest: d, transition: T(ms) }; };
+var ov = function (t, d) { return { type: t, dest: d, position: "center", closeOnClickOutside: true, transition: T(100) }; };
+var ctx = { nodeId: "A" };
+
+test("navigate_replaces_screen_and_pushes_history", function () {
+  var s = FCP.createState(mkProto());
+  assertEq(s.screen, "A");
+  var fx = s.run([nav("B", 300)], ctx);
+  assertEq(s.screen, "B");
+  assertEq(fx.length, 1);
+  assertEq(fx[0].kind, "screen"); assertEq(fx[0].from, "A"); assertEq(fx[0].to, "B");
+  assertEq(fx[0].transition.durationMs, 300);
+  assertTrue(!fx[0].reverse);
+});
+test("navigate_from_overlay_closes_overlays", function () {
+  var s = FCP.createState(mkProto());
+  s.run([ov("openOverlay", "O1"), ov("openOverlay", "O2")], ctx);
+  assertEq(s.overlays.length, 2);
+  var fx = s.run([nav("B")], ctx);
+  assertEq(s.overlays.length, 0); assertEq(s.screen, "B");
+  assertEq(fx.filter(function (e) { return e.kind === "overlayClose"; }).length, 2);
+  assertEq(fx.filter(function (e) { return e.kind === "screen"; }).length, 1);
+});
+test("back_closes_top_overlay_first", function () {
+  var s = FCP.createState(mkProto());
+  s.run([nav("B"), ov("openOverlay", "O1")], ctx);
+  var fx = s.run([{ type: "back" }], ctx);
+  assertEq(fx[0].kind, "overlayClose"); assertEq(fx[0].id, "O1");
+  assertEq(s.overlays.length, 0); assertEq(s.screen, "B");
+});
+test("back_returns_with_reverse_transition", function () {
+  var s = FCP.createState(mkProto());
+  s.run([nav("B", 333)], ctx);
+  var fx = s.run([{ type: "back" }], ctx);
+  assertEq(s.screen, "A");
+  assertEq(fx[0].kind, "screen"); assertEq(fx[0].from, "B"); assertEq(fx[0].to, "A");
+  assertEq(fx[0].reverse, true); assertEq(fx[0].transition.durationMs, 333);
+});
+test("back_on_first_screen_is_noop", function () {
+  var s = FCP.createState(mkProto());
+  var fx = s.run([{ type: "back" }], ctx);
+  assertEq(fx.length, 0); assertEq(s.screen, "A");
+});
+test("swap_overlay_replaces_top", function () {
+  var s = FCP.createState(mkProto());
+  s.run([ov("openOverlay", "O1")], ctx);
+  var fx = s.run([ov("swapOverlay", "O2")], { nodeId: "inst" });
+  assertEq(s.overlays.length, 1); assertEq(s.overlays[0].id, "O2"); assertEq(s.overlays[0].sourceNodeId, "inst");
+  assertEq(fx[0].kind, "overlaySwap"); assertEq(fx[0].id, "O2");
+});
+test("close_overlay_pops", function () {
+  var s = FCP.createState(mkProto());
+  s.run([ov("openOverlay", "O1"), ov("openOverlay", "O2")], ctx);
+  var fx = s.run([{ type: "closeOverlay" }], ctx);
+  assertEq(s.overlays.length, 1); assertEq(s.overlays[0].id, "O1");
+  assertEq(fx[0].kind, "overlayClose"); assertEq(fx[0].id, "O2");
+});
+test("restart_clears_history_overlays_and_vars", function () {
+  var s = FCP.createState(mkProto());
+  s.run([nav("B"), ov("openOverlay", "O1"),
+    { type: "setVariable", variable: "count", value: 9 },
+    { type: "setVariableMode", collection: "c1", mode: "m2" },
+    { type: "changeTo", variant: "on", transition: T() }], { nodeId: "innerA" });
+  s.restart();
+  assertEq(s.screen, "A"); assertEq(s.overlays.length, 0);
+  assertEq(s.vars.count, 0); assertEq(s.modes.c1, "m1");
+  assertEq(s.variants.inst, undefined);
+  assertEq(s.run([{ type: "back" }], ctx).length, 0);
+});
+test("set_variable_expr_count_plus_one", function () {
+  var s = FCP.createState(mkProto());
+  assertEq(s.vars.count, 0);
+  var a = { type: "setVariable", variable: "count", expr: { op: { op: "add", args: [{ value: { type: "alias", value: "count" } }, { value: { type: "number", value: 1 } }] } } };
+  var fx = s.run([a], ctx);
+  assertEq(s.vars.count, 1); assertEq(fx[0].kind, "vars");
+  s.run([a], ctx);
+  assertEq(s.vars.count, 2);
+});
+test("set_variable_mode_changes_modes", function () {
+  var s = FCP.createState(mkProto());
+  var fx = s.run([{ type: "setVariableMode", collection: "c1", mode: "m2" }], ctx);
+  assertEq(s.modes.c1, "m2"); assertEq(fx[0].kind, "vars");
+});
+test("conditional_runs_first_matching_block_else_last", function () {
+  var s = FCP.createState(mkProto());
+  var bool = function (b) { return { value: { type: "boolean", value: b } }; };
+  var set = function (v) { return { type: "setVariable", variable: "count", value: v }; };
+  s.run([{ type: "conditional", blocks: [
+    { condition: bool(false), actions: [set(1)] },
+    { condition: bool(true), actions: [set(2)] },
+    { condition: bool(true), actions: [set(3)] },
+    { actions: [set(4)] }] }], ctx);
+  assertEq(s.vars.count, 2);
+  s.run([{ type: "conditional", blocks: [{ condition: bool(false), actions: [set(1)] }, { actions: [set(4)] }] }], ctx);
+  assertEq(s.vars.count, 4);
+});
+test("change_to_records_variant", function () {
+  var s = FCP.createState(mkProto());
+  var fx = s.run([{ type: "changeTo", variant: "on", transition: T(50) }], { nodeId: "innerA" });
+  assertEq(s.variants.inst, "on");
+  assertEq(fx[0].kind, "variant"); assertEq(fx[0].node, "inst"); assertEq(fx[0].from, "off"); assertEq(fx[0].to, "on");
+  assertEq(fx[0].transition.durationMs, 50);
+});
+test("navigate_to_missing_screen_is_noop_no_throw", function () {
+  var s = FCP.createState(mkProto());
+  var fx = s.run([nav("nope"), ov("openOverlay", "nope"), ov("swapOverlay", "nope"),
+    { type: "changeTo", variant: "zzz", transition: T() }], { nodeId: "inst" });
+  assertEq(fx.length, 0); assertEq(s.screen, "A"); assertEq(s.overlays.length, 0);
+  assertEq(s.run([{ type: "changeTo", variant: "on", transition: T() }], { nodeId: "ghost" }).length, 0);
+});
+test("scroll_and_url_effects", function () {
+  var s = FCP.createState(mkProto());
+  var fx = s.run([{ type: "scrollTo", dest: "B", offset: [0, 5], transition: T() }, { type: "openUrl", url: "http://x", newTab: true }], ctx);
+  assertEq(fx[0].kind, "scroll"); assertEq(fx[0].target, "B"); assertEq(fx[1].kind, "url"); assertEq(fx[1].newTab, true);
+});
