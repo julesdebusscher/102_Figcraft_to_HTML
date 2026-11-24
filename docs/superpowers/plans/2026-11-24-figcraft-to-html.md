@@ -2,44 +2,45 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** A FigCraft plugin that exports the selected frames as a `.zip` holding a standalone, file://-openable HTML/JS/CSS clickable prototype that replays every FigCraft prototype interaction, with a side panel to jump between frames.
+**Revision 2 (2026-11-24):** Task 1 proved a FigCraft plugin cannot render layers (`file.*` refused). The user chose an external **Python** tool driving FigCraft over its control channel, to run on a **Windows** machine that only has Python 3. Tasks 0–1 are done; Tasks 2–5 (player) are unchanged; Tasks 6–11 are rewritten. Findings: `docs/figcraft-api-notes.md`.
 
-**Architecture:** Two halves joined by one data contract. (1) A Rust → wasm32 plugin walks the selection through FigCraft commands, renders every layer's own paint with FigCraft's exporter, writes `data.js` (the contract below) and zips it with an embedded player. (2) A dependency-free JS player (classic scripts, concatenated into `player.js` at Rust build time) rebuilds the layer tree as absolutely positioned DOM and runs triggers, actions, variables, transitions and Smart Animate.
+**Goal:** A stdlib-only Python tool that, with FigCraft open, exports the selected frames to a folder holding a standalone, file://-openable HTML/JS/CSS clickable prototype that replays every FigCraft prototype interaction, with a side panel to jump between frames.
 
-**Tech Stack:** Rust 2024 + `figcraft-plugin-sdk` (git, `storytold/figcraft`, `plugins/sdk`), target `wasm32-unknown-unknown`; vanilla ES2020 JS + CSS (no modules, no fetch); JS logic tests run with macOS's built-in `jsc`; end-to-end driven from Python 3 (stdlib only) over FigCraft's `--control` loopback channel against `/Applications/FigCraft.app` 0.18.1.
+**Architecture:** Two halves joined by one data contract. (1) A Python package `figcraft_export` talks to FigCraft (`--control <port>`, newline JSON on 127.0.0.1), walks the selection, reads `document.json` for what `node.get` omits, renders each layer's own paint with `file.export`, writes `data.js` (the contract below), the player and the assets into a folder. (2) A dependency-free JS player (classic scripts concatenated into `player.js`) rebuilds the layer tree as absolutely positioned DOM and runs triggers, actions, variables, transitions and Smart Animate.
+
+**Tech Stack:** Python ≥ 3.8 standard library only (`socket`, `json`, `base64`, `subprocess`, `unittest`, optional `tkinter`); vanilla ES2020 JS + CSS (no modules, no fetch); JS logic tests with macOS `jsc` (dev only); end-to-end against `/Applications/FigCraft.app` 0.18.1 on this Mac; Windows launchers `.bat`.
 
 **Spec:** `docs/superpowers/specs/2026-11-24-figcraft-to-html-design.md`
 
 ## Global Constraints
 
-- Plugin manifest `api: 4`, `permissions.saveFile: true`; one `save_file` per run, ≤ 16 MB; no file/network/clock/random in wasm.
-- Per run: 1 000 000 000 fuel, 64 MB memory, 100 000 host calls, 16 MB per string.
-- Export must open by double-click (`file://`) in Chrome, Safari and Firefox: no `type="module"`, no `fetch`, no XHR; data ships as `data.js` setting `window.FIGCRAFT_PROTOTYPE`.
-- Output folder layout: `index.html`, `player.js`, `player.css`, `data.js`, `assets/`.
-- Export scope = current page's selected top-level frames; panel lists only those, grouped by section; transitive closure follows every link (navigate, overlays, change to) at any depth on any page, unselected targets exported but not listed.
-- Start screen = page flow starting point if selected, else first selected frame in layer order; "redémarrer" returns there and clears history.
-- > 16 MB → run fails with total size and the heaviest contributors; never silently drop a link.
+- Target machine: **Windows with Python 3 and FigCraft only.** Python ≥ 3.8, standard library only, no `pip install`; source must parse with `ast.parse(..., feature_version=(3, 8))` and avoid 3.9+ APIs (`str.removeprefix`, `list[int]` annotations, `zoneinfo`, …).
+- All text files written/read with explicit `encoding="utf-8"`; console output survives cp1252/cp65001 consoles (`sys.stdout.reconfigure(encoding="utf-8", errors="replace")` when available); paths via `pathlib`, never string concatenation; paths with spaces and accents must work.
+- Control channel: `127.0.0.1:<port>`, default port **47917**, newline-delimited JSON `{id, method, params}`; renders via `engine.execute {command:"file.export", params:{ids:[id], format:"svg"|"png", scale}}` → `{format, data(base64)}`.
+- Every temporary document edit is undone before the tool exits, on success **and** on error; at the end `document.json` (from `file.saveAs {data:true}`) must hash the same as at the start, else print a loud French warning.
+- Export must open by double-click (`file://`) in Chrome, Edge and Firefox: no `type="module"`, no `fetch`, no XHR; data ships as `data.js` setting `window.FIGCRAFT_PROTOTYPE`.
+- Output folder layout: `index.html`, `player.js`, `player.css`, `data.js`, `assets/`. Asset file names use sanitised layer ids only (`[A-Za-z0-9_~-]`).
+- Export scope = current page's selected top-level frames; panel lists only those, grouped by section; transitive closure follows every link (navigate, overlays, change to) at any depth on any page, unselected targets exported but not listed; a missing link target is reported, never silently dropped.
+- Start screen = page flow starting point if selected, else first selected frame in layer order; "Redémarrer" returns there and clears history and variables.
 - Variables: visibility, string and number text live; bound colours and mode switches pre-rendered for reachable values (cap 32 alternatives per layer, beyond → reported as approximated).
-- Backdrop blur, glass, blend modes, masks, non-rectangular clips → CSS approximation, listed in the end-of-export `notify`.
+- Backdrop blur, glass, blend modes, masks, non-rectangular clips → CSS approximation, listed in the end-of-export summary.
 - Behaviour reference: FigCraft `docs/prototyping-parity.md` (the presenter's behaviour wins on any doubt).
-- User-facing text (menu labels, notify messages, panel) in French.
-- Nothing to install beyond Rust (`rustup`, target `wasm32-unknown-unknown`); Node is not required.
-
-**Deviation from the spec, to confirm with the user in Task 0:** the spec says `permissions.access: "read"`. Rendering a container without its children, a layer without a CSS-handled effect, other variants of an instance and other variable modes all need temporary edits restored before the run ends, so the plan uses `access: "write"` with every edit undone in the same run (verified by the spike, Task 1).
+- User-facing text (console summary, errors, launcher prompts, panel) in French.
+- FigCraft version check: refuse versions < 0.18.1 with `FigCraft 0.18.1 ou plus récent est nécessaire (trouvé : X).`
 
 ## Review Focus
 
-1. **Bad selection** (nothing selected, a non-frame layer, a frame nested in another) → French error `Sélectionnez au moins une frame de premier niveau.` for nothing usable; nested or non-frame layers skipped and named in the notify. Test in Task 7.
-2. **Awkward names** (duplicate frame names, `/`, emoji, empty name) → panel shows them as typed, escaped; asset files are named by layer id only. Tests in Tasks 6 and 9.
-3. **Oversized export** → run fails before `save_file` with `L'archive ferait N Mo (limite 16 Mo). Le plus lourd : …` listing the 5 largest assets. Test in Task 10.
-4. **Opened from `file://` in Safari/Firefox** → loads with no console error. Check in Task 11.
-5. **Broken links** (destination deleted, hidden, or a component set missing a variant) → hotspot does nothing, export still succeeds, link named in notify; player never throws. Tests in Tasks 4 and 7.
+1. **FigCraft not started via the launcher** (no control port) → `Impossible de joindre FigCraft. Ouvrez-le avec « Ouvrir FigCraft ».` and exit code 1, no traceback. Test in Task 6.
+2. **Bad selection** (nothing, non-frame, nested frame) → `Sélectionnez au moins une frame de premier niveau.` when nothing usable; skipped layers named in the summary. Test in Task 7.
+3. **Windows paths and encoding** (destination `C:\Users\Élodie\Mes prototypes\`, frame named `Écran / 🚀 "test"`, cp1252 console) → folder written, names intact in `data.js`, no `UnicodeEncodeError`. Tests in Tasks 6 and 10.
+4. **Crash mid-render** (FigCraft closes or an export fails halfway) → all temporary edits undone that can be, partial output folder removed, French error. Test in Task 9.
+5. **Broken links** (destination deleted or hidden, a missing variant) → hotspot does nothing, export succeeds, link named in summary; player never throws. Tests in Tasks 3 and 7.
 
 ---
 
 ## Shared contract: `data.js`
 
-Both halves code against this. The Rust structs (Task 6) serialize to it; the player reads it; `player/fixtures/demo.data.js` (Task 2) is its reference instance. Ids are strings (FigCraft layer ids stringified; instance-variant clones are `"<instanceId>~<variantId>~<childId>"`).
+Both halves code against this. The Python exporter (Tasks 7–10) emits it; the player reads it; `player/fixtures/demo.data.js` (Task 2) is its reference instance. Ids are strings (FigCraft layer ids stringified; instance-variant clones are `"<instanceId>~<variantId>~<childId>"`).
 
 ```text
 window.FIGCRAFT_PROTOTYPE = {
@@ -92,60 +93,38 @@ Expr = { value: { type, value } } | { op: { op, args: [Expr] } }  // FigCraft's 
 ## File Structure
 
 ```
-plugin/                         Rust crate `figcraft-to-html` (cdylib)
-  Cargo.toml  figcraft-plugin.json  build.rs (concatenates player sources → OUT_DIR/player.js)
-  src/lib.rs        entry point: picks command, calls export::run
-  src/host.rs       trait Host (the only place touching the SDK) + FakeHost for tests
-  src/model.rs      serde structs = the contract
-  src/walk.rs       selection → screens, panel, start, closure, nodes
-  src/interactions.rs  FigCraft interaction JSON → contract Interaction
-  src/vars.rs       variables, reachable values/modes
-  src/render.rs     per-node paint, CSS effect extraction, temporary edits + restore, alts
-  src/zip.rs        stored zip + crc32
-  src/export.rs     orchestration, size check, report → notify, save_file
-  tests/fixtures/   node.get / export replies recorded in Task 1
-player/
-  src/ORDER         file order for concatenation
-  src/*.js          one concern each (see Tasks 2–5)
-  player.css  index.html
-  test/harness.js  test/run.sh  test/*.test.js     (jsc)
-  fixtures/demo.data.js  dev/index.html            (open in a browser, loads src/*.js one by one)
-tools/fcctl.py      control-channel client
-tools/e2e.py        launch FigCraft, open example, select, run plugin, unzip
-docs/figcraft-api-notes.md   spike findings (Task 1)
-spike/              throwaway, deleted at the end of Task 1
+player/                         (Tasks 2–5, unchanged)
+  src/ORDER  src/*.js  player.css  index.html
+  test/harness.js  test/run.sh  test/*.test.js     (jsc, dev only)
+  fixtures/demo.data.js  fixtures/assets/  dev/index.html
+exporter/
+  figcraft_export/
+    __init__.py   __main__.py      CLI: python -m figcraft_export launch|export
+    control.py    Control client (moved from tools/fcctl.py)
+    launcher.py   find FigCraft.exe / app, config.json, start with --control
+    docfile.py    document.json (from file.saveAs {data:true}) → per-node extras
+    walk.py       selection → screens, panel, start, closure, nodes
+    interactions.py  FigCraft interaction JSON → contract Interaction
+    variables.py  variables, reachable values/modes, alternatives
+    render.py     per-node paint, CSS effect extraction, temporary edits + undo
+    writer.py     folder output, data.js, player assembly
+    summary.py    French end-of-export summary
+  tests/          unittest; fixtures/ (moved from plugin/tests/fixtures)
+  Ouvrir FigCraft.bat   Exporter la sélection.bat   Ouvrir FigCraft.command   Exporter la sélection.command
+tools/make_dist.py   builds dist/FigCraft Export HTML/ (launchers, figcraft_export/ with built player)
+tools/e2e.py         launch FigCraft, open example, select, export, render references
+docs/figcraft-api-notes.md
 ```
 
----
+Run all Python tests: `cd exporter && python3 -m unittest discover -s tests -t .` (from `exporter/`).
 
-### Task 0: Toolchain (with the user)
+### Task 0: Toolchain — DONE
 
-**Files:** none.
+Rust installed and user approved write access (now moot: no plugin).
 
-- [ ] **Step 1:** Tell the user the plan switches the plugin to `access: "write"` with every edit restored in the same run (see Global Constraints) and get a yes; tell them Rust must be installed. Install only on their yes: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y` then `~/.cargo/bin/rustup target add wasm32-unknown-unknown`.
-- [ ] **Step 2:** Verify: `~/.cargo/bin/cargo --version` prints a version; `~/.cargo/bin/rustup target list --installed` lists `wasm32-unknown-unknown`.
+### Task 1: Spike — DONE (gate failed → Revision 2)
 
-### Task 1: Spike — verify the FigCraft plugin API (throwaway, gate)
-
-**Files:**
-- Create: `tools/fcctl.py` (kept), `spike/` (deleted at the end), `docs/figcraft-api-notes.md` (kept), `plugin/tests/fixtures/*.json` (kept), `examples/ridgeline-onboarding.figcraft`, `examples/ridgeline-design-system.figcraft` (downloaded from `https://raw.githubusercontent.com/storytold/figcraft/main/examples/`).
-
-**Interfaces:**
-- Produces: `tools/fcctl.py` — `class Fc(port=7979)` with `request(method, params, timeout_ms=60000) -> result` (raises on `ok:false`), `execute(command, params) -> result` (wraps `engine.execute`), `launch(file) -> Fc` (starts `/Applications/FigCraft.app/Contents/MacOS/FigCraft --control <port> <file>`, waits until a request succeeds).
-- Produces: `docs/figcraft-api-notes.md` answering each question below with the exact command id, params and a trimmed sample reply.
-
-- [ ] **Step 1:** Write `tools/fcctl.py` (newline-delimited JSON over `127.0.0.1:<port>`, see FigCraft `docs/control-protocol.md`); smoke test: `python3 tools/fcctl.py smoke examples/ridgeline-onboarding.figcraft` prints the page names from `document.inspect {depth:1, outline:true}`.
-- [ ] **Step 2:** Build a minimal plugin in `spike/` (SDK, `api: 4`, `access: "write"`, `saveFile: true`) whose single command logs to `set_output` the JSON of whatever probe the params name; import it with `plugin.import {path}` and call it with `plugin.run`.
-- [ ] **Step 3:** Answer, from inside the plugin (not via control), and record in the notes:
-  1. Which command returns rendered bytes for a layer id (try `export`, `node.export`, `export.render`; scan the command list `engine.execute` may expose) and in what encoding (SVG text, base64 PNG).
-  2. `node.get` (engine, one level) fields for: interactions (exact trigger/action/transition/easing ids), `boundVariables`, `clip`, overflow/scroll, fixed/sticky, `variableModes`, instance → component set/variant, `effects`, `blend`, mask layers.
-  3. Rendering a container **without children**: `contentsOnly`? If not, hiding children with `node.set {visible:false}` then restoring.
-  4. Switching an instance's variant and a frame's variable mode temporarily, rendering, restoring; does the document end byte-identical (`document.inspect` before/after) and does `save_file` still work after such edits in the same run?
-  5. Variables & collections listing command; page flow starting point (`proto.settings {}` / flows).
-  6. Does `save_file` from a `plugin.run` sent over control open a Save dialog (blocking e2e)? Can `set_output` carry a base64 zip (≤ 12 MB) instead?
-  7. Fuel and host-call counts for exporting all of `ridgeline-onboarding` (`plugin.run` returns `fuel`, `calls`).
-- [ ] **Step 4:** Save raw replies for one frame tree of each example as `plugin/tests/fixtures/{node_get_*,export_*,variables,proto_settings}.json`.
-- [ ] **Step 5: Gate.** If (1) or (3) or (4) fails, stop and bring the user the fallback (whole-frame renders, Smart Animate precision lost). Otherwise delete `spike/`, commit `tools/ docs/figcraft-api-notes.md plugin/tests/fixtures examples/` with `chore: spike findings on the FigCraft plugin API`.
+Outputs: `tools/fcctl.py`, `docs/figcraft-api-notes.md`, `plugin/tests/fixtures/*.json`, `examples/*.figcraft`, `spike/` (kept as reference until Task 6, then deleted). Easing ids, interaction shapes and the restore mechanics are in the notes.
 
 ### Task 2: Player foundations — harness, expressions, easing, fixture
 
@@ -204,83 +183,93 @@ spike/              throwaway, deleted at the end of Task 1
 - [ ] **Step 1: Write failing tests** `smart.test.js`: `matches_by_name_path`; `unmatched_layers_excluded`; `duplicate_names_match_in_order`.
 - [ ] **Step 2:** Run → FAIL. **Step 3:** Implement `smart.js`; run → pass.
 - [ ] **Step 4:** Implement the DOM files; `player/index.html` loads `player.css`, `data.js`, `player.js` with classic `<script>` tags; `player/dev/index.html` loads `../fixtures/demo.data.js` then each file of `src/ORDER`.
-- [ ] **Step 5: Verify in the built-in browser** on `file://…/player/dev/index.html`: every fixture interaction from Task 2 Step 5 behaves as described there (hover/press revert, push, smart animate moves the shared layer, counter increments, Dark mode swaps paints, header stays fixed while scrolling, overlay closes on outside click, Back plays reversed, panel jumps and highlights, Redémarrer resets the counter); console has no errors; a screen name `Écran / 🚀 "test"` renders literally in the panel (Review Focus 2).
+- [ ] **Step 5: Verify in the built-in browser** on `file://…/player/dev/index.html`: every fixture interaction from Task 2 Step 5 behaves as described there (hover/press revert, push, smart animate moves the shared layer, counter increments, Dark mode swaps paints, header stays fixed while scrolling, overlay closes on outside click, Back plays reversed, panel jumps and highlights, Redémarrer resets the counter); console has no errors; a screen name `Écran / 🚀 "test"` renders literally in the panel (Review Focus 3).
 - [ ] **Step 6: Commit** `feat(player): DOM scene, transitions, smart animate, triggers, panel`.
 
-### Task 6: Plugin crate — host seam, contract structs, build embedding
+### Task 6: Exporter package — control client, launcher, CLI skeleton
 
 **Files:**
-- Create: `plugin/Cargo.toml`, `plugin/figcraft-plugin.json`, `plugin/build.rs`, `plugin/src/lib.rs`, `plugin/src/host.rs`, `plugin/src/model.rs`, `.gitignore` entry `plugin/target/`
+- Create: `exporter/figcraft_export/{__init__,__main__,control,launcher}.py`, `exporter/tests/test_control.py`, `exporter/tests/test_launcher.py`, `exporter/tests/test_py38.py`, `exporter/tests/fake_control.py`, the four launchers
+- Move: `tools/fcctl.py` → `exporter/figcraft_export/control.py` (adapt), `plugin/tests/fixtures/` → `exporter/tests/fixtures/`; Delete: `spike/`, `plugin/`
+- Modify: `docs/figcraft-api-notes.md` (add "Control-only facts")
 
 **Interfaces:**
-- Produces: `trait Host { fn call(&mut self, cmd: &str, params: &Value) -> Result<Value, String>; fn selection(&mut self) -> Vec<u64>; fn notify(&mut self, msg: &str); fn save_file(&mut self, name: &str, mime: &str, bytes: &[u8]) -> Result<(), String>; }`; `SdkHost` (wasm only) and `FakeHost { replies: HashMap<(String, String), Value>, calls: Vec<(String, Value)>, saved: Option<(String, Vec<u8>)>, notes: Vec<String> }` keyed by `(cmd, canonical params JSON)`, loading Task 1 fixtures.
-- Produces: `model.rs` structs mirroring the contract (`Proto`, `Screen`, `PanelSection`, `Node`, `Paint`, `Alt`, `When`, `Css`, `LiveText`, `Instance`, `Interaction`, `Trigger`, `Action` as `#[serde(tag="type")]` enum, `Transition`, `Easing`, `Variables`, `Report`), `#[serde(rename_all="camelCase")]`, optional fields skipped when `None`; `fn to_data_js(&Proto) -> String` → `window.FIGCRAFT_PROTOTYPE = <json>;\n` with `</` escaped as `<\/`.
-- Produces: `build.rs` concatenates `../player/src/` files in `ORDER` into `$OUT_DIR/player.js`; `lib.rs` exposes `PLAYER_JS`, `PLAYER_CSS`, `INDEX_HTML` via `include_str!`.
-- Manifest: id `fr.julos.figcraft-to-html`, name `Export HTML`, `api: 4`, `permissions: {access: "write", saveFile: true}`, commands `[{id:"export", label:"Exporter en site HTML…", params:[{name:"title", label:"Titre du site", type:"text", default:""}, {name:"pngScale", label:"Échelle des images", type:"select", options:["1","2","3"], default:"2"}]}, {id:"exportRaw", label:"Exporter en site HTML (test)"}]` (`exportRaw` returns the zip as base64 via `set_output`, for e2e).
+- Produces: `class Control: __init__(self, port=47917, host="127.0.0.1")`, `request(method, params=None, timeout_ms=60000) -> object` (raises `ControlError(message)` on `ok:false`), `execute(command, params=None) -> object`, `close()`; `class Unreachable(Exception)`.
+- Produces: `class FakeControl` (tests) with `replies: dict[(method_or_command, canonical_params_json)] -> object | Exception`, `calls: list`, same `request/execute` API; loads fixtures by name.
+- Produces: `launcher.find_figcraft(config: dict, env=os.environ, platform=sys.platform) -> Path | None` (Windows candidates: `%LOCALAPPDATA%\Programs\FigCraft\FigCraft.exe`, `%ProgramFiles%\FigCraft\FigCraft.exe`, `%ProgramFiles(x86)%\FigCraft\FigCraft.exe`; macOS: `/Applications/FigCraft.app/Contents/MacOS/FigCraft`; then `config["figcraft_path"]`), `load_config(dir) / save_config(dir, cfg)` (`config.json` next to the package), `launch(path, port) -> subprocess.Popen`.
+- Produces: `python -m figcraft_export launch [--port]` (asks for the exe path once if not found, saves it) and `python -m figcraft_export export [--port] [--out DIR] [--scale 2] [--no-open]` (Tasks 7–10 fill it in); exit codes 0 ok, 1 handled error (French message, no traceback), 2 usage.
+- Produces: `figcraft_export.version_ok(version_str) -> bool` (≥ 0.18.1).
+- Launchers: `.bat` = `@echo off`, `chcp 65001 >nul`, `cd /d "%~dp0"`, run `py -3 -m figcraft_export <cmd>` falling back to `python -m figcraft_export <cmd>`, then `pause`; if neither exists print `Python 3 est introuvable.`; `.command` = same with `python3`.
 
-- [ ] **Step 1: Write failing tests** (`cargo test` in `plugin/`): `data_js_escapes_script_close` (a node name `</script>` stays inside the string); `optional_fields_omitted`; `action_serializes_with_type_tag` (`{"type":"navigate","dest":"12",…}`); `player_js_embedded_in_order` (contains `var FCP` before `FCP.boot`).
-- [ ] **Step 2:** `cd plugin && cargo test` → FAIL. **Step 3:** Implement. **Step 4:** `cargo test` → pass; `cargo build --release --target wasm32-unknown-unknown` succeeds.
-- [ ] **Step 5: Commit** `feat(plugin): crate, host seam, data contract`.
+- [ ] **Step 1:** Over control on this Mac, find and record in the notes: how to read the **current selection** and **current page** (try `ui.inspect`, `document.inspect`, `select.*`, `page.list`), how to read the **app version**, whether `file.saveAs {data:true}` leaves the document's path/dirty state unchanged, and whether `edit.undo` over control reverts `node.set` / `instance.setProperties` / `variable.setMode` one step each. Use `spike/py/*.py` as reference for calling conventions.
+- [ ] **Step 2: Write failing tests:** `unreachable_port_raises_unreachable` (nothing listens on a free port); `error_reply_raises_control_error_with_message`; `request_ids_increment_and_replies_match`; `find_figcraft_windows_localappdata` (fake env + a temp file at the candidate path, `platform="win32"`); `find_figcraft_falls_back_to_config`; `config_roundtrip_utf8_path_with_accents` (`C:\Users\Élodie\FigCraft\FigCraft.exe`); `export_without_figcraft_prints_french_and_exits_1` (Review Focus 1: runs `python -m figcraft_export export --port <free>` in a subprocess, stderr contains `Impossible de joindre FigCraft.`, no `Traceback`); `version_ok` table (`0.18.0` false, `0.18.1` true, `0.19.0-alpha` true, `1.0` true); `all_sources_parse_as_python38` (walks `figcraft_export/*.py` with `ast.parse(src, feature_version=(3, 8))`).
+- [ ] **Step 3:** Run `cd exporter && python3 -m unittest discover -s tests -t .` → FAIL. **Step 4:** Implement. **Step 5:** Run → pass.
+- [ ] **Step 6: Commit** `feat(exporter): control client, launcher, CLI skeleton, Windows launchers`.
 
-### Task 7: Plugin walk — selection, panel, start, closure, interactions
+### Task 7: Walk — selection, panel, start, closure, interactions, document extras
 
 **Files:**
-- Create: `plugin/src/walk.rs`, `plugin/src/interactions.rs`, `plugin/tests/walk.rs`
+- Create: `exporter/figcraft_export/{walk,interactions,docfile}.py`, `exporter/tests/test_walk.py`, `exporter/tests/test_interactions.py`, `exporter/tests/test_docfile.py`; new fixtures recorded over control as needed (selection, `file.saveAs {data:true}`, `node.get` with depth)
 
 **Interfaces:**
-- Consumes: `Host`, model structs, Task 1 notes for exact field names.
-- Produces: `fn walk(host: &mut dyn Host, selection: &[u64]) -> Result<Walked, String>`; `struct Walked { proto: Proto /* paints empty */, render_jobs: Vec<RenderJob>, warnings: Vec<String> }`; `struct RenderJob { node: String, figcraft_id: u64, kind: JobKind /* Own | OwnWithoutEffects(Vec<String>) | Variant{instance, variant} | Mode{collection, mode} | VarValue{var, value} */ }`; `fn convert_interaction(raw: &Value) -> Result<Interaction, String>`.
+- Consumes: `Control`/`FakeControl`, notes.
+- Produces: `docfile.extras(saveas_reply) -> dict[str, {"overflow", "position", "varModes"}]` (keys = layer ids as strings; from `document.json`'s `overflow`, `scroll_position`, `var_modes`) and `docfile.digest(saveas_reply) -> str` (sha256 of `document.json` bytes).
+- Produces: `walk.walk(ctl, extras) -> Walked`; `Walked = {"proto": dict (contract, paints empty), "jobs": [RenderJob], "warnings": [str], "page_id": str}`; `RenderJob = {"node": str, "fc_id": int, "kind": "own"|"variant"|"mode"|"varValue", "hide_children": bool, "strip_effects": [str], "instance"?: str, "variant"?: str, "collection"?: str, "mode"?: str, "var"?: str, "value"?: any}`.
+- Produces: `interactions.convert(raw: dict) -> dict` (contract `Interaction`; maps `onClick→click`, `onHover→hover`, `onPress→press`, `onDrag→drag`, `keyPress→key`, `afterDelay.ms→delayMs`, interaction-level `delay_ms→trigger.delayMs`, `close_on_outside→closeOnClickOutside`, `background {r,g,b,a}→css rgba()`, `duration_ms→durationMs`, easing string/`customBezier`/`customSpring` → contract `easing`; `changeTo.dest` → `variant` key); raises `ValueError` on an unknown kind (walk catches, reports, skips).
 
-- [ ] **Step 1: Write failing tests** with `FakeHost` + fixtures: `empty_selection_errors_in_french` (`Sélectionnez au moins une frame de premier niveau.`); `non_frame_and_nested_skipped_and_reported`; `panel_groups_by_section_in_layer_order`; `start_is_flow_start_when_selected_else_first`; `closure_follows_navigate_overlay_changeto_across_pages_not_listed_in_panel`; `closure_terminates_on_cycles`; `missing_destination_reported_not_fatal` (Review Focus 5); `every_trigger_and_action_kind_converts` (one fixture interaction per kind from notes); `instance_lists_reachable_variants_only`; `text_bound_to_string_or_number_var_becomes_live_text_with_style`; `visible_bound_to_boolean_var_sets_bindings_visible`; `overflow_fixed_sticky_and_clip_copied`.
-- [ ] **Step 2:** `cargo test` → FAIL. **Step 3:** Implement (engine `node.get` returns one level: breadth-first with a visited set). **Step 4:** pass. **Step 5: Commit** `feat(plugin): document walk and interaction conversion`.
+- [ ] **Step 1: Write failing tests** with `FakeControl` + fixtures: `empty_selection_errors_in_french` (`Sélectionnez au moins une frame de premier niveau.`); `non_frame_and_nested_skipped_and_reported`; `panel_groups_by_section_in_layer_order`; `start_is_flow_start_when_selected_else_first`; `closure_follows_navigate_overlay_changeto_across_pages_not_listed_in_panel`; `closure_terminates_on_cycles`; `missing_destination_reported_not_fatal` (Review Focus 5); `every_trigger_and_action_kind_converts` (one fixture interaction per kind from notes §2); `custom_bezier_and_spring_convert`; `variant_interactions_read_from_component_node`; `instance_lists_reachable_variants_only`; `text_bound_to_string_or_number_var_becomes_live_text_with_style`; `visible_bound_to_boolean_var_sets_bindings_visible`; `overflow_position_from_docfile_extras`; `container_job_hides_children`; `backdrop_blur_blend_mask_jobs_strip_effects_and_set_css`.
+- [ ] **Step 2:** Run → FAIL. **Step 3:** Implement (breadth-first `node.get` with a visited set; depth as allowed over control). **Step 4:** Run → pass. **Step 5: Commit** `feat(exporter): document walk and interaction conversion`.
 
-### Task 8: Plugin variables — reachable values and modes
+### Task 8: Variables — reachable values and modes
 
 **Files:**
-- Create: `plugin/src/vars.rs`, `plugin/tests/vars.rs`
+- Create: `exporter/figcraft_export/variables.py`, `exporter/tests/test_variables.py`
 
 **Interfaces:**
-- Produces: `fn variables(host) -> Result<Variables, String>`; `fn reachable(vars: &Variables, actions: &[&Action]) -> Reach`; `struct Reach { modes: HashMap<CollId, Vec<ModeId>>, values: HashMap<VarId, Vec<Value>>, open: Vec<VarId> /* expr-driven, not enumerable */ }`; `fn alternatives(node_bindings, reach, cap: usize /*32*/) -> (Vec<When>, bool /*capped*/)`.
+- Produces: `variables.read(ctl) -> dict` (contract `variables` from `variable.list`; colour values → css `rgba()`); `reachable(variables, actions: list) -> {"modes": {coll: [mode]}, "values": {var: [value]}, "open": [var]}`; `alternatives(bound_vars: dict, modes_used: list, reach, cap=32) -> (list[When], capped: bool)`; walk adds `mode`/`varValue` jobs from these.
 
-- [ ] **Step 1: Write failing tests:** `defaults_always_reachable`; `set_variable_literal_adds_value`; `set_mode_adds_mode`; `expr_driven_colour_marked_open`; `cartesian_product_capped_at_32_and_flagged`.
-- [ ] **Step 2–4:** fail → implement → pass. **Step 5: Commit** `feat(plugin): variable reachability`.
+- [ ] **Step 1: Write failing tests:** `defaults_always_reachable`; `set_variable_literal_adds_value`; `set_mode_adds_mode`; `expr_driven_colour_marked_open`; `cartesian_product_capped_at_32_and_flagged`; `colour_values_become_css_rgba`.
+- [ ] **Step 2–4:** fail → implement → pass. **Step 5: Commit** `feat(exporter): variable reachability`.
 
-### Task 9: Plugin render — paints, CSS effects, temporary edits
+### Task 9: Render — paints with undone temporary edits
 
 **Files:**
-- Create: `plugin/src/render.rs`, `plugin/tests/render.rs`
+- Create: `exporter/figcraft_export/render.py`, `exporter/tests/test_render.py`
 
 **Interfaces:**
-- Consumes: `RenderJob`, Task 1 notes (export command, hide/restore mechanics).
-- Produces: `fn render_all(host, walked: &mut Walked, png_scale: u8) -> Result<Vec<Asset>, String>`; `struct Asset { path: String /* "assets/<nodeId>[__<suffix>].svg|png" , ids sanitised to [A-Za-z0-9_~-] */, bytes: Vec<u8> }`; fills `Node.paint`/`alts`/`css`; returns every temporary edit to its original value before returning, on success **and** on error (a guard that restores in reverse order).
+- Consumes: `Walked`, `RenderJob`, notes (edit/undo mechanics from Task 6 Step 1).
+- Produces: `render.render_all(ctl, walked, scale=2) -> list[Asset]`, `Asset = {"path": "assets/<sanitised id>[__<suffix>].svg|png", "data": bytes}`; fills `paint`, `alts`, `css` in `walked["proto"]["nodes"]`; `class EditSession` context manager: records each successful edit, on exit (normal or exception) undoes them all in reverse (`edit.undo` per edit if the notes confirm it, else inverse `node.set`/`instance.setProperties`/`variable.setMode` with the original values, Auto mode restored as `mode: null`).
 
-Decisions: SVG for vectors/shapes/text (outlined); PNG at `png_scale` for image fills, noise, layer blur and anything the notes show the SVG exporter approximates; containers rendered with children hidden; backdrop blur/glass/blend/mask/non-rect clip removed before render and emitted in `css` + `report.approximated`; identical bytes deduplicated (same path reused).
+Decisions: SVG for vectors/shapes/text; PNG at `scale` for image fills, noise, layer blur; containers rendered with children hidden; CSS-handled effects stripped before render; `Paint.dx/dy/w/h` from the exported image size vs node box (`absoluteBounds`); identical bytes share one asset.
 
-- [ ] **Step 1: Write failing tests:** `container_paint_excludes_children` (FakeHost records hide-before/restore-after around the export call); `edits_restored_after_error` (export fails mid-way → every `node.set` undone, in reverse order); `backdrop_blur_moves_to_css_and_reported`; `asset_name_uses_sanitised_id_not_layer_name` (Review Focus 2); `duplicate_bytes_share_one_asset`; `mode_alt_renders_with_mode_then_restores`.
-- [ ] **Step 2–4:** fail → implement → pass. **Step 5: Commit** `feat(plugin): layer rendering with restored temporary edits`.
+- [ ] **Step 1: Write failing tests:** `container_paint_excludes_children` (FakeControl records hide-before/undo-after around `file.export`); `edits_undone_after_error` (export raises mid-way → every edit undone in reverse, exception re-raised); `asset_name_uses_sanitised_id_not_layer_name`; `duplicate_bytes_share_one_asset`; `mode_alt_renders_with_mode_then_restores`; `variant_render_switches_then_restores`; `paint_offsets_account_for_shadow_bounds`.
+- [ ] **Step 2–4:** fail → implement → pass. **Step 5: Commit** `feat(exporter): layer rendering with undone temporary edits`.
 
-### Task 10: Plugin export — zip, size check, report, save
+### Task 10: Writer, summary, export command, distribution
 
 **Files:**
-- Create: `plugin/src/zip.rs`, `plugin/src/export.rs`, `plugin/tests/export.rs`; Modify: `plugin/src/lib.rs` (dispatch `export` / `exportRaw`)
+- Create: `exporter/figcraft_export/{writer,summary}.py`, `exporter/tests/test_writer.py`, `exporter/tests/test_export.py`, `tools/make_dist.py`; Modify: `exporter/figcraft_export/__main__.py`, `.gitignore` (`dist/`)
 
 **Interfaces:**
-- Produces: `fn zip_store(files: &[(String, &[u8])]) -> Vec<u8>` (stored, CRC-32, DOS date 1980-01-01, folder prefix `<slug>/`); `fn run(host, params) -> Result<Value, String>`: walk → vars → render → `data.js` + player files → zip → size check (16 × 1024 × 1024) → `save_file("<slug>.zip", "application/zip", …)` or base64 output for `exportRaw` → `notify` summary in French: `N écrans exportés (X Mo).` plus approximated / skipped lists (first 5, then `… et K autres`).
+- Produces: `writer.to_data_js(proto) -> str` (`window.FIGCRAFT_PROTOTYPE = <json>;\n`, `ensure_ascii=False`, `</` escaped as `<\/`); `writer.player_js(player_root: Path) -> str` (prebuilt `player.js` if present, else concatenation of `src/` in `ORDER`); `writer.write(out_dir: Path, proto, assets, player_root) -> Path` (writes into `out_dir/<slug>/`; refuses a non-empty existing target unless it holds a previous export (has `data.js`), which it replaces); `summary.text(proto, assets, warnings, digest_ok) -> str` in French (`N écrans exportés (X Mo) dans « path ».`, approximated / skipped lists: first 5 then `… et K autres`, the digest warning `Attention : le document FigCraft a peut-être été modifié…` when `digest_ok` is false).
+- Produces: `export` command flow: connect (Review Focus 1) → version → digest before → walk → variables → render (inside EditSession) → digest after → choose folder (`--out`, else `tkinter.filedialog.askdirectory`, else `input()`) → write → summary → `webbrowser.open(index.html.as_uri())` unless `--no-open`. On error after writing started, remove the partial `<slug>/` folder (Review Focus 4).
+- Produces: `python3 tools/make_dist.py` → `dist/FigCraft Export HTML/` with the four launchers, `figcraft_export/` (no tests), `figcraft_export/player/{index.html,player.js,player.css}` prebuilt, and `LISEZMOI.txt` (French: install Python, double-click order, troubleshooting).
 
-- [ ] **Step 1: Write failing tests:** `zip_roundtrips_with_system_unzip` (write to a temp file, `unzip -t` exits 0); `layout_has_index_player_css_data_assets`; `oversize_fails_before_save_with_top5` (Review Focus 3: message starts `L'archive ferait` and `saved` is `None`); `notify_summarises_in_french`; `slug_from_title_safe` (`"Mon proto / v2"` → `mon-proto-v2`).
-- [ ] **Step 2–4:** fail → implement → pass; `cargo build --release --target wasm32-unknown-unknown` succeeds.
-- [ ] **Step 5: Commit** `feat(plugin): archive, size guard, report, save`.
+- [ ] **Step 1: Write failing tests:** `data_js_escapes_script_close`; `data_js_keeps_unicode_names` (`Écran / 🚀 "test"`, read back with utf-8); `layout_has_index_player_css_data_assets`; `write_into_path_with_spaces_and_accents` (temp dir `Mes prototypes/Élodie`); `refuses_non_empty_foreign_folder`; `replaces_previous_export`; `partial_folder_removed_on_error`; `summary_in_french_with_truncation`; `slug_from_title_safe` (`"Mon proto / v2"` → `mon-proto-v2`, empty → `prototype`); `export_end_to_end_with_fake_control` (FakeControl fixtures → folder with N screens, exit 0); `make_dist_contains_launchers_and_built_player`.
+- [ ] **Step 2–4:** fail → implement → pass (full suite).
+- [ ] **Step 5: Commit** `feat(exporter): folder writer, French summary, export command, dist`.
 
-### Task 11: End-to-end on the FigCraft examples
+### Task 11: End-to-end on the FigCraft examples + Windows checklist
 
 **Files:**
-- Create: `tools/e2e.py`, `README.md` (French: build, import via Plugins ▸ Development ▸ Import plugin from manifest…, use, limits)
+- Create: `tools/e2e.py`, `README.md` (French), `docs/windows-checklist.md` (French)
 
 **Interfaces:**
-- Consumes: `tools/fcctl.py`, `plugin/figcraft-plugin.json` + built wasm.
-- Produces: `python3 tools/e2e.py examples/<file>.figcraft --frames "<name>,<name>" --out out/<name>/` → launches FigCraft with control, imports the plugin, selects frames, runs `exportRaw`, unzips into `out/`, renders each selected frame with `ui.render` to `out/<name>/_reference/<frame>.png` for comparison.
+- Consumes: the package, `examples/*.figcraft`, the app at `/Applications/FigCraft.app`.
+- Produces: `python3 tools/e2e.py examples/<file>.figcraft --frames "<name>,<name>" --out out/<name>/` → launches FigCraft with control, opens the file, selects the frames (`select.set`), runs `python -m figcraft_export export --out … --no-open`, renders each selected frame with `file.export png` to `out/<name>/_reference/<frame>.png`, checks the before/after digest is equal, quits FigCraft.
 
-- [ ] **Step 1:** Run e2e on `ridgeline-onboarding` (all onboarding frames) and on `ridgeline-design-system` (a frame using the Button variants). Expected: exit 0, `out/*/index.html` exists.
-- [ ] **Step 2: Verify in the built-in browser** (`file://`): each screen side by side with its `_reference` PNG shows no visible difference except listed CSS approximations; every interaction from the FigCraft presenter on these files behaves the same (click through the onboarding flow incl. Back; hover/press the Button variants); console clean. Repeat the opening check in Safari and Firefox if installed, else say so (Review Focus 4).
-- [ ] **Step 3:** In the real app: import the manifest, select frames, Plugins ▸ Export HTML ▸ Exporter en site HTML…, save, unzip, double-click `index.html`. Expected: same result; the notify toast is in French.
-- [ ] **Step 4: Commit** `test: end-to-end export of FigCraft examples; README`.
+- [ ] **Step 1:** Run e2e on `ridgeline-onboarding` (all onboarding frames) and on `ridgeline-design-system` (a frame using the Button variants). Expected: exit 0, `index.html` exists, digest unchanged.
+- [ ] **Step 2 (controller): Verify in the built-in browser** (`file://`): each screen beside its `_reference` PNG shows no visible difference except listed CSS approximations; click through the onboarding flow incl. Back; hover/press the Button variants; console clean.
+- [ ] **Step 3:** `python3 tools/make_dist.py`; from `dist/FigCraft Export HTML/`, double-click `Ouvrir FigCraft.command`, open an example, select frames, double-click `Exporter la sélection.command`, pick a folder. Expected: summary in French, browser opens the prototype.
+- [ ] **Step 4:** Write `docs/windows-checklist.md`: the exact steps and expected results for the user on the Windows machine (Python check `py -3 --version`, copy the dist folder, first launch asks for `FigCraft.exe` if not found, export to a path with spaces/accents, open in Edge and Chrome, accents in console).
+- [ ] **Step 5: Commit** `test: end-to-end export of FigCraft examples; README; Windows checklist`.
