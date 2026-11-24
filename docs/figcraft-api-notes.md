@@ -5,7 +5,7 @@ Measured on **FigCraft 0.18.1** (`/Applications/FigCraft.app`), plugin `api: 4`,
 Every probe below ran **inside a plugin** through the `call` import (control was only used to
 import/run the plugin, switch documents, build test scaffolding and inspect the document).
 
-Raw replies: `plugin/tests/fixtures/` (see the list at the end).
+Raw replies: `exporter/tests/fixtures/` (see the list at the end).
 
 ## Gate summary
 
@@ -215,10 +215,9 @@ Results:
 - `plugin.import {path: <folder>}` then `plugin.run {id, command, params, fuel?}` → `{plugin, command, output, logs, calls, fuel, panel}`; a plugin error comes back as control error `"<Plugin name>: <message>"`.
 - `select.set {ids}` over control sets `input.selection` for the next run.
 - A plugin runs on the **active** tab (`doc.switch {index}` over control).
-- `tools/fcctl.py`: `Fc(port).request/execute`, `Fc.launch(file)`, `quit()`;
-  `python3 tools/fcctl.py smoke examples/ridgeline-onboarding.figcraft` prints `Onboarding`.
+- The spike client was replaced by `exporter/figcraft_export/control.py`.
 
-## Fixtures (`plugin/tests/fixtures/`)
+## Fixtures (`exporter/tests/fixtures/`)
 
 | File | Content |
 |---|---|
@@ -230,3 +229,12 @@ Results:
 | `variables.json` | `variable.list` (onboarding: empty; design system + synthetic Theme) |
 | `proto_settings.json` | `proto.settings {}` for both |
 | `export_*.json` | **control-channel** `file.export` replies (plugins are refused) |
+
+## Control-only facts (measured on FigCraft 0.18.1, macOS, task 6)
+
+- **Selection**: `document.inspect {depth:0}` -> `selection: [ids]` (also `ui.inspect` -> `status.selection`). Set with `engine.execute select.set {ids}` -> `{selection}`. There is no `select.get`.
+- **Current page**: `document.inspect` -> `currentPage` (page id); `engine.execute page.list {}` -> `[{id, name, children, current, divider}]`. Switch with `doc.switch {index}` (documents) / page commands.
+- **App version**: not exposed over control (no `app.version`/`app.info`; `ui.inspect` has no version; `help.about` returns `{ok:true}` only). Use the executable: `FigCraft --version` prints `FigCraft 0.18.1 (<git hash>)` (macOS verified). The exporter reads it from the executable it finds and skips the check if unreadable.
+- **`file.saveAs {data:true}`** returns `{bytes, data (base64 .figcraft zip), name}` and leaves `path`, `dirty` (clean or dirty) and `history` unchanged, and writes nothing on disk.
+- **`edit.undo` / `edit.redo`** (`{}` -> `{undone:true}` / `{redone:true}`; `{undone:false}` when nothing to undo): every `node.set`, `instance.setProperties` and `variable.setMode` call adds exactly one history entry ("Set properties", "Set instance properties", "Set variable mode"; `document.inspect.history.undo` lists newest first) and one `edit.undo` reverts exactly that step (verified for node.set name/opacity and instance variant property; setMode's undo step verified by history, the mode itself is not readable). After undoing everything `dirty` stays `true`.
+- `node.get` cannot read `variableModes` (unknown field). `variable.list {}` -> `{collections:[{id,name,modes}], variables:[...]}`; `variable.bind` takes the variable id (`VariableID:1`), a `Collection/name` path was refused here.

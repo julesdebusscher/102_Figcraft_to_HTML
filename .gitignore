@@ -1,7 +1,3 @@
 .superpowers/
-spike/target/
-spike/figcraft/
-spike/probe/*.wasm
-spike/py/__pycache__/
-tools/__pycache__/
 __pycache__/
+exporter/config.json
