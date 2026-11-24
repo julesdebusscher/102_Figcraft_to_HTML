@@ -85,20 +85,21 @@
       for (var g = 0; id !== undefined && g < 10000; g++, id = parents[id]) if (FCP.isHidden(state, proto.nodes[id])) return true;
       return false;
     }
-    function shownVariant(id) {
-      var n = proto.nodes[id];
-      if (!n || !n.instance) return undefined;
-      return state.variants[id] !== undefined ? state.variants[id] : n.instance.variant;
+    // After delay: timed from when the layer (or, for an instance, its variant) appears,
+    // armed again on every entry; it fires only in the visit it was armed in (no instance
+    // around it changed variant since), so loops cycle and stale timers stay silent.
+    var visits = FCP.createVisits();
+    function instancesUp(id) {
+      var out = [];
+      for (var g = 0; id !== undefined && g < 10000; g++, id = parents[id]) if (proto.nodes[id] && proto.nodes[id].instance) out.push(id);
+      return out;
     }
-    // After delay: timed from when the layer (or, for an instance, the variant) appears.
-    // A timer armed while an instance showed one variant fires only if it still shows it.
     function armDelays(layer, ids) {
       ids.forEach(function (id) {
-        var v = shownVariant(id);
-        if (v !== undefined) (layer.chain[id] = layer.chain[id] || {})[v] = true;
         FCP.interactionsFor(proto, state, id).forEach(function (it) {
           if (it.trigger.type !== "afterDelay") return;
-          later(id, +it.trigger.delayMs || 0, function () { if (shownVariant(id) === v) exec(it.actions, id); }, layer);
+          var snap = visits.snap(instancesUp(id));
+          later(id, +it.trigger.delayMs || 0, function () { if (visits.valid(snap)) exec(it.actions, id); }, layer);
         });
       });
     }
@@ -106,7 +107,7 @@
       return layer.el._fcp.reg.list.filter(function (e) { return el.contains(e.el); }).map(function (e) { return e.id; });
     }
     function newLayer(el, id) {
-      var l = { el: el, id: id, alive: true, timers: {}, chain: {} };
+      var l = { el: el, id: id, alive: true, timers: {} };
       return l;
     }
     function logicalPath(id) {
@@ -154,8 +155,9 @@
         if (e.kind === "variant" && state.variants[e.node] === e.to) {
           state.variants[e.node] = e.from;
           APPLY.variant({ kind: "variant", node: e.node, from: e.to, to: e.from, transition: e.transition });
-        } else if (e.kind === "overlayOpen" && overlays.length && overlays[overlays.length - 1].id === e.id) {
-          exec([{ type: "closeOverlay" }]);
+        } else if (e.kind === "overlayOpen" && e.layer) {
+          var at = overlays.indexOf(e.layer);   // that overlay, top of the stack or not
+          if (at >= 0) apply(state.closeOverlayAt(at), {});
         }
       }
     }
@@ -267,6 +269,7 @@
       screen: function (e, ctl) { showScreen(e.to, e, ctl); },
       overlayOpen: function (e, ctl, opts) {
         var l = openOverlay(e, opts);
+        e.layer = l;   // lets a hover/press revert close this very overlay
         FCP.animate(e, { from: null, to: l.el, w: view.w, h: view.h, also: [l.back] });
       },
       overlaySwap: function (e, ctl, opts) {
@@ -275,9 +278,11 @@
         var sameBack = !!top && top.backColor === (e.background || "");   // no flash between equal dims
         if (top) closeOverlay(top, null, true);
         var l = openOverlay(e, opts, pos);
+        e.layer = l;
         FCP.animate(e, { from: null, to: l.el, w: view.w, h: view.h, also: sameBack ? [] : [l.back] });
       },
       overlayClose: function (e) {
+        if (e.index !== undefined) return overlays[e.index] && closeOverlay(overlays[e.index], e.transition);
         for (var i = overlays.length - 1; i >= 0; i--) if (overlays[i].id === e.id) return closeOverlay(overlays[i], e.transition);
       },
       variant: function (e, ctl) {
@@ -285,11 +290,12 @@
         if (!layer) return;
         var r = FCP.swapVariantDom(layer.el, e.node), n = proto.nodes[e.node];
         if (!r) return;
+        visits.bump(e.node);   // timers of the variant it leaves (and of its old subtree) go stale
         FCP.animate(e, { from: r.oldWrap, to: r.newWrap, w: n.w, h: n.h, smart: {
           proto: proto, fromRoot: e.node, toRoot: e.node, kids: kidsFn({ id: e.node, from: e.from, to: e.to }),
           fromEls: r.fromEls, toEls: r.toEls
         } }, ctl || {}).then(function () { FCP.dropDom(layer.el, r.oldWrap); });
-        if (!(layer.chain[e.node] && layer.chain[e.node][e.to])) armDelays(layer, [e.node].concat(idsIn(layer, r.newWrap)));
+        armDelays(layer, [e.node].concat(idsIn(layer, r.newWrap)));
       },
       scroll: scrollTo,
       vars: function () { layers().forEach(function (l) { FCP.refreshScreen(l.el); }); },

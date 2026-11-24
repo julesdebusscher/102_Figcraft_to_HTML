@@ -169,3 +169,13 @@ test("overlay_and_navigate_effects_carry_renderer_data", function () {
   var nv = s.run([{ type: "navigate", dest: "B", preserveScroll: true, transition: T() }], ctx);
   assertEq(nv[nv.length - 1].preserveScroll, true);
 });
+
+test("close_overlay_at_closes_that_one_not_the_top", function () {
+  var p = { start: "A", screens: { A: {}, O1: {}, O2: {} }, nodes: {}, variables: { collections: {}, vars: {} } };
+  var st = FCP.createState(p);
+  st.run([{ type: "openOverlay", dest: "O1", transition: { type: "dissolve" } }, { type: "openOverlay", dest: "O2" }], {});
+  var fx = st.closeOverlayAt(0);
+  assertEq(fx[0].id, "O1"); assertEq(fx[0].index, 0); assertEq(fx[0].transition.type, "dissolve");
+  assertEq(st.overlays.length, 1); assertEq(st.overlays[0].id, "O2");
+  assertEq(st.run([{ type: "closeOverlay" }], {})[0].transition, undefined);
+});

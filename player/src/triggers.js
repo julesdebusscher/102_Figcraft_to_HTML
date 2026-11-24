@@ -10,13 +10,26 @@
   var MOD_KEYS = { Shift: 1, Control: 1, Alt: 1, Meta: 1, AltGraph: 1, CapsLock: 1 };
   var DRAG_MIN = 5;
 
-  // While hovering: the layer that owns the hover keeps it as long as the pointer stays
-  // inside it, even when what it shows no longer has a hover trigger (an interactive
-  // component's Hover variant). Only a pointer that left it resolves anew.
-  // -> {keep: true} or {r: resolve result | null}
+  // While hovering, resolved on every move. While the pointer stays inside the owner, the
+  // owner keeps the hover when nothing resolves or only an ancestor does (an interactive
+  // component's Hover variant has no hover trigger of its own); a hover on a layer nested
+  // in the owner takes over. -> {keep: true} or {r: resolve result | null}
   FCP.hoverStep = function (proto, state, path, owner) {
-    if (owner !== null && owner !== undefined && path.indexOf(owner) >= 0) return { keep: true };
-    return { r: FCP.resolve(proto, state, path, "hover") };
+    var r = FCP.resolve(proto, state, path, "hover"), at = owner === null || owner === undefined ? -1 : path.indexOf(owner);
+    if (at < 0) return { r: r };
+    if (!r || r.nodeId === owner || path.indexOf(r.nodeId) > at) return { keep: true };
+    return { r: r };
+  };
+
+  // Visit tokens: every variant change of an instance starts a new visit. A timer armed
+  // during a visit (of the node or of any instance around it) fires only in that visit.
+  FCP.createVisits = function () {
+    var tok = {};
+    return {
+      bump: function (id) { tok[id] = (tok[id] || 0) + 1; },
+      snap: function (ids) { var o = {}; ids.forEach(function (id) { o[id] = tok[id] || 0; }); return o; },
+      valid: function (s) { return Object.keys(s).every(function (id) { return (tok[id] || 0) === s[id]; }); }
+    };
   };
 
   FCP.wireTriggers = function (P) {

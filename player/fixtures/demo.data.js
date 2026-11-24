@@ -107,7 +107,8 @@ window.FIGCRAFT_PROTOTYPE = {
     "1.menu",
     "1.badge",
     "1.chip",
-    "1.tip"
+    "1.tip",
+    "1.loop"
    ],
    "interactions": [
     {
@@ -2089,6 +2090,144 @@ window.FIGCRAFT_PROTOTYPE = {
    "bindings": {},
    "instance": null,
    "children": [],
+   "interactions": []
+  },
+  "1.loop~A~bg": {
+   "id": "1.loop~A~bg",
+   "name": "Bg",
+   "kind": "leaf",
+   "x": 0,
+   "y": 0,
+   "w": 140,
+   "h": 40,
+   "rotation": 0,
+   "opacity": 1,
+   "visible": true,
+   "clip": false,
+   "overflow": "none",
+   "position": "scroll",
+   "paint": {
+    "src": "assets/loop_a.svg",
+    "dx": 0,
+    "dy": 0,
+    "w": 140,
+    "h": 40
+   },
+   "alts": [],
+   "css": {},
+   "liveText": null,
+   "bindings": {},
+   "instance": null,
+   "children": [],
+   "interactions": []
+  },
+  "1.loop~B~bg": {
+   "id": "1.loop~B~bg",
+   "name": "Bg",
+   "kind": "leaf",
+   "x": 0,
+   "y": 0,
+   "w": 140,
+   "h": 40,
+   "rotation": 0,
+   "opacity": 1,
+   "visible": true,
+   "clip": false,
+   "overflow": "none",
+   "position": "scroll",
+   "paint": {
+    "src": "assets/loop_b.svg",
+    "dx": 0,
+    "dy": 0,
+    "w": 140,
+    "h": 40
+   },
+   "alts": [],
+   "css": {},
+   "liveText": null,
+   "bindings": {},
+   "instance": null,
+   "children": [],
+   "interactions": []
+  },
+  "1.loop": {
+   "id": "1.loop",
+   "name": "Boucle",
+   "kind": "instance",
+   "x": 125,
+   "y": 785,
+   "w": 140,
+   "h": 40,
+   "rotation": 0,
+   "opacity": 1,
+   "visible": true,
+   "clip": false,
+   "overflow": "none",
+   "position": "scroll",
+   "paint": null,
+   "alts": [],
+   "css": {},
+   "liveText": null,
+   "bindings": {},
+   "instance": {
+    "set": "Boucle",
+    "variant": "A",
+    "variants": {
+     "A": [
+      "1.loop~A~bg"
+     ],
+     "B": [
+      "1.loop~B~bg"
+     ]
+    },
+    "variantInteractions": {
+     "A": [
+      {
+       "trigger": {
+        "type": "afterDelay",
+        "delayMs": 1500
+       },
+       "actions": [
+        {
+         "type": "changeTo",
+         "variant": "B",
+         "transition": {
+          "type": "dissolve",
+          "durationMs": 300,
+          "easing": {
+           "type": "easeInOut"
+          }
+         }
+        }
+       ]
+      }
+     ],
+     "B": [
+      {
+       "trigger": {
+        "type": "afterDelay",
+        "delayMs": 1500
+       },
+       "actions": [
+        {
+         "type": "changeTo",
+         "variant": "A",
+         "transition": {
+          "type": "dissolve",
+          "durationMs": 300,
+          "easing": {
+           "type": "easeInOut"
+          }
+         }
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "children": [
+    "1.loop~A~bg"
+   ],
    "interactions": []
   }
  },

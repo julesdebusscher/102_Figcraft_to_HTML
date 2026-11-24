@@ -157,6 +157,12 @@ FCP.createState = function (proto) {
     });
     return fx;
   };
+  // Closes the overlay at index i (0 = bottom) of the stack, top or not.
+  State.closeOverlayAt = function (i) {
+    if (i < 0 || i >= State.overlays.length) return [];
+    var o = State.overlays.splice(i, 1)[0], t = ovTrans.splice(i, 1)[0];
+    return [{ kind: "overlayClose", id: o.id, transition: t, index: i }];
+  };
   State.restart = function () {
     State.screen = proto.start; State.overlays.length = 0; clearObj(State.variants);
     history = []; ovTrans = [];

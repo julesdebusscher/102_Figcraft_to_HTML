@@ -32,3 +32,36 @@ test("hover_owner_released_when_pointer_leaves", function () {
   assertEq(s.keep, undefined);
   assertEq(s.r, null);
 });
+
+test("nested_hover_takes_over_from_parent_hover", function () {
+  var hv = function (tag) { return { trigger: { type: "hover" }, actions: [{ type: "navigate", dest: tag }] }; };
+  var p = { start: "S", screens: {}, variables: { collections: {}, vars: {} }, nodes: {
+    S: { id: "S", children: ["card"], interactions: [] },
+    card: { id: "card", children: ["btn", "txt"], interactions: [hv("C")] },
+    btn: { id: "btn", children: [], interactions: [hv("B")] },
+    txt: { id: "txt", children: [], interactions: [] } } };
+  var st = FCP.createState(p);
+  assertEq(FCP.hoverStep(p, st, ["txt", "card", "S"], null).r.nodeId, "card");
+  // From the card onto its child button: the button's own hover wins.
+  assertEq(FCP.hoverStep(p, st, ["btn", "card", "S"], "card").r.nodeId, "btn");
+  // Back onto the card (the button left the path): the card takes the hover again.
+  assertEq(FCP.hoverStep(p, st, ["txt", "card", "S"], "btn").r.nodeId, "card");
+  // Still on the button, which resolves to itself: kept.
+  assertEq(FCP.hoverStep(p, st, ["btn", "card", "S"], "btn").keep, true);
+});
+
+test("visit_tokens_go_stale_on_each_variant_change", function () {
+  var v = FCP.createVisits();
+  var a = v.snap(["I"]);                 // Default armed
+  assertTrue(v.valid(a));
+  v.bump("I");                           // -> Hover
+  var b = v.snap(["I"]);
+  v.bump("I");                           // -> Default again before the delay ended
+  var c = v.snap(["I"]);
+  assertEq(v.valid(a), false, "first Default visit is stale");
+  assertEq(v.valid(b), false, "Hover visit is stale");
+  assertEq(v.valid(c), true, "re-entered Default is armed again");
+  var nested = v.snap(["kid", "I"]);
+  v.bump("I");
+  assertEq(v.valid(nested), false, "a timer inside the instance goes stale with it");
+});
