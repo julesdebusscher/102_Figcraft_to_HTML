@@ -39,6 +39,10 @@ class _Walker(object):
         self.actions, self.var_types = [], {}
         self.queue, self.queued, self.missing = deque(), set(), set()
         self.pending, self.inst_links = [], {}
+        self.prefix, self.alias = "", {}  # node ids: alias.get(fc) or prefix + fc (render's variant clones)
+
+    def _id(self, fc):
+        return self.alias.get(fc) or self.prefix + str(fc)
 
     def get(self, fc_id):
         if fc_id not in self.cache:
@@ -152,7 +156,7 @@ class _Walker(object):
     def _node(self, raw, parent_raw, inst, hidden, screen, flat=False):
         """Adds one contract node; returns ([child work items], its own job or None).
         flat: drawn as one paint (a mask layer), children not listed."""
-        fc, nid, t = raw["id"], str(raw["id"]), raw.get("type")
+        fc, nid, t = raw["id"], self._id(raw["id"]), raw.get("type")
         kids = [] if flat else [c for c in self._children(raw) if c.get("type") not in _SKIP_TYPES]
         mask = None
         if t == "GROUP" and kids and kids[0].get("isMask"):
@@ -188,9 +192,9 @@ class _Walker(object):
                 "visible": raw.get("visible", True) is not False, "clip": bool(raw.get("clip")),
                 "overflow": ex.get("overflow", "none"), "position": ex.get("position", "scroll"),
                 "paint": None, "alts": [], "css": css, "liveText": live, "bindings": bindings,
-                "instance": None, "children": [str(c["id"]) for c in kids], "interactions": []}
+                "instance": None, "children": [self._id(c["id"]) for c in kids], "interactions": []}
         self.nodes[nid] = node
-        self.parent[nid] = str(parent_raw["id"]) if parent_raw is not None else None
+        self.parent[nid] = self._id(parent_raw["id"]) if parent_raw is not None else None
         self.screen_of[nid] = screen
         if bv:
             self.bound[nid] = dict(bv)
@@ -342,7 +346,8 @@ class _Walker(object):
     def _finish_instances(self):
         while self.pending:
             raw, hidden, key0 = self.pending.pop(0)
-            nid, node = str(raw["id"]), self.nodes[str(raw["id"])]
+            nid = self._id(raw["id"])
+            node = self.nodes[nid]
             main = raw.get("mainComponent")
             reach = {}
             for cid in self._reach([main] + self.inst_links.get(nid, [])):
