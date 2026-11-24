@@ -1,5 +1,3 @@
-import base64
-import copy
 import unittest
 
 from figcraft_export import render
@@ -79,6 +77,46 @@ def basic():
     return doc_nodes, proto, jobs, parent
 
 
+def variant_scene(doc_edit=None, w_edit=None, **sim):
+    doc_nodes = {
+        1: {"type": "FRAME", "name": "Écran", "width": 390, "height": 844, "x": 0, "y": 0,
+            "fills": [{"type": "solid", "color": "#FFFFFF"}], "children": [10]},
+        10: {"type": "INSTANCE", "name": "Carte", "width": 200, "height": 100, "x": 5, "y": 5,
+             "fills": [{"type": "solid", "color": "#0000AA"}], "children": [11],
+             "mainComponentName": "Mode=A", "mainComponent": 20,
+             "variants": {"Mode=A": {"children": [11], "fills": [{"type": "solid", "color": "#0000AA"}],
+                                     "width": 200, "height": 100},
+                          "Mode=B": {"children": [12, 13], "fills": [{"type": "solid", "color": "#00BB00"}],
+                                     "width": 240, "height": 120}}},
+        11: rect("Titre A", 50, 20, "#111111", x=10, y=10),
+        12: rect("Titre B", 60, 20, "#222222", x=12, y=14),
+        13: rect("Pied B", 60, 20, "#333333", x=12, y=80, visible=False),
+    }
+    for k in (12, 13):
+        doc_nodes[k]["parent"] = 10
+    sid = "10~Mode=A~self"
+    inst = cnode("10", "instance", 200, 100, [sid, "11"], x=5, y=5,
+                 instance={"set": "Carte", "variant": "Mode=A",
+                           "variants": {"Mode=A": [sid, "11"], "Mode=B": []}, "variantInteractions": {}})
+    proto = [cnode("1", "frame", 390, 844, ["10"]), inst, cnode(sid, w=200, h=100), cnode("11", w=50, h=20)]
+    jobs = [job("1", 1, hide=True), job(sid, 10, hide=True), job("11", 11),
+            {"node": "10", "fc_id": 10, "kind": "variant", "hide_children": False, "strip_effects": [],
+             "instance": "10", "variant": "Mode=B", "variant_fc_id": 30, "properties": {"Mode": "B"}}]
+    parent = {"1": None, "10": "1", sid: "10", "11": "10"}
+    if doc_edit:
+        doc_edit(doc_nodes)
+    doc, w = make(doc_nodes, proto, jobs, parent, **sim)
+    if w_edit:
+        w_edit(w)
+    return doc, w
+
+
+VARIABLES = {"collections": {THEME: {"name": "Theme", "defaultMode": LIGHT, "modes": {LIGHT: "Light", DARK: "Dark"}}},
+             "vars": {SURF: {"name": "surface", "collection": THEME, "type": "color",
+                             "valuesByMode": {LIGHT: "rgba(255, 255, 255, 1)", DARK: "rgba(17, 17, 17, 1)"}}}}
+VARS = {SURF: {"collection": THEME, "values": {LIGHT: "#FFFFFF", DARK: "#111111"}}}
+
+
 class RenderTests(unittest.TestCase):
     def test_container_paint_excludes_children(self):
         doc, w = make(*basic())
@@ -90,13 +128,11 @@ class RenderTests(unittest.TestCase):
         self.assertNotIn("kid4", svg)
         self.assertNotIn("kid", svg_of(assets, nodes["1"]["paint"]))
         # hide happened before the container's export and was undone after it
-        seq = [c for c, p in doc.calls if c in ("node.set", "command.batch", "file.export", "edit.undo")]
         i_export = [k for k, (c, p) in enumerate(doc.calls) if c == "file.export" and p["ids"] == [3]][0]
         before = [c for c, p in doc.calls[:i_export] if c in ("node.set", "command.batch")]
         self.assertTrue(before)
         self.assertIn("edit.undo", [c for c, p in doc.calls[i_export:]])
         self.assertIn(("node.set", {"ids": [4], "props": {"visible": False}}), flat_edits(doc))
-        self.assertTrue(seq)
         self.assertEqual(doc.snapshot(), start)
         self.assertEqual(doc.history, [])
 
@@ -121,26 +157,88 @@ class RenderTests(unittest.TestCase):
                                                        "variable.setMode", "variable.set")])
         self.assertEqual(len(calls(doc, "edit.undo")), edits)
 
-    def test_edit_session_undoes_in_reverse_and_reports_failed_undo_in_french(self):
-        doc = SimDoc({1: rect("a"), 2: rect("b")}, fail_undo=1)
+    def test_edit_session_labels_every_edit_and_undoes_in_reverse(self):
+        doc = SimDoc({1: rect("a"), 2: rect("b")})
         start = doc.snapshot()
+        with self.assertRaises(KeyError):
+            with render.EditSession(doc) as s:
+                s.apply("node.set", {"ids": [1], "props": {"opacity": 0.5}})
+                s.batch([("node.set", {"ids": [2], "props": {"opacity": 0.2}})])
+                with self.assertRaises(ControlError):
+                    s.apply("node.set", {"ids": [99], "props": {"opacity": 0.2}})  # failed: not recorded
+                labels = [h[0] for h in doc.history]
+                raise KeyError("boom")
+        self.assertEqual(len(labels), 2)
+        for label in labels:
+            self.assertRegex(label, r"^Export HTML \(temporaire\) #\d+$")
+        self.assertEqual([c for c, p in doc.calls if c in ("node.set", "instance.setProperties")], [])
+        self.assertEqual(len(calls(doc, "edit.undo")), 2)
+        self.assertEqual(doc.snapshot(), start)
+
+    def test_failed_undo_retried_once_then_french_error_and_nothing_skipped(self):
+        doc = SimDoc({1: rect("a"), 2: rect("b")}, fail_undo=1)
+        with render.EditSession(doc) as s:
+            s.apply("node.set", {"ids": [1], "props": {"opacity": 0.5}})
+        self.assertEqual(doc.history, [])                     # the retry worked
+        doc = SimDoc({1: rect("a"), 2: rect("b")}, fail_undo=2)
         with self.assertRaises(render.RenderError) as cm:
             with render.EditSession(doc) as s:
                 s.apply("node.set", {"ids": [1], "props": {"opacity": 0.5}})
                 s.apply("node.set", {"ids": [2], "props": {"opacity": 0.2}})
         self.assertEqual(str(cm.exception),
                          "Impossible d'annuler toutes les modifications temporaires : vérifiez le document.")
-        self.assertEqual(len(calls(doc, "edit.undo")), 2)   # kept going after the failure
-        doc2 = SimDoc({1: rect("a"), 2: rect("b")})
-        with self.assertRaises(KeyError):
-            with render.EditSession(doc2) as s:
+        self.assertEqual(len(calls(doc, "edit.undo")), 2)
+        self.assertEqual(len(doc.history), 2)                 # never undo past a step still on top
+
+    def test_undo_that_errors_after_undoing_is_not_repeated(self):
+        doc = SimDoc({1: rect("a"), 2: rect("b")}, undo_script=["raise_after"])
+        start = doc.snapshot()
+        with render.EditSession(doc) as s:
+            s.apply("node.set", {"ids": [1], "props": {"opacity": 0.5}})
+            s.apply("node.set", {"ids": [2], "props": {"opacity": 0.2}})
+        self.assertEqual(len(calls(doc, "edit.undo")), 2)
+        self.assertEqual(doc.snapshot(), start)
+
+    def test_user_step_between_our_edit_and_the_undo_is_never_reverted(self):
+        def user(doc, fc):
+            if fc == 1 and doc.exports == 1:
+                doc.user_edit(2, {"name": "renamed by the user"})
+        doc, w = make(*basic(), on_export=user)
+        with self.assertRaises(render.RenderError):
+            render.render_all(doc, w)
+        self.assertEqual(calls(doc, "edit.undo"), [])
+        self.assertEqual(doc.history[-1][0], "Set properties")        # the user's step is still there
+        self.assertEqual(doc.state["nodes"][2]["name"], "renamed by the user")
+
+    def test_timed_out_edit_that_landed_is_undone(self):
+        doc, w = make(*basic(), timeout_edit=1)
+        start = doc.snapshot()
+        with self.assertRaises(ControlError):
+            render.render_all(doc, w)
+        self.assertEqual(len(calls(doc, "edit.undo")), 1)
+        self.assertEqual(doc.snapshot(), start)
+        self.assertEqual(doc.history, [])
+
+    def test_ctrl_c_while_rendering_still_undoes_then_reraises(self):
+        def interrupt(doc, fc):
+            if fc == 3:
+                raise KeyboardInterrupt()
+        doc, w = make(*basic(), on_export=interrupt)
+        start = doc.snapshot()
+        with self.assertRaises(KeyboardInterrupt):
+            render.render_all(doc, w)
+        self.assertEqual(doc.snapshot(), start)
+        self.assertEqual(doc.history, [])
+
+    def test_ctrl_c_during_the_undos_finishes_them_then_reraises(self):
+        doc = SimDoc({1: rect("a"), 2: rect("b")}, undo_script=["interrupt"])
+        start = doc.snapshot()
+        with self.assertRaises(KeyboardInterrupt):
+            with render.EditSession(doc) as s:
                 s.apply("node.set", {"ids": [1], "props": {"opacity": 0.5}})
                 s.apply("node.set", {"ids": [2], "props": {"opacity": 0.2}})
-                with self.assertRaises(ControlError):
-                    s.apply("node.set", {"ids": [99], "props": {"opacity": 0.2}})  # failed: not recorded
-                raise KeyError("boom")
-        self.assertEqual(len(calls(doc2, "edit.undo")), 2)
-        self.assertEqual(doc2.snapshot()["nodes"], start["nodes"])
+        self.assertEqual(doc.snapshot(), start)
+        self.assertEqual(doc.history, [])
 
     def test_asset_name_uses_sanitised_id_not_layer_name(self):
         self.assertEqual(render.sanitise("181~State=Hover, Size=L~182"), "181~State_Hover__Size_L~182")
@@ -193,32 +291,7 @@ class RenderTests(unittest.TestCase):
         self.assertEqual(doc.snapshot(), start)
 
     def test_variant_render_switches_then_restores(self):
-        doc_nodes = {
-            1: {"type": "FRAME", "name": "Écran", "width": 390, "height": 844, "x": 0, "y": 0,
-                "fills": [{"type": "solid", "color": "#FFFFFF"}], "children": [10]},
-            10: {"type": "INSTANCE", "name": "Carte", "width": 200, "height": 100, "x": 5, "y": 5,
-                 "fills": [{"type": "solid", "color": "#0000AA"}], "children": [11],
-                 "mainComponentName": "Mode=A", "mainComponent": 20,
-                 "variants": {"Mode=A": {"children": [11], "fills": [{"type": "solid", "color": "#0000AA"}],
-                                         "width": 200, "height": 100},
-                              "Mode=B": {"children": [12, 13], "fills": [{"type": "solid", "color": "#00BB00"}],
-                                         "width": 240, "height": 120}}},
-            11: rect("Titre A", 50, 20, "#111111", x=10, y=10),
-            12: rect("Titre B", 60, 20, "#222222", x=12, y=14),
-            13: rect("Pied B", 60, 20, "#333333", x=12, y=80, visible=False),
-        }
-        for k in (12, 13):
-            doc_nodes[k]["parent"] = 10
-        sid = "10~Mode=A~self"
-        inst = cnode("10", "instance", 200, 100, [sid, "11"], x=5, y=5,
-                     instance={"set": "Carte", "variant": "Mode=A",
-                               "variants": {"Mode=A": [sid, "11"], "Mode=B": []}, "variantInteractions": {}})
-        proto = [cnode("1", "frame", 390, 844, ["10"]), inst, cnode(sid, w=200, h=100), cnode("11", w=50, h=20)]
-        jobs = [job("1", 1, hide=True), job(sid, 10, hide=True), job("11", 11),
-                {"node": "10", "fc_id": 10, "kind": "variant", "hide_children": False, "strip_effects": [],
-                 "instance": "10", "variant": "Mode=B", "variant_fc_id": 30, "properties": {"Mode": "B"}}]
-        parent = {"1": None, "10": "1", sid: "10", "11": "10"}
-        doc, w = make(doc_nodes, proto, jobs, parent)
+        doc, w = variant_scene()
         start = doc.snapshot()
         assets = render.render_all(doc, w)
         nodes = w["proto"]["nodes"]
@@ -236,6 +309,55 @@ class RenderTests(unittest.TestCase):
         self.assertIn(("instance.setProperties", {"ids": [10], "properties": {"Mode": "B"}}), flat_edits(doc))
         self.assertEqual(doc.snapshot(), start)
         self.assertEqual(doc.history, [])
+
+    def test_variant_clone_gets_alternatives_and_extras_and_its_warnings(self):
+        def doc_edit(doc_nodes):
+            doc_nodes[12]["bound"] = SURF
+            doc_nodes[13]["blend"] = "multiply"
+
+        def w_edit(w):
+            w["proto"]["variables"] = VARIABLES
+            w["actions"] = [{"type": "setVariableMode", "collection": THEME, "mode": DARK}]
+            w["extras"] = {"12": {"position": "fixed"}}
+        doc, w = variant_scene(doc_edit, w_edit, vars_=VARS, defaults={THEME: LIGHT})
+        start = doc.snapshot()
+        assets = render.render_all(doc, w)
+        n = w["proto"]["nodes"]["10~Mode=B~12"]
+        self.assertEqual(n["position"], "fixed")
+        self.assertIn("#FFFFFF", svg_of(assets, n["paint"]))   # bound: Light by default
+        self.assertEqual([a["when"] for a in n["alts"]], [{"modes": {THEME: DARK}}])
+        self.assertIn("#111111", svg_of(assets, n["alts"][0]["paint"]))
+        self.assertTrue(any("Pied B" in m for m in w["proto"]["report"]["approximated"]))
+        self.assertEqual(doc.snapshot(), start)
+
+    def test_unparsed_offset_listed_as_approximation(self):
+        doc_nodes, proto, jobs, parent = basic()
+        doc, w = make(doc_nodes, proto, jobs, parent)
+        real = doc._export
+        doc._export = lambda p: ({"format": "svg", "data": __import__("base64").b64encode(
+            b'<svg width="100" height="60"><rect width="1" height="1"/></svg>').decode()}
+            if p["ids"] == [2] and p["format"] == "svg" else real(p))
+        render.render_all(doc, w)
+        self.assertEqual(w["proto"]["nodes"]["2"]["paint"]["dx"], 0)
+        self.assertIn("« n2 » : position du rendu inconnue (approximation)", w["proto"]["report"]["approximated"])
+
+    def test_variable_of_unknown_collection_skips_the_alternative_with_a_warning(self):
+        doc_nodes, proto, jobs, parent = basic()
+        proto[1]["alts"] = [{"when": {"vars": {"VariableID:9": "rgba(1, 2, 3, 1)"}}, "paint": None},
+                            {"when": {"modes": {THEME: DARK}}, "paint": None}]
+        doc_nodes[2]["bound"] = SURF
+        jobs.append(dict(job("2", 2), kind="varValue", alt=0, when=proto[1]["alts"][0]["when"],
+                         vars={"VariableID:9": "rgba(1, 2, 3, 1)"}, modes={}))
+        jobs.append(dict(job("2", 2), kind="mode", alt=1, when=proto[1]["alts"][1]["when"], vars={},
+                         modes={THEME: DARK}))
+        doc, w = make(doc_nodes, proto, jobs, parent, variables=VARIABLES, vars_=VARS, defaults={THEME: LIGHT})
+        assets = render.render_all(doc, w)
+        alts = w["proto"]["nodes"]["2"]["alts"]
+        self.assertEqual([a["when"] for a in alts], [{"modes": {THEME: DARK}}])
+        self.assertIn("#111111", svg_of(assets, alts[0]["paint"]))
+        msg = "Variable VariableID:9 de collection inconnue : alternative ignorée pour « n2 »."
+        self.assertIn(msg, w["warnings"])
+        self.assertIn(msg, w["proto"]["report"]["skipped"])
 
     def test_paint_offsets_account_for_shadow_bounds(self):
         doc_nodes, proto, jobs, parent = basic()

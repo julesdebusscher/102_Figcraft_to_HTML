@@ -16,14 +16,20 @@ class SimDoc(object):
     "mainComponentName"?}}; vars: {var: {"collection", "values": {mode: colour}}};
     defaults: {coll: mode}."""
 
-    def __init__(self, nodes, vars_=None, defaults=None, fail_export=None, fail_undo=0):
+    def __init__(self, nodes, vars_=None, defaults=None, fail_export=None, fail_undo=0, undo_script=None,
+                 on_export=None, timeout_edit=None):
         self.state = {"nodes": copy.deepcopy(nodes), "vars": copy.deepcopy(vars_ or {})}
         self.defaults = dict(defaults or {})
-        self.history = []
+        self.history = []               # [(label, state before)], newest last
         self.calls = []
         self.fail_export = fail_export  # (fc, nth call) -> raise ControlError
         self.exports = 0
-        self.fail_undo = fail_undo      # number of edit.undo calls that raise
+        # edit.undo behaviours in order: "raise" (nothing undone), "raise_after" (undone, then
+        # raises), "interrupt" (undone, then KeyboardInterrupt); then normal
+        self.undo_script = list(undo_script or []) + ["raise"] * fail_undo
+        self.on_export = on_export      # f(doc, fc): e.g. a user edit while we render
+        self.timeout_edit = timeout_edit  # nth edit call: applied, then "timed out"
+        self.edit_calls = 0
         for fc, n in self.state["nodes"].items():
             for k in n.get("children") or []:
                 self.state["nodes"][k]["parent"] = fc
@@ -31,20 +37,33 @@ class SimDoc(object):
     def snapshot(self):
         return copy.deepcopy(self.state)
 
+    def user_edit(self, fc, props):
+        """A step made by the user in FigCraft (not through our calls)."""
+        before = self.snapshot()
+        self.state["nodes"][fc].update(props)
+        self.history.append(("Set properties", before))
+
     # -- control API -------------------------------------------------------
     def request(self, method, params=None, timeout_ms=60000):
+        self.calls.append((method, copy.deepcopy(params or {})))
+        if method == "document.inspect":
+            return {"history": {"undo": [h[0] for h in reversed(self.history)], "redo": 0}}
         raise AssertionError("unexpected request %s" % method)
 
     def execute(self, command, params=None, timeout_ms=60000):
         params = params or {}
         self.calls.append((command, copy.deepcopy(params)))
         if command == "edit.undo":
-            if self.fail_undo:
-                self.fail_undo -= 1
+            how = self.undo_script.pop(0) if self.undo_script else None
+            if how == "raise":
                 raise ControlError("undo failed")
             if not self.history:
                 return {"undone": False}
-            self.state = self.history.pop()
+            self.state = self.history.pop()[1]
+            if how == "raise_after":
+                raise ControlError("FigCraft n'a pas répondu à temps.")
+            if how == "interrupt":
+                raise KeyboardInterrupt()
             return {"undone": True}
         if command in ("node.set", "instance.setProperties", "variable.setMode", "variable.set", "command.batch"):
             before = self.snapshot()
@@ -53,8 +72,12 @@ class SimDoc(object):
             except ControlError:
                 self.state = before
                 raise
-            self.history.append(before)
-            return {"ok": True}
+            self.history.append((params.get("label") or "Batch" if command == "command.batch"
+                                 else "Set properties", before))
+            self.edit_calls += 1
+            if self.timeout_edit == self.edit_calls:
+                raise ControlError("FigCraft n'a pas répondu à temps.")
+            return [{"ok": True}] * len(params["commands"]) if command == "command.batch" else {"ok": True}
         if command == "node.get":
             return self._get(params)
         if command == "file.export":
@@ -160,6 +183,8 @@ class SimDoc(object):
     def _export(self, p):
         fc = p["ids"][0]
         self.exports += 1
+        if self.on_export:
+            self.on_export(self, fc)
         if self.fail_export and self.fail_export == (fc, self.exports):
             raise ControlError("export failed")
         n = self.state["nodes"][fc]

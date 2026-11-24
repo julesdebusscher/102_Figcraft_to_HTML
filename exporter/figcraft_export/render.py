@@ -37,12 +37,23 @@ def sanitise(node_id):
     return re.sub(r"[^A-Za-z0-9_~-]", "_", str(node_id))
 
 
+class _UnknownVariable(Exception):
+    pass
+
+
 class EditSession(object):
-    """Records each successful edit; on exit (normal or exception) undoes them all, newest first,
-    with one `edit.undo` each (every node.set / instance.setProperties / variable.setMode /
-    variable.set / command.batch call is exactly one undo step, even when it changes nothing).
-    A failed call is not recorded (FigCraft leaves the document as it was). If an undo fails,
-    the others are still undone, then RenderError(UNDO_FAILED) is raised."""
+    """Temporary edits, all undone on exit (normal exit or any exception, Ctrl-C included).
+
+    Every edit is sent as a `command.batch` (one undo step) with its own label
+    "Export HTML (temporaire) #<n>", and recorded when it landed: on success, and also when
+    the call failed or was interrupted but the top of FigCraft's undo history carries that
+    label (a timed-out call may still have been applied). `edit.undo` is global, so before
+    each undo the top of the history must be our label; otherwise (the user changed the
+    document meanwhile) undoing stops and RenderError(UNDO_FAILED) is raised, leaving the
+    user's step alone. A failed undo is retried once. A KeyboardInterrupt during the undos
+    is held until they are done, then re-raised."""
+
+    _count = [0]
 
     def __init__(self, ctl):
         self.ctl, self.edits = ctl, []
@@ -54,32 +65,70 @@ class EditSession(object):
         self.undo_all()
         return False
 
+    def _top(self):
+        undo = ((self.ctl.request("document.inspect", {"depth": 0}) or {}).get("history") or {}).get("undo") or []
+        return undo[0] if undo else None
+
     def apply(self, command, params):
-        result = self.ctl.execute(command, params)
-        self.edits.append(command)
-        return result
+        return self.batch([(command, params)])
 
     def batch(self, commands):
-        """[(command, params)] as one undo step."""
+        """[(command, params)] as one labelled undo step."""
         if not commands:
             return None
-        if len(commands) == 1:
-            return self.apply(*commands[0])
-        return self.apply("command.batch", {"label": BATCH_LABEL,
-                                            "commands": [{"command": c, "params": p} for c, p in commands]})
+        EditSession._count[0] += 1
+        label = "%s #%d" % (BATCH_LABEL, EditSession._count[0])
+        try:
+            result = self.ctl.execute("command.batch", {"label": label, "commands": [
+                {"command": c, "params": p} for c, p in commands]})
+        except BaseException:
+            try:
+                if self._top() == label:   # applied although the call failed (timeout, Ctrl-C)
+                    self.edits.append(label)
+            except Exception:
+                pass
+            raise
+        self.edits.append(label)
+        return result
 
     def undo_all(self):
-        failed = False
+        failed, interrupt, attempts = False, None, {}
         while self.edits:
-            self.edits.pop()
+            label = self.edits[-1]
             try:
-                reply = self.ctl.execute("edit.undo", {})
-                if isinstance(reply, dict) and reply.get("undone") is False:
-                    failed = True
+                top = self._top()
+            except KeyboardInterrupt as e:
+                interrupt = e
+                continue
             except Exception:
                 failed = True
+                break
+            if top != label:
+                if top in self.edits:      # ours, deeper: the newer ones are already gone
+                    del self.edits[self.edits.index(top) + 1:]
+                    continue
+                failed = True              # not ours: never undo the user's step
+                break
+            if attempts.get(label, 0) >= 2:
+                failed = True              # undo keeps failing: give up rather than loop
+                break
+            attempts[label] = attempts.get(label, 0) + 1
+            try:
+                reply = self.ctl.execute("edit.undo", {})
+            except KeyboardInterrupt as e:
+                interrupt = e              # the top is checked again: it may have been undone
+                continue
+            except Exception:
+                continue
+            if isinstance(reply, dict) and reply.get("undone") is False:
+                failed = True
+                break
+            self.edits.pop()
+        self.edits = []
         if failed:
             raise RenderError(UNDO_FAILED)
+        if interrupt is not None:
+            raise interrupt
 
 
 def _svg_text(data):
@@ -131,8 +180,8 @@ def _r(v):
 class _CloneWalker(walk._Walker):
     """The walk's node rules for a switched instance's subtree, ids "<inst>~<key>~<childId>"."""
 
-    def __init__(self, ctl, prefix, inst_id, inst_fc, var_types):
-        walk._Walker.__init__(self, ctl, {})
+    def __init__(self, ctl, prefix, inst_id, inst_fc, var_types, extras):
+        walk._Walker.__init__(self, ctl, extras)
         self.prefix, self.alias, self.var_types = prefix, {inst_fc: inst_id}, var_types
         self.inst_links[inst_id] = []
 
@@ -151,8 +200,21 @@ class _Renderer(object):
         self.var_types = {v.get("id"): v.get("resolvedType")
                           for v in (walked.get("variables_raw") or {}).get("variables") or []}
         self.stats = {"jobs": 0, "exports": 0, "edits": 0}
+        self.dropped = set()   # (node, alt index) that could not be rendered
 
     # -- helpers -------------------------------------------------------------
+    def _approx(self, msg):
+        lst = self.proto.setdefault("report", {}).setdefault("approximated", [])
+        if msg not in lst:
+            lst.append(msg)
+
+    def _warn(self, msg, skipped=True):
+        if msg not in self.w.setdefault("warnings", []):
+            self.w["warnings"].append(msg)
+        lst = self.proto.setdefault("report", {}).setdefault("skipped", [])
+        if skipped and msg not in lst:
+            lst.append(msg)
+
     def fc_of(self, nid):
         if nid in self.fc:
             return self.fc[nid]
@@ -209,7 +271,9 @@ class _Renderer(object):
         vs = self.proto.get("variables") or {}
         for v in sorted(job.get("vars") or {}):
             coll = (vs.get("collections") or {}).get(((vs.get("vars") or {}).get(v) or {}).get("collection")) or {}
-            for m in coll.get("modes") or {}:
+            if not coll.get("modes"):
+                raise _UnknownVariable(v)
+            for m in coll["modes"]:
                 edits.append(("variable.set", {"variable": v, "mode": m, "value": job["vars"][v]}))
         return edits
 
@@ -254,7 +318,13 @@ class _Renderer(object):
         rot = self._rotated(nid, fc, info.get("rotation"))
         if rot:
             edits.append(("node.set", {"ids": rot, "props": {"rotation": 0}}))
-        edits += self._var_edits(job, nid)
+        try:
+            edits += self._var_edits(job, nid)
+        except _UnknownVariable as e:   # this alternative can't be made: dropped from alts
+            self._warn("Variable %s de collection inconnue : alternative ignorée pour « %s »."
+                       % (e, self.nodes[nid]["name"]))
+            self.dropped.add((nid, job["alt"]))
+            return
         png = any(e.get("type") in _PNG_EFFECTS and e.get("visible", True) for e in kept) or any(
             _raster_paint(f) for f in (info.get("fills") or []) + (info.get("strokes") or []))
         self.stats["edits"] += 1 if edits else 0
@@ -276,6 +346,8 @@ class _Renderer(object):
         box = _origin(_svg_text(self._export(fc, "svg", includeBoundingBox=True)))
         own = _origin(text)
         dx, dy = (box[0] - own[0], box[1] - own[1]) if box and own else (0.0, 0.0)
+        if not (box and own):
+            self._approx("« %s » : position du rendu inconnue (approximation)" % self.nodes[nid]["name"])
         w, h = _size(text)
         if png:
             src = self._store(nid, alt, "png", self._export(fc, "png", scale=self.scale))
@@ -295,7 +367,7 @@ class _Renderer(object):
             s.apply("instance.setProperties", {"ids": [fc], "properties": job["properties"]})
             self.stats["edits"] += 1
             raw = self.ctl.execute("node.get", {"id": fc}) or {}
-            vw = _CloneWalker(self.ctl, prefix, inst, fc, self.var_types)
+            vw = _CloneWalker(self.ctl, prefix, inst, fc, self.var_types, self.w.get("extras"))
             screen = (self.w.get("screen_of") or {}).get(inst)
             if raw.get("boundVariables"):
                 vw.bound[inst] = dict(raw["boundVariables"])
@@ -315,13 +387,17 @@ class _Renderer(object):
                 todo.extend(vw._node(*(todo.popleft() + (screen,)))[0])
             vw._finish_instances()
             self.nodes.update(vw.nodes)
-            for name in ("parent", "screen_of", "bound"):
-                self.w.setdefault(name, {}).update(getattr(vw, name))
+            for name, attr in (("parent", "parent"), ("screen_of", "screen_of"), ("bound", "bound"),
+                               ("explicit_modes", "modes")):
+                self.w.setdefault(name, {}).update(getattr(vw, attr))
             self.nodes[inst]["instance"]["variants"][key] = [sid] + [vw._id(c["id"]) for c in kids]
             report = self.proto.setdefault("report", {"approximated": [], "skipped": []})
-            for m in vw.approx:
-                if m not in report["approximated"]:
-                    report["approximated"].append(m)
+            for key, msgs in (("approximated", vw.approx), ("skipped", vw.skipped)):
+                for m in msgs:
+                    if m not in report.setdefault(key, []):
+                        report[key].append(m)
+            for m in vw.warnings:
+                self._warn(m, skipped=False)
             jobs = [sjob] + vw.jobs
             jobs += self._alt_jobs([j for j in jobs if j["kind"] == "own"], vw.bound)
             for j in jobs:
@@ -354,5 +430,8 @@ def render_all(ctl, walked, scale=2):
     r = _Renderer(ctl, walked, scale)
     for job in list(walked["jobs"]):
         r.run(job)
+    for nid in sorted(set(n for n, _ in r.dropped)):
+        alts = r.nodes[nid]["alts"]
+        r.nodes[nid]["alts"] = [a for i, a in enumerate(alts) if (nid, i) not in r.dropped]
     walked["render_stats"] = r.stats
     return r.assets

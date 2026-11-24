@@ -116,7 +116,8 @@ class _Walker(object):
                  "report": {"approximated": self.approx, "skipped": self.skipped}}
         return {"proto": proto, "jobs": self.jobs, "warnings": self.warnings, "page_id": str(page_id),
                 "bound": self.bound, "explicit_modes": self.modes, "parent": self.parent,
-                "screen_of": self.screen_of, "variables_raw": vl, "actions": self.actions}
+                "screen_of": self.screen_of, "variables_raw": vl, "actions": self.actions,
+                "extras": self.extras}
 
     # -- closure -----------------------------------------------------------
     def enqueue(self, dest, source):
@@ -170,7 +171,7 @@ class _Walker(object):
             x, y = raw.get("x", 0), raw.get("y", 0)
         if raw.get("visible", True) is False:
             hidden = hidden + [fc]
-        ex = self.extras.get(nid, {})
+        ex = self.extras.get(str(fc), {})  # keyed by layer id (also for render's clones)
         css, strip, approx = effects_css(raw, bool(kids))
         if raw.get("opacity", 1) < 1:
             strip.append("opacity")  # the element's own opacity applies it
