@@ -51,6 +51,14 @@ window.FIGCRAFT_PROTOTYPE = {
    "background": "#ffffff",
    "root": "4",
    "overflow": "none"
+  },
+  "5": {
+   "name": "Second menu",
+   "width": 300,
+   "height": 180,
+   "background": "#fffde7",
+   "root": "5",
+   "overflow": "none"
   }
  },
  "nodes": {
@@ -88,9 +96,86 @@ window.FIGCRAFT_PROTOTYPE = {
     "1.cbtn",
     "1.theme",
     "1.surf",
-    "1.menu"
+    "1.menu",
+    "1.badge"
    ],
-   "interactions": []
+   "interactions": [
+    {
+     "trigger": {
+      "type": "afterDelay",
+      "delayMs": 2000
+     },
+     "actions": [
+      {
+       "type": "setVariable",
+       "variable": "v.badge",
+       "value": true
+      }
+     ]
+    },
+    {
+     "trigger": {
+      "type": "key",
+      "key": "Shift+K"
+     },
+     "actions": [
+      {
+       "type": "setVariable",
+       "variable": "v.count",
+       "expr": {
+        "op": {
+         "op": "add",
+         "args": [
+          {
+           "value": {
+            "type": "alias",
+            "value": "v.count"
+           }
+          },
+          {
+           "value": {
+            "type": "number",
+            "value": 10
+           }
+          }
+         ]
+        }
+       }
+      }
+     ]
+    },
+    {
+     "trigger": {
+      "type": "key",
+      "key": "Gamepad A"
+     },
+     "actions": [
+      {
+       "type": "setVariable",
+       "variable": "v.count",
+       "expr": {
+        "op": {
+         "op": "add",
+         "args": [
+          {
+           "value": {
+            "type": "alias",
+            "value": "v.count"
+           }
+          },
+          {
+           "value": {
+            "type": "number",
+            "value": 10
+           }
+          }
+         ]
+        }
+       }
+      }
+     ]
+    }
+   ]
   },
   "1.hdr": {
    "id": "1.hdr",
@@ -658,6 +743,8 @@ window.FIGCRAFT_PROTOTYPE = {
     "2.hdr",
     "2.card",
     "2.blur",
+    "2.fuzzy",
+    "2.drag",
     "2.back",
     "2.next"
    ],
@@ -895,8 +982,10 @@ window.FIGCRAFT_PROTOTYPE = {
    "children": [
     "3.hdr",
     "3.card",
+    "3.sticky",
     "3.rows",
-    "3.back"
+    "3.back",
+    "3.jump"
    ],
    "interactions": []
   },
@@ -1298,6 +1387,8 @@ window.FIGCRAFT_PROTOTYPE = {
    "bindings": {},
    "instance": null,
    "children": [
+    "4.swap",
+    "4.link",
     "4.close"
    ],
    "interactions": []
@@ -1308,6 +1399,375 @@ window.FIGCRAFT_PROTOTYPE = {
    "kind": "leaf",
    "x": 70,
    "y": 240,
+   "w": 120,
+   "h": 40,
+   "rotation": 0,
+   "opacity": 1,
+   "visible": true,
+   "clip": false,
+   "overflow": "none",
+   "position": "scroll",
+   "paint": {
+    "src": "assets/overlay_close.svg",
+    "dx": 0,
+    "dy": 0,
+    "w": 120,
+    "h": 40
+   },
+   "alts": [],
+   "css": {},
+   "liveText": null,
+   "bindings": {},
+   "instance": null,
+   "children": [],
+   "interactions": [
+    {
+     "trigger": {
+      "type": "click"
+     },
+     "actions": [
+      {
+       "type": "closeOverlay"
+      }
+     ]
+    }
+   ]
+  },
+  "1.badge": {
+   "id": "1.badge",
+   "name": "Badge",
+   "kind": "leaf",
+   "x": 270,
+   "y": 86,
+   "w": 90,
+   "h": 32,
+   "rotation": -12,
+   "opacity": 0.85,
+   "visible": true,
+   "clip": false,
+   "overflow": "none",
+   "position": "scroll",
+   "paint": {
+    "src": "assets/badge.svg",
+    "dx": 0,
+    "dy": 0,
+    "w": 90,
+    "h": 32
+   },
+   "alts": [],
+   "css": {},
+   "liveText": null,
+   "bindings": {
+    "visible": "v.badge"
+   },
+   "instance": null,
+   "children": [],
+   "interactions": []
+  },
+  "2.fuzzy": {
+   "id": "2.fuzzy",
+   "name": "Flou",
+   "kind": "leaf",
+   "x": 25,
+   "y": 440,
+   "w": 340,
+   "h": 80,
+   "rotation": 0,
+   "opacity": 1,
+   "visible": true,
+   "clip": false,
+   "overflow": "none",
+   "position": "scroll",
+   "paint": {
+    "src": "assets/fuzzy.svg",
+    "dx": 0,
+    "dy": 0,
+    "w": 340,
+    "h": 80
+   },
+   "alts": [],
+   "css": {
+    "layerBlur": 3
+   },
+   "liveText": null,
+   "bindings": {},
+   "instance": null,
+   "children": [],
+   "interactions": []
+  },
+  "2.drag": {
+   "id": "2.drag",
+   "name": "Glisser",
+   "kind": "leaf",
+   "x": 25,
+   "y": 560,
+   "w": 340,
+   "h": 80,
+   "rotation": 0,
+   "opacity": 1,
+   "visible": true,
+   "clip": false,
+   "overflow": "none",
+   "position": "scroll",
+   "paint": {
+    "src": "assets/drag.svg",
+    "dx": 0,
+    "dy": 0,
+    "w": 340,
+    "h": 80
+   },
+   "alts": [],
+   "css": {},
+   "liveText": null,
+   "bindings": {},
+   "instance": null,
+   "children": [],
+   "interactions": [
+    {
+     "trigger": {
+      "type": "drag"
+     },
+     "actions": [
+      {
+       "type": "navigate",
+       "dest": "3",
+       "transition": {
+        "type": "push",
+        "durationMs": 400,
+        "easing": {
+         "type": "easeOut"
+        },
+        "direction": "left"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "3.sticky": {
+   "id": "3.sticky",
+   "name": "Sous-titre",
+   "kind": "leaf",
+   "x": 0,
+   "y": 212,
+   "w": 390,
+   "h": 28,
+   "rotation": 0,
+   "opacity": 1,
+   "visible": true,
+   "clip": false,
+   "overflow": "none",
+   "position": "sticky",
+   "paint": {
+    "src": "assets/sticky.svg",
+    "dx": 0,
+    "dy": 0,
+    "w": 390,
+    "h": 28
+   },
+   "alts": [],
+   "css": {},
+   "liveText": null,
+   "bindings": {},
+   "instance": null,
+   "children": [],
+   "interactions": []
+  },
+  "3.jump": {
+   "id": "3.jump",
+   "name": "Aller à la ligne 6",
+   "kind": "leaf",
+   "x": 205,
+   "y": 780,
+   "w": 160,
+   "h": 40,
+   "rotation": 0,
+   "opacity": 1,
+   "visible": true,
+   "clip": false,
+   "overflow": "none",
+   "position": "fixed",
+   "paint": {
+    "src": "assets/jump.svg",
+    "dx": 0,
+    "dy": 0,
+    "w": 160,
+    "h": 40
+   },
+   "alts": [],
+   "css": {},
+   "liveText": null,
+   "bindings": {},
+   "instance": null,
+   "children": [],
+   "interactions": [
+    {
+     "trigger": {
+      "type": "click"
+     },
+     "actions": [
+      {
+       "type": "scrollTo",
+       "dest": "3.row5",
+       "offset": [
+        0,
+        72
+       ],
+       "transition": {
+        "type": "smartAnimate",
+        "durationMs": 500,
+        "easing": {
+         "type": "easeInOut"
+        }
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "4.swap": {
+   "id": "4.swap",
+   "name": "Autre menu",
+   "kind": "leaf",
+   "x": 50,
+   "y": 120,
+   "w": 160,
+   "h": 40,
+   "rotation": 0,
+   "opacity": 1,
+   "visible": true,
+   "clip": false,
+   "overflow": "none",
+   "position": "scroll",
+   "paint": {
+    "src": "assets/swap.svg",
+    "dx": 0,
+    "dy": 0,
+    "w": 160,
+    "h": 40
+   },
+   "alts": [],
+   "css": {},
+   "liveText": null,
+   "bindings": {},
+   "instance": null,
+   "children": [],
+   "interactions": [
+    {
+     "trigger": {
+      "type": "click"
+     },
+     "actions": [
+      {
+       "type": "swapOverlay",
+       "dest": "5",
+       "position": "bottomCenter",
+       "closeOnClickOutside": true,
+       "background": "rgba(0,0,0,0.4)",
+       "transition": {
+        "type": "moveIn",
+        "durationMs": 300,
+        "easing": {
+         "type": "easeOut"
+        },
+        "direction": "top"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "4.link": {
+   "id": "4.link",
+   "name": "Lien",
+   "kind": "leaf",
+   "x": 50,
+   "y": 180,
+   "w": 160,
+   "h": 40,
+   "rotation": 0,
+   "opacity": 1,
+   "visible": true,
+   "clip": false,
+   "overflow": "none",
+   "position": "scroll",
+   "paint": {
+    "src": "assets/link.svg",
+    "dx": 0,
+    "dy": 0,
+    "w": 160,
+    "h": 40
+   },
+   "alts": [],
+   "css": {},
+   "liveText": null,
+   "bindings": {},
+   "instance": null,
+   "children": [],
+   "interactions": [
+    {
+     "trigger": {
+      "type": "click"
+     },
+     "actions": [
+      {
+       "type": "openUrl",
+       "url": "https://example.com/",
+       "newTab": true
+      }
+     ]
+    }
+   ]
+  },
+  "5": {
+   "id": "5",
+   "name": "Second menu",
+   "kind": "frame",
+   "x": 0,
+   "y": 0,
+   "w": 300,
+   "h": 180,
+   "rotation": 0,
+   "opacity": 1,
+   "visible": true,
+   "clip": true,
+   "overflow": "none",
+   "position": "scroll",
+   "paint": {
+    "src": "assets/overlay2_bg.svg",
+    "dx": 0,
+    "dy": 0,
+    "w": 300,
+    "h": 180
+   },
+   "alts": [],
+   "css": {},
+   "liveText": null,
+   "bindings": {},
+   "instance": null,
+   "children": [
+    "5.close"
+   ],
+   "interactions": [
+    {
+     "trigger": {
+      "type": "afterDelay",
+      "delayMs": 3000
+     },
+     "actions": [
+      {
+       "type": "closeOverlay"
+      }
+     ]
+    }
+   ]
+  },
+  "5.close": {
+   "id": "5.close",
+   "name": "Fermer",
+   "kind": "leaf",
+   "x": 90,
+   "y": 110,
    "w": 120,
    "h": 40,
    "rotation": 0,
@@ -1380,6 +1840,15 @@ window.FIGCRAFT_PROTOTYPE = {
     "valuesByMode": {
      "m.light": "#ffffff",
      "m.dark": "#1c1c28"
+    }
+   },
+   "v.badge": {
+    "name": "badge",
+    "collection": "c.theme",
+    "type": "boolean",
+    "valuesByMode": {
+     "m.light": false,
+     "m.dark": false
     }
    }
   }

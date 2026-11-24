@@ -3,3 +3,9 @@ expr.js
 easing.js
 state.js
 hit.js
+smart.js
+scene.js
+transitions.js
+triggers.js
+panel.js
+boot.js

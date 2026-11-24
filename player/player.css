@@ -1,0 +1,53 @@
+/* FigCraft HTML prototype player. Chrome follows mockup A (dark top bar, side panel). */
+:root {
+  --fcp-bg: #e9e9ec; --fcp-fg: #1e1e1e; --fcp-mut: #6b6b70; --fcp-line: #d9d9de;
+  --fcp-card: #fff; --fcp-acc: #0d99ff; --fcp-acc-bg: #e5f4ff; --fcp-dark: #2c2c2c; --fcp-dark-2: #444;
+  --fcp-panel-w: 220px; --fcp-bar-h: 40px;
+}
+html, body { margin: 0; height: 100%; }
+body { background: var(--fcp-bg); color: var(--fcp-fg); font: 13px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; overflow: hidden; }
+.fcp-app { position: fixed; inset: 0; display: flex; flex-direction: column; }
+.fcp-error { margin: 40px auto; max-width: 480px; padding: 16px; background: var(--fcp-card); border: 1px solid var(--fcp-line); border-radius: 8px; }
+
+/* Top bar */
+.fcp-bar { flex: none; height: var(--fcp-bar-h); display: flex; align-items: center; gap: 10px; padding: 0 10px; background: var(--fcp-dark); color: #ddd; }
+.fcp-title { font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.fcp-sp { flex: 1; }
+.fcp-btn { font: inherit; color: #fff; background: var(--fcp-dark-2); border: 0; border-radius: 6px; padding: 4px 10px; cursor: pointer; white-space: nowrap; }
+.fcp-btn:hover { background: #555; }
+.fcp-btn:focus-visible, .fcp-item:focus-visible { outline: 2px solid var(--fcp-acc); outline-offset: 1px; }
+.fcp-toggle { padding: 4px 8px; }
+
+/* Side panel */
+.fcp-body { flex: 1; display: flex; min-height: 0; }
+.fcp-panel { flex: none; width: var(--fcp-panel-w); overflow-y: auto; background: var(--fcp-card); border-right: 1px solid var(--fcp-line); padding: 8px; box-sizing: border-box; }
+.fcp-panel-closed .fcp-panel { display: none; }
+.fcp-sec { color: var(--fcp-mut); text-transform: uppercase; font-size: 10px; letter-spacing: .05em; margin: 10px 6px 4px; overflow-wrap: anywhere; }
+.fcp-sec:first-child { margin-top: 4px; }
+.fcp-list { list-style: none; margin: 0; padding: 0; }
+.fcp-item { display: block; width: 100%; text-align: left; font: inherit; color: inherit; background: none; border: 0; border-radius: 5px; padding: 5px 8px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fcp-item:hover { background: #f0f0f3; }
+.fcp-item.on { background: var(--fcp-acc-bg); color: var(--fcp-acc); font-weight: 600; }
+
+/* Stage and device */
+.fcp-stage { flex: 1; min-width: 0; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.fcp-device { position: relative; flex: none; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,.18); }
+.fcp-scaler { position: absolute; left: 0; top: 0; transform-origin: 0 0; overflow: hidden; }
+.fcp-layer { position: absolute; inset: 0; }
+.fcp-overlays { pointer-events: none; }
+.fcp-ovwrap { position: absolute; inset: 0; pointer-events: auto; }
+.fcp-backdrop { position: absolute; inset: 0; }
+
+/* Scene */
+.fcp-screen { position: absolute; left: 0; top: 0; overflow: hidden; user-select: none; -webkit-user-select: none; touch-action: pan-x pan-y; }
+.fcp-bg { position: absolute; inset: 0; }
+.fcp-scroll { position: absolute; inset: 0; scrollbar-width: none; overscroll-behavior: contain; }
+.fcp-scroll::-webkit-scrollbar { display: none; }
+.fcp-pinned { position: absolute; inset: 0; pointer-events: none; }
+.fcp-pinned > .fcp-node { pointer-events: auto; }
+.fcp-spacer { position: absolute; width: 1px; height: 1px; pointer-events: none; }
+.fcp-node { position: absolute; box-sizing: border-box; transform-origin: 0 0; }
+.fcp-clip, .fcp-var { position: absolute; inset: 0; }
+.fcp-clip { overflow: hidden; }
+.fcp-paint { position: absolute; display: block; max-width: none; pointer-events: none; -webkit-user-drag: none; }
+.fcp-text { position: absolute; inset: 0; white-space: pre-wrap; pointer-events: none; }
