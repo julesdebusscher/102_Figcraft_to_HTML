@@ -142,7 +142,7 @@ def _digest_after(ctl, before):
 def _render_failure(e, args):
     if isinstance(e, render.RenderError):
         lines = [str(e)]
-        if e.remaining:
+        if e.remaining and not e.user_undone:   # undoing their step would lose it for good
             lines.append(summary.steps_left(len(e.remaining)))
         return lines
     if isinstance(e, ControlError):

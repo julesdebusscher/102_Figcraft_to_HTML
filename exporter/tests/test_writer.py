@@ -134,6 +134,42 @@ class WriteTests(unittest.TestCase):
             self.assertEqual(len(parse_data_js((first / "data.js").read_text(encoding="utf-8"))["screens"]), 1)
             self.assertEqual(sorted(p.name for p in Path(tmp).iterdir()), ["mon-proto"])
 
+    def test_replace_is_atomic_and_old_comes_back_if_the_swap_fails(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            writer.write(Path(tmp), proto(), ASSETS, PLAYER)
+            real = writer._rename
+
+            def flaky(src, dst):
+                if Path(src).name.startswith(".mon-proto.export-"):
+                    raise OSError("renommage refusé")
+                return real(src, dst)
+
+            with mock.patch.object(writer, "_rename", flaky):
+                with self.assertRaises(OSError):
+                    writer.write(Path(tmp), proto(screens=2), ASSETS, PLAYER)
+            self.assertEqual(sorted(p.name for p in Path(tmp).iterdir()), ["mon-proto"])
+            self.assertEqual(len(parse_data_js((Path(tmp) / "mon-proto" / "data.js").read_text(encoding="utf-8"))["screens"]), 1)
+            writer.write(Path(tmp), proto(screens=2), ASSETS, PLAYER)
+            self.assertEqual(sorted(p.name for p in Path(tmp).iterdir()), ["mon-proto"])   # no .old- left
+
+    def test_leftovers_of_an_earlier_run_are_removed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            for name in (".mon-proto.export-123", ".mon-proto.old-456"):
+                (Path(tmp) / name).mkdir()
+                (Path(tmp) / name / "data.js").write_text("x", encoding="utf-8")
+            (Path(tmp) / ".autre.export-1").mkdir()
+            writer.write(Path(tmp), proto(), ASSETS, PLAYER)
+            self.assertEqual(sorted(p.name for p in Path(tmp).iterdir()), [".autre.export-1", "mon-proto"])
+
+    def test_folder_whose_data_js_is_not_ours_is_refused(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            other = Path(tmp) / "mon-proto"
+            other.mkdir()
+            (other / "data.js").write_text("var config = {};\n", encoding="utf-8")
+            with self.assertRaises(writer.WriteError):
+                writer.write(Path(tmp), proto(), ASSETS, PLAYER)
+            self.assertEqual((other / "data.js").read_text(encoding="utf-8"), "var config = {};\n")
+
     def test_asset_path_cannot_escape_the_folder(self):
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp) / "out"
@@ -167,12 +203,14 @@ class SummaryTests(unittest.TestCase):
         self.assertEqual(text.count("skip 1"), 1)
         self.assertNotIn("Attention", text)
         self.assertIn("Le document FigCraft est inchangé (vérifié).", text)
+        self.assertIn("FigCraft peut afficher le document comme modifié : son contenu est inchangé (vérifié).", text)
 
     def test_summary_singular_and_digest_warning(self):
         text = summary.text(proto(), ASSETS, [], False, Path("x"))
         self.assertIn("1 écran exporté (", text)
         self.assertIn("Attention : le document FigCraft a peut-être été modifié", text)
         self.assertNotIn("inchangé", text)
+        self.assertNotIn("peut afficher", text)
         self.assertEqual(summary.mo(1400000), "1,4 Mo")
         self.assertEqual(summary.mo(920000), "0,92 Mo")
 

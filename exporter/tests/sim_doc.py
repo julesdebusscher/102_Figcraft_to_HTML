@@ -17,7 +17,7 @@ class SimDoc(object):
     defaults: {coll: mode}."""
 
     def __init__(self, nodes, vars_=None, defaults=None, fail_export=None, fail_undo=0, undo_script=None,
-                 on_export=None, timeout_edit=None):
+                 on_export=None, timeout_edit=None, redo_fails=False, inspect_fail_after_undo=0):
         self.state = {"nodes": copy.deepcopy(nodes), "vars": copy.deepcopy(vars_ or {})}
         self.defaults = dict(defaults or {})
         self.history = []               # [(label, state before)], newest last
@@ -27,11 +27,15 @@ class SimDoc(object):
         self.exports = 0
         # edit.undo behaviours in order: "raise" (nothing undone), "raise_after" (undone, then
         # raises), "interrupt" (undone, then KeyboardInterrupt), "user_first" (a user step lands
-        # just before the undo, which then reverts it); then normal
+        # just before the undo, which then reverts it), "user_first_raise" (same, then the undo
+        # raises); then normal
         self.undo_script = list(undo_script or []) + ["raise"] * fail_undo
         self.on_export = on_export      # f(doc, fc): e.g. a user edit while we render
         self.timeout_edit = timeout_edit  # nth edit call: applied, then "timed out"
         self.edit_calls = 0
+        self.redo_fails = redo_fails    # edit.redo answers {redone:false} and does nothing
+        self.inspect_fail_after_undo = inspect_fail_after_undo  # next n document.inspect raise after an undo
+        self._inspect_fails = 0
         for fc, n in self.state["nodes"].items():
             for k in n.get("children") or []:
                 self.state["nodes"][k]["parent"] = fc
@@ -50,30 +54,34 @@ class SimDoc(object):
     def request(self, method, params=None, timeout_ms=60000):
         self.calls.append((method, copy.deepcopy(params or {})))
         if method == "document.inspect":
-            return {"history": {"undo": [h[0] for h in reversed(self.history)], "redo": 0}}
+            if self._inspect_fails:
+                self._inspect_fails -= 1
+                raise ControlError("FigCraft n'a pas répondu à temps.")
+            return {"history": {"undo": [h[0] for h in reversed(self.history)], "redo": len(self.redo)}}
         raise AssertionError("unexpected request %s" % method)
 
     def execute(self, command, params=None, timeout_ms=60000):
         params = params or {}
         self.calls.append((command, copy.deepcopy(params)))
         if command == "edit.undo":
+            self._inspect_fails = self.inspect_fail_after_undo
             how = self.undo_script.pop(0) if self.undo_script else None
             if how == "raise":
                 raise ControlError("undo failed")
-            if how == "user_first":
+            if how in ("user_first", "user_first_raise"):
                 self.user_edit(1, {"name": "racing user step"})
             if not self.history:
                 return {"undone": False}
             label, before = self.history.pop()
             self.redo.append((label, self.snapshot()))
             self.state = before
-            if how == "raise_after":
+            if how in ("raise_after", "user_first_raise"):
                 raise ControlError("FigCraft n'a pas répondu à temps.")
             if how == "interrupt":
                 raise KeyboardInterrupt()
             return {"undone": True}
         if command == "edit.redo":
-            if not self.redo:
+            if not self.redo or self.redo_fails:
                 return {"redone": False}
             label, after = self.redo.pop()
             self.history.append((label, self.snapshot()))

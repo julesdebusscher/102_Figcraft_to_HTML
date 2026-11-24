@@ -56,23 +56,40 @@ class WalkSelectionTests(unittest.TestCase):
         self.assertNotIn("150", w["proto"]["screens"])
         self.assertIn("150", w["proto"]["nodes"])
 
-    def test_panel_groups_by_section_in_layer_order(self):
+    def test_panel_groups_by_section_in_canvas_reading_order(self):
         w = walk.walk(scenario(), EXTRAS)
         p = w["proto"]
         self.assertEqual(p["panel"], [
-            # layers-panel order: topmost first (reverse of page children)
-            {"section": None, "screens": ["163", "146"]},
-            {"section": "Parcours", "screens": ["161", "160"]},
+            # canvas reading order: rows by top y (overlapping ranges share a row), then x
+            {"section": None, "screens": ["146", "163"]},
+            {"section": "Parcours", "screens": ["160", "161"]},
         ])
         self.assertEqual(p["pageName"], "Scénario")
         self.assertEqual(p["title"], "Ridgeline onboarding")
         self.assertEqual(w["page_id"], "145")
         self.assertEqual(p["version"], 1)
 
+    def test_sections_ordered_by_their_first_frame(self):
+        def move(byid):
+            [c for c in node_get(byid, 145)["children"] if c["id"] == 146][0]["x"] = 3000.0
+        p = walk.walk(scenario(edit=move), EXTRAS)["proto"]
+        self.assertEqual(p["panel"], [
+            {"section": "Parcours", "screens": ["160", "161"]},
+            {"section": None, "screens": ["163", "146"]},
+        ])
+
+    def test_reading_order_rows_then_x(self):
+        boxes = {"A": (0, 0, 100, 100), "B": (200, 10, 100, 100), "C": (0, 300, 100, 100),
+                 "D": (500, -50, 100, 60), "E": (-100, 320, 50, 50)}
+        self.assertEqual(walk.reading_order(boxes), ["A", "B", "D", "E", "C"])
+        # four screens side by side, listed in reverse layer order: 1, 2, 3, 4
+        four = {"4": (1500, 0, 390, 844), "3": (1000, 0, 390, 844), "2": (500, 0, 390, 844), "1": (0, 0, 390, 844)}
+        self.assertEqual(walk.reading_order(four), ["1", "2", "3", "4"])
+
     def test_start_is_flow_start_when_selected_else_first(self):
         self.assertEqual(walk.walk(scenario(), EXTRAS)["proto"]["start"], "160")
         w = walk.walk(scenario(selection=[146, 163, 161]), EXTRAS)
-        self.assertEqual(w["proto"]["start"], "163")
+        self.assertEqual(w["proto"]["start"], "146")
 
 
 class WalkClosureTests(unittest.TestCase):

@@ -3,6 +3,8 @@ import binascii
 import os
 
 UNDO_FAILED = "Impossible d'annuler toutes les modifications temporaires : vérifiez le document."
+USER_UNDONE = ("L'export a annulé par erreur votre dernière modification dans FigCraft : "
+               "rétablissez-la avec Cmd/Ctrl+Maj+Z, puis vérifiez le document.")
 BATCH_LABEL = "Export HTML (temporaire)"
 
 
@@ -11,11 +13,13 @@ _NONCE = binascii.hexlify(os.urandom(2)).decode("ascii")  # one per run: labels 
 
 class RenderError(Exception):
     """French message, shown as is. `remaining`: labels of our steps still in the document
-    (newest last), when undoing could not finish."""
+    (newest last), when undoing could not finish. `user_undone`: the user's last step was
+    reverted by our undo and could not be redone (message USER_UNDONE)."""
 
-    def __init__(self, message, remaining=()):
+    def __init__(self, message, remaining=(), user_undone=False):
         Exception.__init__(self, message)
         self.remaining = list(remaining)
+        self.user_undone = user_undone
 
 
 class EditSession(object):
@@ -29,9 +33,12 @@ class EditSession(object):
     document meanwhile) undoing stops and RenderError(UNDO_FAILED) is raised, leaving the
     user's step alone (RenderError.remaining lists our steps left). The history top and depth
     seen before the session's first edit are its baseline: back there, everything is undone
-    (an undo that errored after working is no failure). A failed undo is retried once. When our
-    label is still on top after an undo, a user step made in between was reverted instead: it is
-    redone (`edit.redo`) and RenderError is raised. A KeyboardInterrupt during the undos
+    (an undo that errored after working is no failure). A failed undo is retried once. Every undo
+    is verified on the next history read: our label gone = undone; still on top with a deeper
+    redo stack = a user step made in between was reverted instead (also after an undo that
+    raised): it is redone (`edit.redo`) and RenderError is raised (USER_UNDONE when the redo did
+    not bring it back); still on top with the same redo depth = nothing happened (retried). A
+    label is only dropped once a history read proves it undone, so `remaining` is exact. A KeyboardInterrupt during the undos
     is held until they are done, then re-raised."""
 
     _count = [0]
@@ -46,10 +53,15 @@ class EditSession(object):
         self.undo_all()
         return False
 
+    def _hist(self):
+        """(top label of the undo history or None, its depth, redo depth)."""
+        h = (self.ctl.request("document.inspect", {"depth": 0}) or {}).get("history") or {}
+        undo, redo = h.get("undo") or [], h.get("redo") or 0
+        return (undo[0] if undo else None, len(undo), len(redo) if isinstance(redo, list) else int(redo))
+
     def _state(self):
         """(top label of the undo history or None, its depth)."""
-        undo = ((self.ctl.request("document.inspect", {"depth": 0}) or {}).get("history") or {}).get("undo") or []
-        return (undo[0] if undo else None, len(undo))
+        return self._hist()[:2]
 
     def _top(self):
         return self._state()[0]
@@ -78,66 +90,77 @@ class EditSession(object):
         self.edits.append(label)
         return result
 
-    def _reverted_foreign(self, label):
-        """After an undo meant for `label`: True when `label` is still on top, i.e. a user step
-        made between our check and the undo was reverted instead; that step is redone."""
+    def _give_back(self, label):
+        """Our undo reverted a user step (now on the redo stack): redo it. Returns
+        (failure message, held KeyboardInterrupt or None)."""
+        interrupt, reply = None, None
         try:
-            if self._top() != label:
-                return False
-        except Exception:
-            return False
-        try:
-            self.ctl.execute("edit.redo", {})
+            reply = self.ctl.execute("edit.redo", {})
+        except KeyboardInterrupt as e:
+            interrupt = e
         except Exception:
             pass
-        return True
+        try:
+            back = self._top() != label and not (isinstance(reply, dict) and reply.get("redone") is False)
+        except KeyboardInterrupt as e:
+            interrupt, back = e, False
+        except Exception:
+            back = False
+        return (UNDO_FAILED if back else USER_UNDONE), interrupt
 
     def undo_all(self):
-        failed, interrupt, attempts = False, None, {}
+        failed, interrupt, attempts, unread = None, None, {}, 0
+        pending = None   # redo depth before our last edit.undo of edits[-1], not yet verified
         while self.edits:
             label = self.edits[-1]
             try:
-                state = self._state()
+                top, depth, redo = self._hist()
             except KeyboardInterrupt as e:
                 interrupt = e
                 continue
             except Exception:
-                failed = True
-                break
-            top = state[0]
-            if state == self.baseline:     # back where the session started: all undone
+                unread += 1                # inconclusive: keep the label, read again (3 tries)
+                if unread >= 3:
+                    failed = UNDO_FAILED
+                    break
+                continue
+            unread = 0
+            if pending is not None:
+                before, pending = pending, None
+                if top != label:           # ours is gone: undone (a user step may sit on top now)
+                    self.edits.pop()
+                    continue
+                if redo > before:          # still on top, yet something went to redo: the user's
+                    failed, held = self._give_back(label)
+                    interrupt = held or interrupt
+                    break
+                # same redo depth: nothing happened, retry below
+            if (top, depth) == self.baseline:   # back where the session started: all undone
                 self.edits = []
                 break
             if top != label:
                 if top in self.edits:      # ours, deeper: the newer ones are already gone
                     del self.edits[self.edits.index(top) + 1:]
                     continue
-                failed = True              # not ours: never undo the user's step
+                failed = UNDO_FAILED       # not ours: never undo the user's step
                 break
             if attempts.get(label, 0) >= 2:
-                failed = True              # undo keeps failing: give up rather than loop
+                failed = UNDO_FAILED       # undo keeps failing: give up rather than loop
                 break
             attempts[label] = attempts.get(label, 0) + 1
+            reply = None
             try:
                 reply = self.ctl.execute("edit.undo", {})
             except KeyboardInterrupt as e:
-                interrupt = e              # the top is checked again: it may have been undone
-                continue
+                interrupt = e
             except Exception:
-                continue
+                pass
             if isinstance(reply, dict) and reply.get("undone") is False:
-                failed = True
+                failed = UNDO_FAILED
                 break
-            try:
-                foreign = self._reverted_foreign(label)
-            except KeyboardInterrupt as e:
-                interrupt, foreign = e, False
-            if foreign:
-                failed = True              # a user step landed just before: it is redone, ours stays
-                break
-            self.edits.pop()
+            pending = redo                 # verified on the next history read
         remaining, self.edits = list(self.edits), []
         if failed:
-            raise RenderError(UNDO_FAILED, remaining)
+            raise RenderError(failed, remaining, user_undone=failed == USER_UNDONE)
         if interrupt is not None:
             raise interrupt

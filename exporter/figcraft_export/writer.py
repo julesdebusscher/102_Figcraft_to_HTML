@@ -76,23 +76,42 @@ def _remove(path):
         shutil.rmtree(str(path), ignore_errors=True)
 
 
+def _rename(src, dst):
+    Path(src).rename(dst)
+
+
+def _is_export(folder):
+    """True when folder/data.js is one of ours (starts with DATA_PREFIX)."""
+    try:
+        with open(str(folder / "data.js"), "rb") as f:
+            return f.read(len(DATA_PREFIX)) == DATA_PREFIX.encode("ascii")
+    except OSError:
+        return False
+
+
 def write(out_dir, proto, assets, player_root):
     """Write the export into out_dir/<slug(title)>/ and return that folder.
 
-    Everything is written into a hidden sibling folder first, then renamed: an error leaves
-    no partial folder (and an earlier export in place). An existing target is replaced only
-    when it is empty or holds an earlier export (has data.js); otherwise WriteError."""
+    Everything is written into a hidden sibling folder `.<slug>.export-<pid>` first, then
+    swapped in: an earlier export is renamed `.<slug>.old-<pid>`, the new one renamed to
+    <slug>, then the old one deleted (renamed back if the swap fails). An error leaves no
+    partial folder and the earlier export in place. Leftover `.<slug>.export-*`/`.old-*`
+    folders of an interrupted run are removed. An existing target is replaced only when it is
+    empty or holds an earlier export (data.js starting with DATA_PREFIX); otherwise WriteError."""
     out_dir = Path(out_dir)
     name = slug(proto.get("title"))
     target = out_dir / name
     if target.exists():
         if not target.is_dir():
             raise WriteError("« %s » existe déjà et n'est pas un dossier." % target)
-        if any(target.iterdir()) and not (target / "data.js").is_file():
+        if any(target.iterdir()) and not _is_export(target):
             raise WriteError("Le dossier « %s » existe déjà et ne contient pas un export : "
                              "choisissez un autre dossier ou videz-le." % target)
+    for pattern in (".%s.export-*" % name, ".%s.old-*" % name):
+        for left in out_dir.glob(pattern):
+            _remove(left)
     tmp = out_dir / (".%s.export-%d" % (name, os.getpid()))
-    _remove(tmp)
+    old = out_dir / (".%s.old-%d" % (name, os.getpid()))
     try:
         tmp.mkdir()
         (tmp / "assets").mkdir()
@@ -104,10 +123,18 @@ def write(out_dir, proto, assets, player_root):
         _write_text(tmp / "player.js", player_js(player_root))
         _write_bytes(tmp / "player.css", (Path(player_root) / "player.css").read_bytes())
         _write_text(tmp / "index.html", index_html(player_root, proto.get("title")))
+        moved = False
         if target.exists():
-            shutil.rmtree(str(target))
-        tmp.rename(target)
+            _rename(target, old)
+            moved = True
+        try:
+            _rename(tmp, target)
+        except BaseException:
+            if moved:
+                _rename(old, target)
+            raise
     except BaseException:
         _remove(tmp)
         raise
+    _remove(old)
     return target

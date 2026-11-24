@@ -99,6 +99,47 @@ class EditSessionTests(unittest.TestCase):
         self.assertEqual(cm.exception.remaining, [label])
         self.assertEqual(len(calls(doc, "edit.redo")), 1)
 
+    def test_failed_redo_says_the_user_step_was_undone(self):
+        doc = SimDoc({1: rect("a"), 2: rect("b")}, undo_script=["user_first"], redo_fails=True)
+        with self.assertRaises(edits.RenderError) as cm:
+            with edits.EditSession(doc) as s:
+                s.apply("node.set", {"ids": [2], "props": {"opacity": 0.5}})
+                label = doc.history[-1][0]
+        self.assertEqual(str(cm.exception), edits.USER_UNDONE)
+        self.assertIn("Cmd/Ctrl+Maj+Z", str(cm.exception))
+        self.assertTrue(cm.exception.user_undone)
+        self.assertEqual(cm.exception.remaining, [label])
+        self.assertEqual([h[0] for h in doc.history], [label])      # the user's step sits in redo
+        self.assertEqual(len(calls(doc, "edit.undo")), 1)
+
+    def test_undo_that_raises_after_reverting_a_user_step_is_redone_and_reported(self):
+        doc = SimDoc({1: rect("a"), 2: rect("b")}, undo_script=["user_first_raise"])
+        with self.assertRaises(edits.RenderError) as cm:
+            with edits.EditSession(doc) as s:
+                s.apply("node.set", {"ids": [2], "props": {"opacity": 0.5}})
+                label = doc.history[-1][0]
+        self.assertEqual(doc.state["nodes"][1]["name"], "racing user step")
+        self.assertEqual([h[0] for h in doc.history], [label, "Set properties"])
+        self.assertEqual(cm.exception.remaining, [label])
+        self.assertFalse(cm.exception.user_undone)
+        self.assertEqual(len(calls(doc, "edit.undo")), 1)
+
+    def test_inconclusive_check_after_undo_keeps_the_label_until_proven_undone(self):
+        doc = SimDoc({1: rect("a"), 2: rect("b")}, inspect_fail_after_undo=1)
+        start = doc.snapshot()
+        with edits.EditSession(doc) as s:
+            s.apply("node.set", {"ids": [1], "props": {"opacity": 0.5}})
+            s.apply("node.set", {"ids": [2], "props": {"opacity": 0.2}})
+        self.assertEqual(doc.snapshot(), start)
+        self.assertEqual(len(calls(doc, "edit.undo")), 2)        # never undone twice
+        # the check keeps failing: the label stays in `remaining`, though it may be undone
+        doc = SimDoc({1: rect("a"), 2: rect("b")}, inspect_fail_after_undo=5)
+        with self.assertRaises(edits.RenderError) as cm:
+            with edits.EditSession(doc) as s:
+                s.apply("node.set", {"ids": [1], "props": {"opacity": 0.5}})
+                label = doc.history[-1][0]
+        self.assertEqual(cm.exception.remaining, [label])
+
 
 if __name__ == "__main__":
     unittest.main()

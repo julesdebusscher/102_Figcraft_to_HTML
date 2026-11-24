@@ -29,6 +29,23 @@ def _variant_props(key):
     return out
 
 
+def reading_order(boxes):
+    """{id: (x, y, w, h)} (canvas coordinates) -> ids in canvas reading order: rows by top y
+    (boxes whose vertical ranges overlap the row's share it), then by x within a row."""
+    rows = []
+    for i in sorted(boxes, key=lambda k: (boxes[k][1], boxes[k][0])):
+        x, y, w, h = boxes[i]
+        if rows and y < rows[-1][1] and y + h > rows[-1][0]:
+            rows[-1][1] = max(rows[-1][1], y + h)
+            rows[-1][2].append(i)
+        else:
+            rows.append([y, y + h, [i]])
+    out = []
+    for _, _, ids in rows:
+        out.extend(sorted(ids, key=lambda k: (boxes[k][0], boxes[k][1])))
+    return out
+
+
 class _Walker(object):
     def __init__(self, ctl, extras):
         self.ctl, self.extras = ctl, extras or {}
@@ -60,16 +77,17 @@ class _Walker(object):
             self.skipped.append(msg)
 
     # -- selection ---------------------------------------------------------
-    def _top_frames(self, container, section, order, section_of, tops):
-        # layers-panel order: topmost first = reverse of `children`
-        for c in reversed(container.get("children") or []):
+    def _top_frames(self, container, section, boxes, section_of, tops, ox=0.0, oy=0.0):
+        # boxes in page coordinates (a section's children are relative to the section)
+        for c in container.get("children") or []:
             tops[c["id"]] = c
+            x, y = ox + num(c.get("x", 0)), oy + num(c.get("y", 0))
             if c.get("type") == "FRAME":
-                order.append(c["id"])
+                boxes[c["id"]] = (x, y, num(c.get("width", 0)), num(c.get("height", 0)))
                 section_of[c["id"]] = section
             elif c.get("type") == "SECTION" and c.get("childCount", len(c.get("children") or [])):
                 sec = self.get(c["id"]) or {}
-                self._top_frames(sec, (c["id"], c.get("name")), order, section_of, tops)
+                self._top_frames(sec, (c["id"], c.get("name")), boxes, section_of, tops, x, y)
 
     def run(self):
         insp = self.ctl.request("document.inspect", {"depth": 0}) or {}
@@ -78,9 +96,10 @@ class _Walker(object):
             raise WalkError(SELECT_MSG)
         page_id = insp.get("currentPage")
         page = self.get(page_id) or {}
-        order, section_of, tops = [], {}, {}
-        self._top_frames(page, None, order, section_of, tops)
-        selected = [i for i in order if i in sel]
+        boxes, section_of, tops = {}, {}, {}
+        self._top_frames(page, None, boxes, section_of, tops)
+        # canvas reading order (ruling R14); panel groups follow their first frame in it
+        selected = reading_order({i: b for i, b in boxes.items() if i in sel})
         for i in sel:
             if i in selected:
                 continue

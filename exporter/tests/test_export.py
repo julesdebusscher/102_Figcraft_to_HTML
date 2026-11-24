@@ -189,6 +189,17 @@ class ExportTests(unittest.TestCase):
         self.assertIn("Attention : le document FigCraft a peut-être été modifié", err)
         self.assertEqual(list(self.out.iterdir()), [])
 
+    def test_user_step_undone_by_us_never_advises_undoing_it(self):
+        from figcraft_export import edits
+        args = cli.build_parser().parse_args(["export"])
+        args.debug = False
+        lines = cli._render_failure(edits.RenderError(edits.USER_UNDONE, ["l1"], user_undone=True), args)
+        text = "\n".join(lines)
+        self.assertIn("Cmd/Ctrl+Maj+Z", text)
+        self.assertNotIn("annulez votre modification", text)
+        lines = cli._render_failure(edits.RenderError(edits.UNDO_FAILED, ["l1", "l2"]), args)
+        self.assertIn("annulez votre modification", "\n".join(lines))
+
     def test_write_error_removes_partial_folder(self):
         with mock.patch.object(writer, "_write_bytes", side_effect=OSError("disque plein")):
             rc, out, err, _ = run(Doc(), "--out", str(self.out), "--no-open")

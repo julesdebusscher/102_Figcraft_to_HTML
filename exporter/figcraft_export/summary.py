@@ -4,6 +4,7 @@ from . import writer
 SHOWN = 5
 BIG = 10 * 1000 * 1000
 DIGEST_OK = "Le document FigCraft est inchangé (vérifié)."
+DIRTY_NOTE = "FigCraft peut afficher le document comme modifié : son contenu est inchangé (vérifié)."
 DIGEST_WARNING = ("Attention : le document FigCraft a peut-être été modifié pendant l'export. "
                   "Vérifiez-le avant de l'enregistrer (Cmd/Ctrl+Z annule les dernières modifications).")
 
@@ -52,5 +53,5 @@ def text(proto, assets, warnings, digest_ok, folder=None):
     lines += _block("Rendu approximé", approx)
     lines += _block("Ignoré", skipped)
     lines += _block("Remarques", notes)
-    lines.append(DIGEST_OK if digest_ok else DIGEST_WARNING)
+    lines += [DIGEST_OK, DIRTY_NOTE] if digest_ok else [DIGEST_WARNING]
     return "\n".join(lines)
