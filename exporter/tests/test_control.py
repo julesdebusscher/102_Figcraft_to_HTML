@@ -165,6 +165,17 @@ class ControlTests(unittest.TestCase):
         c.close()
         srv.close()
 
+    def test_null_id_error_reply_raises_control_error_at_once(self):
+        srv = Server(lambda r: {"id": None, "ok": False, "error": "invalid request"})
+        srv.start()
+        c = Control(srv.port)
+        t0 = time.time()
+        with self.assertRaises(ControlError) as cm:
+            c.request("x", timeout_ms=2000)
+        self.assertIn("invalid request", str(cm.exception))
+        self.assertLess(time.time() - t0, 1.5)
+        c.close()
+
     def test_fake_control_replies_and_records(self):
         fake = FakeControl({("node.get", canonical({"id": 2})): {"id": 2}})
         self.assertEqual(fake.request("node.get", {"id": 2}), {"id": 2})

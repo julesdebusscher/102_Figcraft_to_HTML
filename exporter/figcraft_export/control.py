@@ -108,6 +108,8 @@ class Control:
             if not isinstance(reply, dict):
                 self.close()
                 raise ControlError("Réponse inattendue de FigCraft.")
+            if "id" in reply and reply["id"] is None and not reply.get("ok"):
+                return reply  # a protocol error FigCraft could not tie to a request: ours
             if "id" in reply and reply["id"] != want_id:
                 continue  # a stale reply to an earlier request: not ours
             return reply

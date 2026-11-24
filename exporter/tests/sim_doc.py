@@ -21,11 +21,13 @@ class SimDoc(object):
         self.state = {"nodes": copy.deepcopy(nodes), "vars": copy.deepcopy(vars_ or {})}
         self.defaults = dict(defaults or {})
         self.history = []               # [(label, state before)], newest last
+        self.redo = []                  # [(label, state after)], newest last
         self.calls = []
         self.fail_export = fail_export  # (fc, nth call) -> raise ControlError
         self.exports = 0
         # edit.undo behaviours in order: "raise" (nothing undone), "raise_after" (undone, then
-        # raises), "interrupt" (undone, then KeyboardInterrupt); then normal
+        # raises), "interrupt" (undone, then KeyboardInterrupt), "user_first" (a user step lands
+        # just before the undo, which then reverts it); then normal
         self.undo_script = list(undo_script or []) + ["raise"] * fail_undo
         self.on_export = on_export      # f(doc, fc): e.g. a user edit while we render
         self.timeout_edit = timeout_edit  # nth edit call: applied, then "timed out"
@@ -42,6 +44,7 @@ class SimDoc(object):
         before = self.snapshot()
         self.state["nodes"][fc].update(props)
         self.history.append(("Set properties", before))
+        self.redo = []
 
     # -- control API -------------------------------------------------------
     def request(self, method, params=None, timeout_ms=60000):
@@ -57,14 +60,25 @@ class SimDoc(object):
             how = self.undo_script.pop(0) if self.undo_script else None
             if how == "raise":
                 raise ControlError("undo failed")
+            if how == "user_first":
+                self.user_edit(1, {"name": "racing user step"})
             if not self.history:
                 return {"undone": False}
-            self.state = self.history.pop()[1]
+            label, before = self.history.pop()
+            self.redo.append((label, self.snapshot()))
+            self.state = before
             if how == "raise_after":
                 raise ControlError("FigCraft n'a pas répondu à temps.")
             if how == "interrupt":
                 raise KeyboardInterrupt()
             return {"undone": True}
+        if command == "edit.redo":
+            if not self.redo:
+                return {"redone": False}
+            label, after = self.redo.pop()
+            self.history.append((label, self.snapshot()))
+            self.state = after
+            return {"redone": True}
         if command in ("node.set", "instance.setProperties", "variable.setMode", "variable.set", "command.batch"):
             before = self.snapshot()
             try:
@@ -74,6 +88,7 @@ class SimDoc(object):
                 raise
             self.history.append((params.get("label") or "Batch" if command == "command.batch"
                                  else "Set properties", before))
+            self.redo = []
             self.edit_calls += 1
             if self.timeout_edit == self.edit_calls:
                 raise ControlError("FigCraft n'a pas répondu à temps.")

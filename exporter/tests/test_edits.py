@@ -88,6 +88,17 @@ class EditSessionTests(unittest.TestCase):
         self.assertEqual(cm.exception.remaining, labels)
         self.assertEqual(str(cm.exception), edits.UNDO_FAILED)
 
+    def test_user_step_landing_just_before_an_undo_is_redone_and_reported(self):
+        doc = SimDoc({1: rect("a"), 2: rect("b")}, undo_script=["user_first"])
+        with self.assertRaises(edits.RenderError) as cm:
+            with edits.EditSession(doc) as s:
+                s.apply("node.set", {"ids": [2], "props": {"opacity": 0.5}})
+                label = doc.history[-1][0]
+        self.assertEqual(doc.state["nodes"][1]["name"], "racing user step")   # the user's step is back
+        self.assertEqual([h[0] for h in doc.history], [label, "Set properties"])
+        self.assertEqual(cm.exception.remaining, [label])
+        self.assertEqual(len(calls(doc, "edit.redo")), 1)
+
 
 if __name__ == "__main__":
     unittest.main()

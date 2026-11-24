@@ -29,7 +29,9 @@ class EditSession(object):
     document meanwhile) undoing stops and RenderError(UNDO_FAILED) is raised, leaving the
     user's step alone (RenderError.remaining lists our steps left). The history top and depth
     seen before the session's first edit are its baseline: back there, everything is undone
-    (an undo that errored after working is no failure). A failed undo is retried once. A KeyboardInterrupt during the undos
+    (an undo that errored after working is no failure). A failed undo is retried once. When our
+    label is still on top after an undo, a user step made in between was reverted instead: it is
+    redone (`edit.redo`) and RenderError is raised. A KeyboardInterrupt during the undos
     is held until they are done, then re-raised."""
 
     _count = [0]
@@ -76,6 +78,20 @@ class EditSession(object):
         self.edits.append(label)
         return result
 
+    def _reverted_foreign(self, label):
+        """After an undo meant for `label`: True when `label` is still on top, i.e. a user step
+        made between our check and the undo was reverted instead; that step is redone."""
+        try:
+            if self._top() != label:
+                return False
+        except Exception:
+            return False
+        try:
+            self.ctl.execute("edit.redo", {})
+        except Exception:
+            pass
+        return True
+
     def undo_all(self):
         failed, interrupt, attempts = False, None, {}
         while self.edits:
@@ -111,6 +127,13 @@ class EditSession(object):
                 continue
             if isinstance(reply, dict) and reply.get("undone") is False:
                 failed = True
+                break
+            try:
+                foreign = self._reverted_foreign(label)
+            except KeyboardInterrupt as e:
+                interrupt, foreign = e, False
+            if foreign:
+                failed = True              # a user step landed just before: it is redone, ours stays
                 break
             self.edits.pop()
         remaining, self.edits = list(self.edits), []
