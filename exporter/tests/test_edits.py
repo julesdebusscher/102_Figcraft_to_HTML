@@ -140,6 +140,18 @@ class EditSessionTests(unittest.TestCase):
                 label = doc.history[-1][0]
         self.assertEqual(cm.exception.remaining, [label])
 
+    def test_failed_undo_then_user_step_keeps_our_label_in_remaining(self):
+        doc = SimDoc({1: rect("a"), 2: rect("b")}, undo_script=["raise_then_user"])
+        with self.assertRaises(edits.RenderError) as cm:
+            with edits.EditSession(doc) as s:
+                s.apply("node.set", {"ids": [1], "props": {"opacity": 0.5}})
+                s.apply("node.set", {"ids": [2], "props": {"opacity": 0.2}})
+                labels = [h[0] for h in doc.history]
+        self.assertEqual(cm.exception.remaining, labels)          # both still in the document
+        self.assertEqual([h[0] for h in doc.history], labels + ["Set properties"])
+        self.assertEqual(doc.state["nodes"][1]["name"], "user step after a failed undo")
+        self.assertEqual(len(calls(doc, "edit.undo")), 1)
+
 
 if __name__ == "__main__":
     unittest.main()

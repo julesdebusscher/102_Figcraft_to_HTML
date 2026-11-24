@@ -38,7 +38,8 @@ class EditSession(object):
     redo stack = a user step made in between was reverted instead (also after an undo that
     raised): it is redone (`edit.redo`) and RenderError is raised (USER_UNDONE when the redo did
     not bring it back); still on top with the same redo depth = nothing happened (retried). A
-    label is only dropped once a history read proves it undone, so `remaining` is exact. A KeyboardInterrupt during the undos
+    label is only dropped once a history read shows it absent from the whole undo list, so
+    `remaining` is exact (a user step made after a failed undo leaves our label in place). A KeyboardInterrupt during the undos
     is held until they are done, then re-raised."""
 
     _count = [0]
@@ -54,10 +55,10 @@ class EditSession(object):
         return False
 
     def _hist(self):
-        """(top label of the undo history or None, its depth, redo depth)."""
+        """(top label of the undo history or None, its depth, redo depth, full undo list)."""
         h = (self.ctl.request("document.inspect", {"depth": 0}) or {}).get("history") or {}
-        undo, redo = h.get("undo") or [], h.get("redo") or 0
-        return (undo[0] if undo else None, len(undo), len(redo) if isinstance(redo, list) else int(redo))
+        undo, redo = list(h.get("undo") or []), h.get("redo") or 0
+        return (undo[0] if undo else None, len(undo), len(redo) if isinstance(redo, list) else int(redo), undo)
 
     def _state(self):
         """(top label of the undo history or None, its depth)."""
@@ -114,7 +115,7 @@ class EditSession(object):
         while self.edits:
             label = self.edits[-1]
             try:
-                top, depth, redo = self._hist()
+                top, depth, redo, undo = self._hist()
             except KeyboardInterrupt as e:
                 interrupt = e
                 continue
@@ -127,9 +128,12 @@ class EditSession(object):
             unread = 0
             if pending is not None:
                 before, pending = pending, None
-                if top != label:           # ours is gone: undone (a user step may sit on top now)
+                if label not in undo:      # proven gone: undone (a user step may sit on top now)
                     self.edits.pop()
                     continue
+                if top != label:           # still in the document, under a user step: stop
+                    failed = UNDO_FAILED
+                    break
                 if redo > before:          # still on top, yet something went to redo: the user's
                     failed, held = self._give_back(label)
                     interrupt = held or interrupt

@@ -129,9 +129,15 @@ def write(out_dir, proto, assets, player_root):
             moved = True
         try:
             _rename(tmp, target)
-        except BaseException:
+        except BaseException as e:
             if moved:
-                _rename(old, target)
+                try:
+                    _rename(old, target)
+                except OSError:
+                    raise WriteError(
+                        "Impossible d'écrire l'export (%s). L'export précédent se trouve maintenant dans "
+                        "« %s » ; le prochain export dans ce dossier le supprimera : copiez-le ailleurs "
+                        "pour le garder." % (e, old))
             raise
     except BaseException:
         _remove(tmp)

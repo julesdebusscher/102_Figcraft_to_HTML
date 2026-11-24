@@ -152,6 +152,25 @@ class WriteTests(unittest.TestCase):
             writer.write(Path(tmp), proto(screens=2), ASSETS, PLAYER)
             self.assertEqual(sorted(p.name for p in Path(tmp).iterdir()), ["mon-proto"])   # no .old- left
 
+    def test_failed_rename_back_says_where_the_previous_export_is(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            writer.write(Path(tmp), proto(), ASSETS, PLAYER)
+            real = writer._rename
+
+            def flaky(src, dst):
+                if Path(src).name.startswith((".mon-proto.export-", ".mon-proto.old-")):
+                    raise OSError("renommage refusé")
+                return real(src, dst)
+
+            with mock.patch.object(writer, "_rename", flaky):
+                with self.assertRaises(writer.WriteError) as cm:
+                    writer.write(Path(tmp), proto(screens=2), ASSETS, PLAYER)
+            olds = [p for p in Path(tmp).iterdir() if p.name.startswith(".mon-proto.old-")]
+            self.assertEqual(len(olds), 1)
+            self.assertTrue((olds[0] / "data.js").is_file())
+            self.assertIn(str(olds[0]), str(cm.exception))
+            self.assertIn("prochain export", str(cm.exception))
+
     def test_leftovers_of_an_earlier_run_are_removed(self):
         with tempfile.TemporaryDirectory() as tmp:
             for name in (".mon-proto.export-123", ".mon-proto.old-456"):

@@ -28,7 +28,7 @@ class SimDoc(object):
         # edit.undo behaviours in order: "raise" (nothing undone), "raise_after" (undone, then
         # raises), "interrupt" (undone, then KeyboardInterrupt), "user_first" (a user step lands
         # just before the undo, which then reverts it), "user_first_raise" (same, then the undo
-        # raises); then normal
+        # raises), "raise_then_user" (nothing undone, a user step lands, then it raises); then normal
         self.undo_script = list(undo_script or []) + ["raise"] * fail_undo
         self.on_export = on_export      # f(doc, fc): e.g. a user edit while we render
         self.timeout_edit = timeout_edit  # nth edit call: applied, then "timed out"
@@ -68,6 +68,9 @@ class SimDoc(object):
             how = self.undo_script.pop(0) if self.undo_script else None
             if how == "raise":
                 raise ControlError("undo failed")
+            if how == "raise_then_user":   # nothing undone, the call fails, then the user edits
+                self.user_edit(1, {"name": "user step after a failed undo"})
+                raise ControlError("FigCraft n'a pas répondu à temps.")
             if how in ("user_first", "user_first_raise"):
                 self.user_edit(1, {"name": "racing user step"})
             if not self.history:
