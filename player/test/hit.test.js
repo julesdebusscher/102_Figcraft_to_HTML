@@ -40,8 +40,8 @@ test("hidden_layer_ignored", function () {
 function instProto() {
   return hp([
     { id: "inst", kind: "instance", interactions: [ia("hover", "OWN")],
-      instance: { set: "S", variant: "off", variants: { off: [], on: [] } },
-      variantInteractions: { off: [ia("click", "TURN_ON"), ia("hover", "VOFF")], on: [ia("click", "TURN_OFF")] } }
+      instance: { set: "S", variant: "off", variants: { off: [], on: [] },
+        variantInteractions: { off: [ia("click", "TURN_ON"), ia("hover", "VOFF")], on: [ia("click", "TURN_OFF")] } } }
   ]);
 }
 test("instance_plays_shown_variant_interactions", function () {
@@ -79,4 +79,10 @@ test("resolve_key_uses_event", function () {
   var st = FCP.createState(p);
   assertEq(FCP.resolve(p, st, ["n"], "key", { key: "k" }), null);
   assertEq(FCP.resolve(p, st, ["n"], "key", { key: "k", shift: true }).nodeId, "n");
+});
+test("hidden_instance_variant_interaction_does_not_fire", function () {
+  var p = instProto(); p.nodes.inst.visible = false;
+  p.nodes.root = { id: "root", children: [], interactions: [ia("click", "R")] };
+  var st = FCP.createState(p);
+  assertEq(FCP.resolve(p, st, ["inst", "root"], "click").nodeId, "root");
 });

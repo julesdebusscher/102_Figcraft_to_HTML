@@ -9,7 +9,7 @@
     var n = (proto.nodes || {})[nodeId];
     if (!n) return [];
     var own = n.interactions || [];
-    var vi = n.instance && n.variantInteractions;
+    var vi = n.instance && n.instance.variantInteractions;
     if (!n.instance || !vi) return own.slice();
     var shown = state && state.variants && state.variants[nodeId] !== undefined ? state.variants[nodeId] : n.instance.variant;
     var fromVariant = has(vi, shown) ? vi[shown] || [] : [];
@@ -18,7 +18,7 @@
     return own.concat(fromVariant.filter(function (i) { return !ownTypes[i.trigger.type]; }));
   };
 
-  function hidden(proto, state, n) {
+  function hidden(state, n) {
     if (!n) return false;
     if (n.visible === false) return true;
     var b = n.bindings && n.bindings.visible;
@@ -55,7 +55,7 @@
   FCP.resolve = function (proto, state, pathTopDown, triggerType, keyEvent) {
     var nodes = proto.nodes || {}, path = pathTopDown || [], firstVisible = 0;
     for (var h = path.length - 1; h >= 0; h--) {
-      if (hidden(proto, state, nodes[path[h]])) { firstVisible = h + 1; break; }
+      if (hidden(state, nodes[path[h]])) { firstVisible = h + 1; break; }
     }
     for (var i = firstVisible; i < path.length; i++) {
       var list = FCP.interactionsFor(proto, state, path[i]);
