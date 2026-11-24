@@ -59,6 +59,7 @@ window.FIGCRAFT_PROTOTYPE = {
 }
 Node = { id, name, kind: "frame"|"group"|"instance"|"leaf"|"text",
   x, y, w, h, rotation, opacity, visible,                      // relative to parent box
+                                                               // x,y,w,h: the unrotated box; rotation: degrees counter-clockwise about its top-left; paint rendered unrotated
   clip: bool, overflow: as screen, position: "scroll"|"fixed"|"sticky",
   paint: Paint|null,                                           // own paint only, never children
   alts: [{ when: { vars?: {[VarId]: value}, modes?: {[CollId]: ModeId} }, paint: Paint }],

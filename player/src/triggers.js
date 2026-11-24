@@ -4,13 +4,23 @@
 // logicalPath(id), scale(), viewSize() -> {w, h}}.
 (function () {
   // Standard Gamepad API layout, by button index (face buttons by position).
-  FCP.GAMEPAD_BUTTONS = ["A", "B", "X", "Y", "LB", "RB", "LT", "RT", "Back", "Start",
+  // Names as FigCraft's docs list them ("Gamepad A" … "Gamepad Home").
+  FCP.GAMEPAD_BUTTONS = ["A", "B", "X", "Y", "LB", "RB", "LT", "RT", "View", "Menu",
                          "LS", "RS", "Up", "Down", "Left", "Right", "Home"];
   var MOD_KEYS = { Shift: 1, Control: 1, Alt: 1, Meta: 1, AltGraph: 1, CapsLock: 1 };
   var DRAG_MIN = 5;
 
+  // While hovering: the layer that owns the hover keeps it as long as the pointer stays
+  // inside it, even when what it shows no longer has a hover trigger (an interactive
+  // component's Hover variant). Only a pointer that left it resolves anew.
+  // -> {keep: true} or {r: resolve result | null}
+  FCP.hoverStep = function (proto, state, path, owner) {
+    if (owner !== null && owner !== undefined && path.indexOf(owner) >= 0) return { keep: true };
+    return { r: FCP.resolve(proto, state, path, "hover") };
+  };
+
   FCP.wireTriggers = function (P) {
-    var hoverOwner = null, hoverFx = null, prevPath = [], press = null;
+    var hoverOwner = null, hoverFx = null, prevPath = [], press = null, gen = 0;
     function resolve(path, type, kev) { return FCP.resolve(P.proto, P.state, path, type, kev); }
     function fire(r, opts) {
       if (!r) return null;
@@ -21,12 +31,16 @@
     function inPath(path, id) { return path.indexOf(id) >= 0; }
 
     function updateHover(path) {
-      var h = resolve(path, "hover"), hid = h ? h.nodeId : null;
-      if (hid !== hoverOwner) {
-        var old = hoverFx;
-        hoverOwner = hid; hoverFx = null;
+      var step = FCP.hoverStep(P.proto, P.state, path, hoverOwner);
+      if (!step.keep) {
+        var h = step.r, old = hoverFx;
+        hoverOwner = h ? h.nodeId : null; hoverFx = null;
         if (old) P.revert(old);
-        if (h) hoverFx = fire(h);
+        if (h) {
+          var g = gen, fx = fire(h, { transient: h.nodeId });
+          if (g === gen) hoverFx = fx;   // a screen change in between already ended the hover
+          else return;
+        }
       }
       var lv = resolve(prevPath, "mouseLeave");
       if (lv && !inPath(path, lv.nodeId)) fire(lv);
@@ -36,7 +50,7 @@
     }
 
     function onMove(ev) {
-      if (ev.pointerType !== "touch" || press) updateHover(P.pathAt(ev.target));
+      if (ev.pointerType !== "touch" || press) updateHover(P.pathAt(ev.target, true));
       if (!press || ev.pointerId !== press.id) return;
       var s = P.scale(), dx = (ev.clientX - press.x) / s, dy = (ev.clientY - press.y) / s;
       if (!press.moved && Math.sqrt(dx * dx + dy * dy) > DRAG_MIN) {
@@ -63,10 +77,14 @@
       var path = P.pathAt(ev.target);
       if (!path.length) return;
       if (ev.pointerType === "touch") updateHover(path);
-      press = { id: ev.pointerId, path: path, x: ev.clientX, y: ev.clientY, moved: false };
+      var pr = { id: ev.pointerId, path: path, x: ev.clientX, y: ev.clientY, moved: false };
+      press = pr;
       fire(resolve(path, "mouseDown"));
-      press.fx = fire(resolve(path, "press"));
-      press.drag = resolve(path, "drag");
+      if (press !== pr) return;                 // it changed the screen: the press is over
+      var r = resolve(path, "press"), fx = fire(r, r ? { transient: r.nodeId } : null);
+      if (press !== pr) return;
+      pr.fx = fx;
+      pr.drag = resolve(path, "drag");
     }
 
     function endPress(ev, cancelled) {
@@ -134,6 +152,7 @@
       // The layers under the pointer change (new screen, overlay): hover and press end, so
       // their variant changes revert (a button left while hovered shows its default again).
       reset: function () {
+        gen++;
         var fx = (hoverFx || []).concat(press && press.fx || []).filter(function (e) { return e.kind === "variant"; });
         hoverOwner = null; hoverFx = null; prevPath = [];
         // A drag that started this change keeps driving its transition until release.

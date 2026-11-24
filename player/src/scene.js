@@ -51,6 +51,11 @@
     return String(v);
   }
 
+  function hasDrag(n) {
+    var lists = [n.interactions || []], vi = n.instance && n.instance.variantInteractions;
+    if (vi) Object.keys(vi).forEach(function (k) { lists.push(vi[k] || []); });
+    return lists.some(function (l) { return l.some(function (i) { return i.trigger && i.trigger.type === "drag"; }); });
+  }
   function div(cls) { var d = document.createElement("div"); d.className = cls; return d; }
   function px(v) { return (+v || 0) + "px"; }
   function pct(a, b) { return b ? (a / b * 100) + "%" : px(a); }
@@ -143,6 +148,7 @@
     if (n.rotation) s.transform = "rotate(" + (-n.rotation) + "deg)";
     if (n.opacity !== undefined && n.opacity < 1) s.opacity = n.opacity;
     s.pointerEvents = n.kind === "group" ? "none" : "auto";
+    if (hasDrag(n)) s.touchAction = "none";   // a touch drag reaches the drag trigger, not scrolling
     applyCss(el, n);
     var e = { id: id, node: n, el: el, img: null, txt: null };
     if (n.paint || (n.alts && n.alts.length)) {

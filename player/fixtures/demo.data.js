@@ -59,6 +59,14 @@ window.FIGCRAFT_PROTOTYPE = {
    "background": "#fffde7",
    "root": "5",
    "overflow": "none"
+  },
+  "6": {
+   "name": "Infobulle",
+   "width": 180,
+   "height": 44,
+   "background": "transparent",
+   "root": "6",
+   "overflow": "none"
   }
  },
  "nodes": {
@@ -97,7 +105,9 @@ window.FIGCRAFT_PROTOTYPE = {
     "1.theme",
     "1.surf",
     "1.menu",
-    "1.badge"
+    "1.badge",
+    "1.chip",
+    "1.tip"
    ],
    "interactions": [
     {
@@ -1801,6 +1811,285 @@ window.FIGCRAFT_PROTOTYPE = {
      ]
     }
    ]
+  },
+  "1.chip~Default~bg": {
+   "id": "1.chip~Default~bg",
+   "name": "Bg",
+   "kind": "leaf",
+   "x": 0,
+   "y": 0,
+   "w": 140,
+   "h": 40,
+   "rotation": 0,
+   "opacity": 1,
+   "visible": true,
+   "clip": false,
+   "overflow": "none",
+   "position": "scroll",
+   "paint": {
+    "src": "assets/chip_default.svg",
+    "dx": 0,
+    "dy": 0,
+    "w": 140,
+    "h": 40
+   },
+   "alts": [],
+   "css": {},
+   "liveText": null,
+   "bindings": {},
+   "instance": null,
+   "children": [],
+   "interactions": []
+  },
+  "1.chip~Hover~bg": {
+   "id": "1.chip~Hover~bg",
+   "name": "Bg",
+   "kind": "leaf",
+   "x": 0,
+   "y": 0,
+   "w": 140,
+   "h": 40,
+   "rotation": 0,
+   "opacity": 1,
+   "visible": true,
+   "clip": false,
+   "overflow": "none",
+   "position": "scroll",
+   "paint": {
+    "src": "assets/chip_hover.svg",
+    "dx": 0,
+    "dy": 0,
+    "w": 140,
+    "h": 40
+   },
+   "alts": [],
+   "css": {},
+   "liveText": null,
+   "bindings": {},
+   "instance": null,
+   "children": [],
+   "interactions": []
+  },
+  "1.chip~Pressed~bg": {
+   "id": "1.chip~Pressed~bg",
+   "name": "Bg",
+   "kind": "leaf",
+   "x": 0,
+   "y": 0,
+   "w": 140,
+   "h": 40,
+   "rotation": 0,
+   "opacity": 1,
+   "visible": true,
+   "clip": false,
+   "overflow": "none",
+   "position": "scroll",
+   "paint": {
+    "src": "assets/chip_pressed.svg",
+    "dx": 0,
+    "dy": 0,
+    "w": 140,
+    "h": 40
+   },
+   "alts": [],
+   "css": {},
+   "liveText": null,
+   "bindings": {},
+   "instance": null,
+   "children": [],
+   "interactions": []
+  },
+  "1.chip": {
+   "id": "1.chip",
+   "name": "Puce",
+   "kind": "instance",
+   "x": 45,
+   "y": 730,
+   "w": 140,
+   "h": 40,
+   "rotation": 0,
+   "opacity": 1,
+   "visible": true,
+   "clip": false,
+   "overflow": "none",
+   "position": "scroll",
+   "paint": null,
+   "alts": [],
+   "css": {},
+   "liveText": null,
+   "bindings": {},
+   "instance": {
+    "set": "Puce",
+    "variant": "Default",
+    "variants": {
+     "Default": [
+      "1.chip~Default~bg"
+     ],
+     "Hover": [
+      "1.chip~Hover~bg"
+     ],
+     "Pressed": [
+      "1.chip~Pressed~bg"
+     ]
+    },
+    "variantInteractions": {
+     "Default": [
+      {
+       "trigger": {
+        "type": "hover"
+       },
+       "actions": [
+        {
+         "type": "changeTo",
+         "variant": "Hover",
+         "transition": {
+          "type": "dissolve",
+          "durationMs": 150,
+          "easing": {
+           "type": "easeOut"
+          }
+         }
+        }
+       ]
+      }
+     ],
+     "Hover": [
+      {
+       "trigger": {
+        "type": "press"
+       },
+       "actions": [
+        {
+         "type": "changeTo",
+         "variant": "Pressed",
+         "transition": {
+          "type": "instant",
+          "durationMs": 300,
+          "easing": {
+           "type": "easeOut"
+          }
+         }
+        }
+       ]
+      },
+      {
+       "trigger": {
+        "type": "click"
+       },
+       "actions": [
+        {
+         "type": "setVariable",
+         "variable": "v.count",
+         "expr": {
+          "op": {
+           "op": "add",
+           "args": [
+            {
+             "value": {
+              "type": "alias",
+              "value": "v.count"
+             }
+            },
+            {
+             "value": {
+              "type": "number",
+              "value": 100
+             }
+            }
+           ]
+          }
+         }
+        }
+       ]
+      }
+     ],
+     "Pressed": []
+    }
+   },
+   "children": [
+    "1.chip~Default~bg"
+   ],
+   "interactions": []
+  },
+  "1.tip": {
+   "id": "1.tip",
+   "name": "Info",
+   "kind": "leaf",
+   "x": 215,
+   "y": 730,
+   "w": 130,
+   "h": 40,
+   "rotation": 0,
+   "opacity": 1,
+   "visible": true,
+   "clip": false,
+   "overflow": "none",
+   "position": "scroll",
+   "paint": {
+    "src": "assets/info.svg",
+    "dx": 0,
+    "dy": 0,
+    "w": 130,
+    "h": 40
+   },
+   "alts": [],
+   "css": {},
+   "liveText": null,
+   "bindings": {},
+   "instance": null,
+   "children": [],
+   "interactions": [
+    {
+     "trigger": {
+      "type": "hover"
+     },
+     "actions": [
+      {
+       "type": "openOverlay",
+       "dest": "6",
+       "position": "topCenter",
+       "anchor": "triggerOutside",
+       "closeOnClickOutside": false,
+       "transition": {
+        "type": "dissolve",
+        "durationMs": 150,
+        "easing": {
+         "type": "easeOut"
+        }
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "6": {
+   "id": "6",
+   "name": "Infobulle",
+   "kind": "frame",
+   "x": 0,
+   "y": 0,
+   "w": 180,
+   "h": 44,
+   "rotation": 0,
+   "opacity": 1,
+   "visible": true,
+   "clip": false,
+   "overflow": "none",
+   "position": "scroll",
+   "paint": {
+    "src": "assets/tooltip_bg.svg",
+    "dx": 0,
+    "dy": 0,
+    "w": 180,
+    "h": 44
+   },
+   "alts": [],
+   "css": {},
+   "liveText": null,
+   "bindings": {},
+   "instance": null,
+   "children": [],
+   "interactions": []
   }
  },
  "variables": {

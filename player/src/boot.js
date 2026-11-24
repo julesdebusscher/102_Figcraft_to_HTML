@@ -85,10 +85,20 @@
       for (var g = 0; id !== undefined && g < 10000; g++, id = parents[id]) if (FCP.isHidden(state, proto.nodes[id])) return true;
       return false;
     }
+    function shownVariant(id) {
+      var n = proto.nodes[id];
+      if (!n || !n.instance) return undefined;
+      return state.variants[id] !== undefined ? state.variants[id] : n.instance.variant;
+    }
+    // After delay: timed from when the layer (or, for an instance, the variant) appears.
+    // A timer armed while an instance showed one variant fires only if it still shows it.
     function armDelays(layer, ids) {
       ids.forEach(function (id) {
+        var v = shownVariant(id);
+        if (v !== undefined) (layer.chain[id] = layer.chain[id] || {})[v] = true;
         FCP.interactionsFor(proto, state, id).forEach(function (it) {
-          if (it.trigger.type === "afterDelay") later(id, +it.trigger.delayMs || 0, function () { exec(it.actions, id); }, layer);
+          if (it.trigger.type !== "afterDelay") return;
+          later(id, +it.trigger.delayMs || 0, function () { if (shownVariant(id) === v) exec(it.actions, id); }, layer);
         });
       });
     }
@@ -96,7 +106,7 @@
       return layer.el._fcp.reg.list.filter(function (e) { return el.contains(e.el); }).map(function (e) { return e.id; });
     }
     function newLayer(el, id) {
-      var l = { el: el, id: id, alive: true, timers: {} };
+      var l = { el: el, id: id, alive: true, timers: {}, chain: {} };
       return l;
     }
     function logicalPath(id) {
@@ -104,10 +114,18 @@
       for (var g = 0; id !== undefined && g < 10000; g++, id = parents[id]) out.push(id);
       return out;
     }
-    function pathAt(target) {
+    // forHover: a pointer over an overlay that a hover or press opened is still over the
+    // layer that opened it (a tooltip doesn't close itself by being pointed at).
+    function pathAt(target, forHover) {
       if (!target || !target.closest || !device.contains(target)) return [];
       var hit = target.closest("[data-fcp-id]");
-      return hit ? logicalPath(hit.getAttribute("data-fcp-id")) : [];
+      var path = hit ? logicalPath(hit.getAttribute("data-fcp-id")) : [];
+      if (forHover && hit) {
+        for (var i = overlays.length - 1; i >= 0; i--) {
+          if (overlays[i].owner !== undefined && overlays[i].el.contains(hit)) return path.concat(logicalPath(overlays[i].owner));
+        }
+      }
+      return path;
     }
     function kidsFn(over) {
       return function (id, side) {
@@ -127,7 +145,7 @@
       fx.forEach(function (e) {
         var c = ctl && (e.kind === "screen" || e.kind === "variant") ? ctl : null;
         if (c) ctl = null;
-        try { APPLY[e.kind](e, c); } catch (err) { if (window.console) console.error(err); }
+        try { APPLY[e.kind](e, c, opts); } catch (err) { if (window.console) console.error(err); }
       });
     }
     function revert(fx) {
@@ -188,29 +206,31 @@
       return { x: x, y: y };
     }
 
-    function openOverlay(e) {
+    function openOverlay(e, opts, p) {
       var s = proto.screens[e.id], wrap = div("fcp-ovwrap"), back = div("fcp-backdrop");
       var el = FCP.buildScreen(proto, state, e.id);
       back.style.background = e.background || "transparent";
-      var p = overlayRect(e, s.width, s.height);
+      p = p || overlayRect(e, s.width, s.height);
+      var transient = opts && opts.transient !== undefined;
+      if (transient) wrap.classList.add("fcp-ovwrap-through");
       el.style.left = p.x + "px"; el.style.top = p.y + "px";
       el.classList.add("fcp-overlay");
       wrap.appendChild(back); wrap.appendChild(el); overlayLayer.appendChild(wrap);
       var layer = newLayer(el, e.id);
       layer.wrap = wrap; layer.back = back; layer.transition = e.transition;
+      if (transient) layer.owner = opts.transient;
+      layer.backColor = e.background || "";
       back.addEventListener("pointerdown", function (ev) {
         ev.stopPropagation();
         if (overlays[overlays.length - 1] === layer && e.closeOnClickOutside !== false) exec([{ type: "closeOverlay" }]);
       });
       overlays.push(layer);
-      trig.reset();
       armDelays(layer, el._fcp.reg.list.map(function (x) { return x.id; }));
       return layer;
     }
     function closeOverlay(layer, tr, instant) {
       kill(layer);
       overlays.splice(overlays.indexOf(layer), 1);
-      trig.reset();
       var done = function () { if (layer.wrap.parentNode) layer.wrap.parentNode.removeChild(layer.wrap); };
       if (instant) return done();
       FCP.animate({ transition: tr, reverse: true }, { from: layer.el, to: null, w: view.w, h: view.h, also: [layer.back] }).then(done);
@@ -245,15 +265,17 @@
 
     var APPLY = {
       screen: function (e, ctl) { showScreen(e.to, e, ctl); },
-      overlayOpen: function (e) {
-        var l = openOverlay(e);
+      overlayOpen: function (e, ctl, opts) {
+        var l = openOverlay(e, opts);
         FCP.animate(e, { from: null, to: l.el, w: view.w, h: view.h, also: [l.back] });
       },
-      overlaySwap: function (e) {
-        var top = overlays[overlays.length - 1];
+      overlaySwap: function (e, ctl, opts) {
+        var top = overlays[overlays.length - 1], s = proto.screens[e.id];
+        var pos = overlayRect(e, s.width, s.height);   // the source may sit in the overlay it replaces
+        var sameBack = !!top && top.backColor === (e.background || "");   // no flash between equal dims
         if (top) closeOverlay(top, null, true);
-        var l = openOverlay(e);
-        FCP.animate(e, { from: null, to: l.el, w: view.w, h: view.h });
+        var l = openOverlay(e, opts, pos);
+        FCP.animate(e, { from: null, to: l.el, w: view.w, h: view.h, also: sameBack ? [] : [l.back] });
       },
       overlayClose: function (e) {
         for (var i = overlays.length - 1; i >= 0; i--) if (overlays[i].id === e.id) return closeOverlay(overlays[i], e.transition);
@@ -263,18 +285,16 @@
         if (!layer) return;
         var r = FCP.swapVariantDom(layer.el, e.node), n = proto.nodes[e.node];
         if (!r) return;
-        idsIn(layer, r.oldWrap).concat([e.node]).forEach(function (id) {
-          (layer.timers[id] || []).forEach(clearTimeout); delete layer.timers[id];
-        });
         FCP.animate(e, { from: r.oldWrap, to: r.newWrap, w: n.w, h: n.h, smart: {
           proto: proto, fromRoot: e.node, toRoot: e.node, kids: kidsFn({ id: e.node, from: e.from, to: e.to }),
           fromEls: r.fromEls, toEls: r.toEls
         } }, ctl || {}).then(function () { FCP.dropDom(layer.el, r.oldWrap); });
-        armDelays(layer, [e.node].concat(idsIn(layer, r.newWrap)));
+        if (!(layer.chain[e.node] && layer.chain[e.node][e.to])) armDelays(layer, [e.node].concat(idsIn(layer, r.newWrap)));
       },
       scroll: scrollTo,
       vars: function () { layers().forEach(function (l) { FCP.refreshScreen(l.el); }); },
       url: function (e) {
+        if (!/^(https?|mailto):/i.test(String(e.url || "").trim())) return;   // no javascript:, data:, file:
         if (e.newTab) window.open(e.url, "_blank", "noopener");
         else window.location.href = e.url;
       }
