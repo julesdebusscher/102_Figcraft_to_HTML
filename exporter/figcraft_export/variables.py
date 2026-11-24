@@ -138,7 +138,8 @@ def alternatives(bound_vars, modes_used, reach, cap=CAP):
             whens.append(w)
     capped = len(whens) > cap
     whens = whens[:cap]
-    whens.sort(key=lambda w: -(len(w.get("vars", {})) + len(w.get("modes", {}))))
+    # an override beats any mode, so value conditions go first, then the most specific
+    whens.sort(key=lambda w: (-len(w.get("vars", {})), -len(w.get("modes", {}))))
     return whens, capped
 
 

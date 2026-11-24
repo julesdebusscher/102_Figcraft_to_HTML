@@ -145,8 +145,8 @@ class AlternativesTests(unittest.TestCase):
         small = variables.alternatives(bound, [THEME, SIZE], r, cap=1000)[0]
         self.assertEqual(len(small), len(set(repr(sorted(w.items())) for w in small)))
         # most specific first
-        sizes = [sum(len(x) for x in w.values()) for w in whens]
-        self.assertEqual(sizes, sorted(sizes, reverse=True))
+        keys = [(len(w.get("vars", {})), len(w.get("modes", {}))) for w in whens]
+        self.assertEqual(keys, sorted(keys, reverse=True))
 
 
 def scene(actions, explicit=None):
