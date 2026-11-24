@@ -71,6 +71,7 @@ class ControlTests(unittest.TestCase):
             f = conn.makefile("rb")
             sent.append(f.readline())
             time.sleep(3)
+            f.close()
             conn.close()
 
         srv = socket.socket()
@@ -85,6 +86,7 @@ class ControlTests(unittest.TestCase):
         t.join()
         self.assertEqual(len(sent), 1)
         c.close()
+        srv.close()
 
     def test_garbage_reply_raises_control_error(self):
         for garbage in (b"not json\n", b"\xff\xfe\n", b"[1,2]\n"):
@@ -94,7 +96,8 @@ class ControlTests(unittest.TestCase):
 
             def serve(srv=srv, garbage=garbage):
                 conn, _ = srv.accept()
-                conn.makefile("rb").readline()
+                with conn.makefile("rb") as rf:
+                    rf.readline()
                 conn.sendall(garbage)
                 conn.close()
 
@@ -113,12 +116,20 @@ class ControlTests(unittest.TestCase):
 
         def handle(conn):
             f = conn.makefile("rwb")
-            for line in f:
-                req = json.loads(line)
-                if req["method"] == "slow":
-                    time.sleep(0.3)   # answered after the client gave up on it
-                f.write((json.dumps({"id": req["id"], "ok": True, "result": req["method"]}) + "\n").encode("utf-8"))
-                f.flush()
+            try:
+                for line in f:
+                    req = json.loads(line)
+                    if req["method"] == "slow":
+                        time.sleep(0.3)   # answered after the client gave up on it
+                    f.write((json.dumps({"id": req["id"], "ok": True, "result": req["method"]}) + "\n").encode("utf-8"))
+                    f.flush()
+            except OSError:
+                pass                       # the client abandoned this socket
+            finally:
+                try:
+                    f.close()
+                except OSError:
+                    pass
 
         def serve():
             while True:
@@ -141,6 +152,8 @@ class ControlTests(unittest.TestCase):
         self.assertEqual(len(conns), 2)       # a new connection after the interrupt
         c.close()
         srv.close()
+        for conn in conns:
+            conn.close()
 
     def test_reply_with_another_id_is_discarded(self):
         def handler(r):
@@ -153,10 +166,16 @@ class ControlTests(unittest.TestCase):
         def serve():
             conn, _ = srv.accept()
             f = conn.makefile("rwb")
-            for line in f:
-                for rep in handler(json.loads(line)):
-                    f.write((json.dumps(rep) + "\n").encode("utf-8"))
-                f.flush()
+            try:
+                for line in f:
+                    for rep in handler(json.loads(line)):
+                        f.write((json.dumps(rep) + "\n").encode("utf-8"))
+                    f.flush()
+            except OSError:
+                pass
+            finally:
+                f.close()
+                conn.close()
 
         threading.Thread(target=serve, daemon=True).start()
         c = Control(srv.getsockname()[1])
