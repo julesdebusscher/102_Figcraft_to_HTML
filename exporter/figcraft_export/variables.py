@@ -155,6 +155,8 @@ def _pinned(walked, nid):
 
 
 def _normalise_actions(variables, actions):
+    # Mutates the action dicts on purpose: walked["actions"] holds the very same dicts that sit in
+    # proto interactions, so the player compares the normalised value with alts.when.vars.
     for a in actions or []:
         if a.get("type") == "setVariable" and a.get("expr") is None:
             d = variables["vars"].get(a.get("variable"))
@@ -188,7 +190,7 @@ def add_jobs(walked, variables, reach, cap=CAP):
         used = [c for c in reach["modes"] if c not in pinned]
         whens, capped = alternatives(bound, used, reach, cap)
         if capped:
-            warn.append("… alternatives limitées à %d pour le calque « %s » : rendu approximé."
+            warn.append("Alternatives limitées à %d pour le calque « %s » : rendu approximé."
                         % (cap, nodes[nid]["name"]))
         nodes[nid]["alts"] = [{"when": w, "paint": None} for w in whens]
         for i, w in enumerate(whens):

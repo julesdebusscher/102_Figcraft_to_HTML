@@ -275,3 +275,5 @@ Fields the exporter relies on (`docfile.extras`):
 Also seen: `bound` (same as node.get `boundVariables`), `component` / `source` on instances, `type` lower-case (`frame`, `section`, `componentSet`, `instance`, `text`, `page`). The digest (`docfile.digest`) is sha256 of the `document.json` bytes.
 
 Fixtures (task 7): `walk_variants.json` (variant set Carte with nested Puce instances, differently sized variants, a setVariable inside a non-current variant), `walk_scenario.json` (every control reply the walk makes on a scratch scenario: sections, second page, bound text/visibility, overlay, mask, blur, blend, rotation, Bouton variant set with two instances, a dangling link), `saveas_scenario.json` (trimmed saveAs reply), `interactions_all_kinds.json`.
+
+- `variable.list` has no default-mode field (fixture `variables.json`); the exporter takes a collection's first mode as `defaultMode` (assumption, unverified against the UI).

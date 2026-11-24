@@ -31,12 +31,6 @@ def raw():
     }
 
 
-def walked(nodes=None, jobs=None, actions=None, explicit=None, parent=None):
-    return {"proto": {"nodes": nodes or {}, "variables": {}}, "jobs": jobs or [], "warnings": [],
-            "bound": {n: v for n, v in (nodes or {}).items()} and {}, "explicit_modes": explicit or {},
-            "parent": parent or {}, "actions": actions or []}
-
-
 class ReadTests(unittest.TestCase):
     def test_colour_values_become_css_rgba(self):
         v = variables.parse(raw())
@@ -185,6 +179,9 @@ class AddJobsTests(unittest.TestCase):
         v, w = scene([act])
         variables.add_jobs(w, v, variables.reachable(v, w["actions"]))
         self.assertEqual(act["value"], "rgba(255, 0, 0, 1)")
+        inter = {"actions": [act]}
+        w["proto"]["nodes"]["1"]["interactions"] = [inter]
+        self.assertEqual(w["proto"]["nodes"]["1"]["interactions"][0]["actions"][0]["value"], "rgba(255, 0, 0, 1)")
         vj = [j for j in w["jobs"] if j["kind"] == "varValue"]
         self.assertEqual(vj[0]["var"], "VariableID:1")
         self.assertEqual(vj[0]["value"], "rgba(255, 0, 0, 1)")
@@ -205,7 +202,7 @@ class AddJobsTests(unittest.TestCase):
         variables.add_jobs(w, v, variables.reachable(v, acts), cap=32)
         n = len([j for j in w["jobs"] if j["node"] == "2" and j["kind"] != "own"])
         self.assertEqual(n, 32)
-        self.assertIn("… alternatives limitées à 32 pour le calque « Carte » : rendu approximé.", w["warnings"])
+        self.assertIn("Alternatives limitées à 32 pour le calque « Carte » : rendu approximé.", w["warnings"])
         self.assertIn("La variable « surface » change par une expression : seules ses valeurs connues sont pré-rendues.",
                       w["warnings"])
         self.assertEqual(len(w["proto"]["nodes"]["2"]["alts"]), 32)
