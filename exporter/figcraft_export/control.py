@@ -64,39 +64,53 @@ class Control:
             msg["timeoutMs"] = int(timeout_ms)
         data = (json.dumps(msg) + "\n").encode("utf-8")
         try:
-            line = self._roundtrip(data, timeout_ms)
-        except _Closed:
-            # Idle connections are closed after 60 s: reconnect once, but only
-            # when the connection was closed (never after a timeout).
-            self.close()
             try:
-                line = self._roundtrip(data, timeout_ms)
-            except _Closed as e:
+                reply = self._roundtrip(data, timeout_ms, msg["id"])
+            except _Closed:
+                # Idle connections are closed after 60 s: reconnect once, but only
+                # when the connection was closed (never after a timeout).
                 self.close()
-                raise Unreachable(str(e))
-        try:
-            reply = json.loads(line.decode("utf-8"))
-        except ValueError:
-            raise ControlError("Réponse illisible de FigCraft.")
-        if not isinstance(reply, dict):
-            raise ControlError("Réponse inattendue de FigCraft.")
+                try:
+                    reply = self._roundtrip(data, timeout_ms, msg["id"])
+                except _Closed as e:
+                    self.close()
+                    raise Unreachable(str(e))
+        except ControlError:
+            raise
+        except BaseException:
+            # Ctrl-C or any other error mid-request: this connection may still deliver the
+            # reply later, so drop it; the next request starts on a fresh one.
+            self.close()
+            raise
         if not reply.get("ok"):
             raise ControlError(str(reply.get("error")))
         return reply.get("result")
 
-    def _roundtrip(self, data, timeout_ms):
+    def _roundtrip(self, data, timeout_ms, want_id):
         sock = self._connect()
         try:
             sock.sendall(data)
         except (ConnectionError, BrokenPipeError) as e:
             raise _Closed(str(e))
-        try:
-            return self._readline(timeout_ms / 1000.0 + 10)
-        except socket.timeout:
-            self.close()
-            raise ControlError("FigCraft n'a pas répondu à temps.")
-        except ConnectionError as e:
-            raise _Closed(str(e))
+        while True:
+            try:
+                line = self._readline(timeout_ms / 1000.0 + 10)
+            except socket.timeout:
+                self.close()
+                raise ControlError("FigCraft n'a pas répondu à temps.")
+            except ConnectionError as e:
+                raise _Closed(str(e))
+            try:
+                reply = json.loads(line.decode("utf-8"))
+            except ValueError:
+                self.close()
+                raise ControlError("Réponse illisible de FigCraft.")
+            if not isinstance(reply, dict):
+                self.close()
+                raise ControlError("Réponse inattendue de FigCraft.")
+            if "id" in reply and reply["id"] != want_id:
+                continue  # a stale reply to an earlier request: not ours
+            return reply
 
     def execute(self, command, params=None, timeout_ms=60000):
         """engine.execute {command, params}."""

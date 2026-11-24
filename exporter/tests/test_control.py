@@ -105,6 +105,66 @@ class ControlTests(unittest.TestCase):
             c.close()
             srv.close()
 
+    def test_interrupt_mid_read_reconnects_and_next_reply_is_its_own(self):
+        conns = []
+        srv = socket.socket()
+        srv.bind(("127.0.0.1", 0))
+        srv.listen(4)
+
+        def handle(conn):
+            f = conn.makefile("rwb")
+            for line in f:
+                req = json.loads(line)
+                if req["method"] == "slow":
+                    time.sleep(0.3)   # answered after the client gave up on it
+                f.write((json.dumps({"id": req["id"], "ok": True, "result": req["method"]}) + "\n").encode("utf-8"))
+                f.flush()
+
+        def serve():
+            while True:
+                try:
+                    conn, _ = srv.accept()
+                except OSError:
+                    return
+                conns.append(conn)
+                threading.Thread(target=handle, args=(conn,), daemon=True).start()
+
+        threading.Thread(target=serve, daemon=True).start()
+        c = Control(srv.getsockname()[1])
+        real = Control._readline
+        with mock.patch.object(Control, "_readline", side_effect=KeyboardInterrupt()):
+            with self.assertRaises(KeyboardInterrupt):
+                c.request("slow")
+        time.sleep(0.5)                       # the stale "slow" reply is now waiting on the old socket
+        self.assertIs(Control._readline, real)
+        self.assertEqual(c.request("fresh"), "fresh")
+        self.assertEqual(len(conns), 2)       # a new connection after the interrupt
+        c.close()
+        srv.close()
+
+    def test_reply_with_another_id_is_discarded(self):
+        def handler(r):
+            return [{"id": r["id"] + 100, "ok": True, "result": "stale"}, {"id": r["id"], "ok": True, "result": "mine"}]
+
+        srv = socket.socket()
+        srv.bind(("127.0.0.1", 0))
+        srv.listen(1)
+
+        def serve():
+            conn, _ = srv.accept()
+            f = conn.makefile("rwb")
+            for line in f:
+                for rep in handler(json.loads(line)):
+                    f.write((json.dumps(rep) + "\n").encode("utf-8"))
+                f.flush()
+
+        threading.Thread(target=serve, daemon=True).start()
+        c = Control(srv.getsockname()[1])
+        self.assertEqual(c.request("a"), "mine")
+        self.assertEqual(c.request("b"), "mine")
+        c.close()
+        srv.close()
+
     def test_fake_control_replies_and_records(self):
         fake = FakeControl({("node.get", canonical({"id": 2})): {"id": 2}})
         self.assertEqual(fake.request("node.get", {"id": 2}), {"id": 2})

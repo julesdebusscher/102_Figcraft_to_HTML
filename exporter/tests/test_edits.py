@@ -28,7 +28,8 @@ class EditSessionTests(unittest.TestCase):
                 raise KeyError("boom")
         self.assertEqual(len(labels), 2)
         for label in labels:
-            self.assertRegex(label, r"^Export HTML \(temporaire\) #\d+$")
+            self.assertRegex(label, r"^Export HTML \(temporaire\) [0-9a-f]{4}#\d+$")
+        self.assertEqual(labels[0].split("#")[0], labels[1].split("#")[0])   # one nonce per run
         self.assertEqual([c for c, p in doc.calls if c in ("node.set", "instance.setProperties")], [])
         self.assertEqual(len(calls(doc, "edit.undo")), 2)
         self.assertEqual(doc.snapshot(), start)
@@ -66,6 +67,26 @@ class EditSessionTests(unittest.TestCase):
                 s.apply("node.set", {"ids": [2], "props": {"opacity": 0.2}})
         self.assertEqual(doc.snapshot(), start)
         self.assertEqual(doc.history, [])
+
+    def test_single_edit_undo_that_errors_after_undoing_is_no_failure(self):
+        doc = SimDoc({1: rect("a")}, undo_script=["raise_after"])
+        doc.user_edit(1, {"name": "earlier user step"})     # baseline top is the user's own step
+        start = doc.snapshot()
+        with edits.EditSession(doc) as s:
+            s.apply("node.set", {"ids": [1], "props": {"opacity": 0.5}})
+        self.assertEqual(doc.snapshot(), start)
+        self.assertEqual(len(doc.history), 1)
+
+    def test_render_error_lists_the_steps_left_in_the_document(self):
+        doc = SimDoc({1: rect("a"), 2: rect("b")})
+        with self.assertRaises(edits.RenderError) as cm:
+            with edits.EditSession(doc) as s:
+                s.apply("node.set", {"ids": [1], "props": {"opacity": 0.5}})
+                s.apply("node.set", {"ids": [2], "props": {"opacity": 0.2}})
+                labels = [h[0] for h in doc.history]
+                doc.user_edit(1, {"name": "user"})
+        self.assertEqual(cm.exception.remaining, labels)
+        self.assertEqual(str(cm.exception), edits.UNDO_FAILED)
 
 
 if __name__ == "__main__":
