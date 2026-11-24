@@ -5,12 +5,14 @@ from figcraft_export import docfile, walk
 from tests.fake_control import FakeControl, canonical, load_fixture
 
 SCENARIO = load_fixture("walk_scenario")
+VARIANTS = load_fixture("walk_variants")
 EXTRAS = docfile.extras(load_fixture("saveas_scenario")["reply"])
 
 
-def scenario(selection=None, edit=None):
-    """FakeControl over the recorded scenario; `edit(replies_by_cmd_id)` may change replies."""
-    calls = copy.deepcopy(SCENARIO["calls"])
+def scenario(selection=None, edit=None, fixture=None):
+    """FakeControl over a recorded scenario; `edit(replies_by_cmd_id)` may change or add
+    replies (keys (command, id); an added key becomes a reply for {"id": id})."""
+    calls = copy.deepcopy((fixture or SCENARIO)["calls"])
     byid = {}
     for cmd, params, reply in calls:
         byid[(cmd, params.get("id"))] = reply
@@ -19,8 +21,8 @@ def scenario(selection=None, edit=None):
     if edit:
         edit(byid)
     replies = {}
-    for cmd, params, reply in calls:
-        replies[(cmd, canonical(params))] = byid[(cmd, params.get("id"))]
+    for (cmd, i), reply in byid.items():
+        replies[(cmd, canonical({"depth": 0} if cmd == "document.inspect" else {} if i is None else {"id": i}))] = reply
     return FakeControl(replies)
 
 
@@ -58,8 +60,9 @@ class WalkSelectionTests(unittest.TestCase):
         w = walk.walk(scenario(), EXTRAS)
         p = w["proto"]
         self.assertEqual(p["panel"], [
-            {"section": None, "screens": ["146", "163"]},
-            {"section": "Parcours", "screens": ["160", "161"]},
+            # layers-panel order: topmost first (reverse of page children)
+            {"section": None, "screens": ["163", "146"]},
+            {"section": "Parcours", "screens": ["161", "160"]},
         ])
         self.assertEqual(p["pageName"], "Scénario")
         self.assertEqual(p["title"], "Ridgeline onboarding")
@@ -68,8 +71,8 @@ class WalkSelectionTests(unittest.TestCase):
 
     def test_start_is_flow_start_when_selected_else_first(self):
         self.assertEqual(walk.walk(scenario(), EXTRAS)["proto"]["start"], "160")
-        w = walk.walk(scenario(selection=[163, 146, 161]), EXTRAS)
-        self.assertEqual(w["proto"]["start"], "146")
+        w = walk.walk(scenario(selection=[146, 163, 161]), EXTRAS)
+        self.assertEqual(w["proto"]["start"], "163")
 
 
 class WalkClosureTests(unittest.TestCase):
@@ -146,7 +149,8 @@ class WalkVariantTests(unittest.TestCase):
         self.assertEqual(a["set"], "Bouton")
         self.assertEqual(a["variant"], "State=Default")
         self.assertEqual(set(a["variants"]), {"State=Default", "State=Hover", "State=Pressed"})
-        self.assertEqual(a["variants"]["State=Default"], ["184"])
+        self.assertEqual(a["variants"]["State=Default"], ["183~State=Default~self", "184"])
+        self.assertEqual(self.nodes["183"]["children"], a["variants"]["State=Default"])
         self.assertEqual(a["variants"]["State=Hover"], [])  # filled by Task 9
         b = self.nodes["181"]["instance"]
         self.assertEqual(set(b["variants"]), {"State=Default", "State=Hover", "State=Pressed", "State=Disabled"})
@@ -172,6 +176,7 @@ class WalkHiddenTests(unittest.TestCase):
         self.assertIn("184", w["proto"]["nodes"])
         own = [j for j in w["jobs"] if j["node"] == "184"][0]
         self.assertEqual(own["unhide"], [183])
+        self.assertEqual([j for j in w["jobs"] if j["node"] == "183~State=Default~self"][0]["unhide"], [183])
         var = [j for j in w["jobs"] if j["kind"] == "variant" and j["instance"] == "183"]
         self.assertTrue(var)
         for j in var:
@@ -231,7 +236,8 @@ class WalkNodeTests(unittest.TestCase):
     def test_container_job_hides_children(self):
         self.assertTrue(self.jobs["146"]["hide_children"])
         self.assertTrue(self.jobs["150"]["hide_children"])
-        self.assertTrue(self.jobs["183"]["hide_children"])
+        self.assertNotIn("183", self.jobs)  # an instance paints through its ~self child
+        self.assertTrue(self.jobs["183~State=Default~self"]["hide_children"])
         self.assertFalse(self.jobs["152"]["hide_children"])
         self.assertFalse(self.jobs["157"]["hide_children"])  # frame without children
         self.assertEqual(self.jobs["146"]["fc_id"], 146)
@@ -261,6 +267,91 @@ class WalkNodeTests(unittest.TestCase):
         types = {a["type"] for a in self.w["actions"]}
         self.assertIn("navigate", types)
         self.assertIn("changeTo", types)
+
+
+class WalkReviewFixTests(unittest.TestCase):
+    """Task 7 review fix round 1."""
+
+    def test_instance_paint_goes_to_synthetic_self_node(self):
+        def edit(byid):
+            for c in node_get(byid, 163)["children"]:
+                if c["id"] == 183:
+                    c.update({"blend": "multiply", "opacity": 0.5,
+                              "effects": [{"type": "backgroundBlur", "radius": 6, "visible": True}]})
+        w = walk.walk(scenario(selection=[163], edit=edit), EXTRAS)
+        n = w["proto"]["nodes"]
+        self_id = "183~State=Default~self"
+        s = n[self_id]
+        self.assertEqual((s["kind"], s["x"], s["y"], s["w"], s["h"], s["rotation"]), ("leaf", 0, 0, 120, 48, 0))
+        self.assertEqual((s["opacity"], s["css"], s["interactions"], s["paint"]), (1, {}, [], None))
+        self.assertIsNone(s["instance"])
+        self.assertEqual(n["183"]["css"]["blend"], "multiply")
+        self.assertEqual(n["183"]["paint"], None)
+        job = [j for j in w["jobs"] if j["node"] == self_id][0]
+        self.assertEqual(job["fc_id"], 183)
+        self.assertTrue(job["hide_children"])
+        self.assertEqual(sorted(job["strip_effects"]), ["backgroundBlur", "blend", "opacity"])
+        self.assertEqual(w["parent"][self_id], "183")
+        self.assertEqual(w["bound"].get(self_id), w["bound"].get("183"))
+
+    def test_nested_instances_in_variant_components_followed_not_counted(self):
+        w = walk.walk(scenario(fixture=VARIANTS), {})
+        screens = set(w["proto"]["screens"])
+        # 201 via Zone, 202 via the nested Puce of the current variant,
+        # 203 via the nested Puce inside the non-current variant Mode=B
+        self.assertEqual(screens, {"187", "201", "202", "203"})
+        inst = w["proto"]["nodes"]["197"]["instance"]
+        self.assertEqual(set(inst["variants"]), {"Mode=A", "Mode=B"})
+        nested = w["proto"]["nodes"]["199"]["instance"]
+        self.assertEqual(nested["set"], "Puce")
+        self.assertEqual(set(nested["variants"]), {"Etat=On", "Etat=Off"})
+
+    def test_instance_children_carry_component_descendant_interactions(self):
+        # measured live: node.get of an instance child returns the component child's interactions
+        w = walk.walk(scenario(fixture=VARIANTS), {})
+        zone = w["proto"]["nodes"]["198"]
+        self.assertEqual(zone["interactions"][0]["actions"][0]["dest"], "201")
+
+    def test_actions_include_variant_descendants(self):
+        w = walk.walk(scenario(fixture=VARIANTS), {})
+        sets = [a for a in w["actions"] if a["type"] == "setVariable"]
+        self.assertEqual(len(sets), 1)  # Zone of the non-current variant Mode=B
+        self.assertEqual(sets[0]["variable"], "VariableID:2")
+        self.assertIn("openOverlay", {a["type"] for a in w["actions"]})
+
+    def test_mask_job_is_the_mask_layers_own_and_group_mask_flattened(self):
+        def edit(byid):
+            grp = node_get(byid, 159)
+            m = grp["children"][0]
+            m.update({"type": "GROUP", "childCount": 2})
+            # a live text right before would make jobs[-1] wrong
+            grp["children"].insert(1, {"id": 999, "type": "RECTANGLE", "name": "x", "width": 1, "height": 1})
+        w = walk.walk(scenario(selection=[146], edit=edit), EXTRAS)
+        n = w["proto"]["nodes"]
+        self.assertEqual(n["155"]["children"], [])
+        mjob = [j for j in w["jobs"] if j.get("mask_for")]
+        self.assertEqual(len(mjob), 1)
+        self.assertEqual(mjob[0]["node"], "155")
+        self.assertEqual(mjob[0]["mask_for"], "159")
+        self.assertFalse(mjob[0]["hide_children"])
+        self.assertNotIn("mask_for", [j for j in w["jobs"] if j["node"] == "999"][0])
+
+    def test_missing_variant_destination_reported_not_emitted(self):
+        def edit(byid):
+            for c in node_get(byid, 163)["children"]:
+                if c["id"] == 181:
+                    c["interactions"][0]["actions"][0]["dest"] = 9999
+            node_get(byid, 181)["interactions"][0]["actions"][0]["dest"] = 9999
+            byid[("node.get", 9999)] = None
+        w = walk.walk(scenario(selection=[163], edit=edit), EXTRAS)
+        msgs = [m for m in w["warnings"] if "9999" in m]
+        self.assertEqual(msgs, ["Lien ignoré : la variante 9999 du calque « Bouton » est introuvable."])
+        n = w["proto"]["nodes"]["181"]
+        self.assertEqual(n["interactions"], [])
+        self.assertEqual(set(n["instance"]["variants"]), {"State=Default", "State=Hover", "State=Pressed"})
+        for a in w["actions"]:
+            if a["type"] == "changeTo":
+                self.assertNotEqual(a["variant"], "9999")
 
 
 if __name__ == "__main__":

@@ -255,6 +255,9 @@ Results:
 - **Variants**: a variant's key is the variant COMPONENT's `name` (`"State=Hover"`), the same string as an instance's `mainComponentName`. `component.combineVariants {ids}` makes the set (`COMPONENT_SET`). `component.properties {id:<instance>}` gives `set`.
 - **Interaction replies** (more kinds than §2): `setVariable` → `{type, variable, value}` or `{type, variable, value:null, expr:{op:{op:"add", args:[{value:{type:"alias", value:"VariableID:2"}}, {value:{type:"number", value:1}}]}}}`; `conditional` → `{type, blocks:[{condition?: Expr, actions}]}`; `openUrl` → `new_tab: false` (absent = default true); `navigate` → `preserve_scroll: true`; `openOverlay` → `anchor`, `offset:[x,y]`, `position:"manual"`, `close_on_outside:false`, `background:null`. Keys: `Gamepad A`. The setter takes `dest` **inside** `action` (`proto.interaction.add {id, trigger, action:{type, dest}}`).
 - **Flows**: `proto.flow.add {name, start}`; page `flows:[{name,start,description}]`.
+- **Instance children carry the component's descendant interactions**: `node.get {id:<instance>}` lists each child with the `interactions` of the matching component descendant, including interactions added to the component after the instance was created (verified live: component child 192 → instance child 198). The instance **root** does not list its variant component's root interactions (§2). Nested instances inside a component keep their own `mainComponent` and `interactions`.
+- **Layer order**: page/section `children` are bottom-first (creation order); the layers panel shows them reversed (topmost first). The panel and start fallback use the layers-panel order.
+- **Unsaved documents come back**: relaunching FigCraft with `--control <port> <file>` after quitting a dirty untitled document reopens that document as an extra tab (`doc.list` → `path: null`, `dirty: true`). The file on disk is untouched; close it with `file.close {index, force:true}`.
 
 ### `document.json` (inside `file.saveAs {data:true}`)
 
@@ -271,4 +274,4 @@ Fields the exporter relies on (`docfile.extras`):
 
 Also seen: `bound` (same as node.get `boundVariables`), `component` / `source` on instances, `type` lower-case (`frame`, `section`, `componentSet`, `instance`, `text`, `page`). The digest (`docfile.digest`) is sha256 of the `document.json` bytes.
 
-Fixtures (task 7): `walk_scenario.json` (every control reply the walk makes on a scratch scenario: sections, second page, bound text/visibility, overlay, mask, blur, blend, rotation, Bouton variant set with two instances, a dangling link), `saveas_scenario.json` (trimmed saveAs reply), `interactions_all_kinds.json`.
+Fixtures (task 7): `walk_variants.json` (variant set Carte with nested Puce instances, differently sized variants, a setVariable inside a non-current variant), `walk_scenario.json` (every control reply the walk makes on a scratch scenario: sections, second page, bound text/visibility, overlay, mask, blur, blend, rotation, Bouton variant set with two instances, a dangling link), `saveas_scenario.json` (trimmed saveAs reply), `interactions_all_kinds.json`.

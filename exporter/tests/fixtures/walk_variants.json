@@ -1,0 +1,1254 @@
+{
+ "_note": "Recorded over control (FigCraft 0.18.1), page 186 'Var' added to the scratch scenario (never saved). Frame 187 holds instance 197 of set Carte 196 (Mode=A 191 200x100: Zone 192 -> navigate 201, nested Puce instance 195 -> navigate 202; root changeTo Mode=B 193). Mode=B 193 is 240x120: Zone 194 setVariable count+1, nested Puce instance 200 (openOverlay 203, changeTo Etat=Off 189 of its own set Puce 190). Puce Etat=On 188 root: changeTo 189. Instance children (198, 199) carry the component descendants' interactions. Selection: 187. Each entry: [command_or_method, params, reply].",
+ "calls": [
+  [
+   "document.inspect",
+   {
+    "depth": 0
+   },
+   {
+    "colorProfile": "srgb",
+    "currentPage": 186,
+    "dirty": true,
+    "id": 2,
+    "images": 0,
+    "kind": "design",
+    "name": "Ridgeline onboarding",
+    "path": null,
+    "selection": [
+     187
+    ],
+    "styles": [],
+    "textEdit": null,
+    "variables": 4
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 186
+   },
+   {
+    "background": "#1E1E1E",
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 844.0,
+       "width": 390.0,
+       "x": 0.0,
+       "y": 0.0
+      },
+      "childCount": 1,
+      "clip": true,
+      "fills": [
+       {
+        "color": "#FFFFFF",
+        "type": "solid"
+       }
+      ],
+      "height": 844.0,
+      "id": 187,
+      "name": "Écran var",
+      "type": "FRAME",
+      "width": 390.0,
+      "x": 0.0,
+      "y": 0.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 60.0,
+       "width": 160.0,
+       "x": 1980.0,
+       "y": -20.0
+      },
+      "childCount": 2,
+      "clip": true,
+      "cornerRadius": 5.0,
+      "dashes": [
+       10.0,
+       5.0
+      ],
+      "height": 60.0,
+      "id": 190,
+      "name": "Puce",
+      "strokeAlign": "inside",
+      "strokeWeight": 1.0,
+      "strokes": [
+       {
+        "color": "#9747FF",
+        "type": "solid"
+       }
+      ],
+      "type": "COMPONENT_SET",
+      "width": 160.0,
+      "x": 1980.0,
+      "y": -20.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 160.0,
+       "width": 580.0,
+       "x": 980.0,
+       "y": -20.0
+      },
+      "childCount": 2,
+      "clip": true,
+      "cornerRadius": 5.0,
+      "dashes": [
+       10.0,
+       5.0
+      ],
+      "height": 160.0,
+      "id": 196,
+      "name": "Carte",
+      "strokeAlign": "inside",
+      "strokeWeight": 1.0,
+      "strokes": [
+       {
+        "color": "#9747FF",
+        "type": "solid"
+       }
+      ],
+      "type": "COMPONENT_SET",
+      "width": 580.0,
+      "x": 980.0,
+      "y": -20.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 100.0,
+       "width": 100.0,
+       "x": 0.0,
+       "y": 1000.0
+      },
+      "clip": true,
+      "fills": [
+       {
+        "color": "#FFFFFF",
+        "type": "solid"
+       }
+      ],
+      "height": 100.0,
+      "id": 201,
+      "name": "Cible zone",
+      "type": "FRAME",
+      "width": 100.0,
+      "x": 0.0,
+      "y": 1000.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 100.0,
+       "width": 100.0,
+       "x": 200.0,
+       "y": 1000.0
+      },
+      "clip": true,
+      "fills": [
+       {
+        "color": "#FFFFFF",
+        "type": "solid"
+       }
+      ],
+      "height": 100.0,
+      "id": 202,
+      "name": "Cible puce",
+      "type": "FRAME",
+      "width": 100.0,
+      "x": 200.0,
+      "y": 1000.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 100.0,
+       "width": 100.0,
+       "x": 400.0,
+       "y": 1000.0
+      },
+      "clip": true,
+      "fills": [
+       {
+        "color": "#FFFFFF",
+        "type": "solid"
+       }
+      ],
+      "height": 100.0,
+      "id": 203,
+      "name": "Cible overlay B",
+      "type": "FRAME",
+      "width": 100.0,
+      "x": 400.0,
+      "y": 1000.0
+     }
+    ],
+    "id": 186,
+    "name": "Var",
+    "type": "PAGE"
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 187
+   },
+   {
+    "absoluteBounds": {
+     "height": 844.0,
+     "width": 390.0,
+     "x": 0.0,
+     "y": 0.0
+    },
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 100.0,
+       "width": 200.0,
+       "x": 20.0,
+       "y": 100.0
+      },
+      "childCount": 2,
+      "clip": true,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#EEEEEE",
+        "type": "solid"
+       }
+      ],
+      "height": 100.0,
+      "id": 197,
+      "mainComponent": 191,
+      "mainComponentName": "Mode=A",
+      "name": "Carte",
+      "type": "INSTANCE",
+      "width": 200.0,
+      "x": 20.0,
+      "y": 100.0
+     }
+    ],
+    "clip": true,
+    "fills": [
+     {
+      "color": "#FFFFFF",
+      "type": "solid"
+     }
+    ],
+    "height": 844.0,
+    "id": 187,
+    "name": "Écran var",
+    "type": "FRAME",
+    "width": 390.0,
+    "x": 0.0,
+    "y": 0.0
+   }
+  ],
+  [
+   "component.properties",
+   {
+    "id": 197
+   },
+   {
+    "component": 191,
+    "conflicts": [],
+    "properties": [
+     {
+      "default": "A",
+      "name": "Mode",
+      "options": [
+       "A",
+       "B"
+      ],
+      "type": "variant",
+      "value": "A"
+     }
+    ],
+    "set": 196
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 190
+   },
+   {
+    "absoluteBounds": {
+     "height": 60.0,
+     "width": 160.0,
+     "x": 1980.0,
+     "y": -20.0
+    },
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 20.0,
+       "width": 20.0,
+       "x": 2000.0,
+       "y": 0.0
+      },
+      "clip": true,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#00FF00",
+        "type": "solid"
+       }
+      ],
+      "height": 20.0,
+      "id": 188,
+      "interactions": [
+       {
+        "actions": [
+         {
+          "dest": 189,
+          "type": "changeTo"
+         }
+        ],
+        "duration_ms": 300,
+        "easing": "easeOut",
+        "transition": {
+         "type": "instant"
+        },
+        "trigger": {
+         "type": "onClick"
+        }
+       }
+      ],
+      "name": "Etat=On",
+      "type": "COMPONENT",
+      "width": 20.0,
+      "x": 20.0,
+      "y": 20.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 20.0,
+       "width": 20.0,
+       "x": 2100.0,
+       "y": 0.0
+      },
+      "clip": true,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#FF0000",
+        "type": "solid"
+       }
+      ],
+      "height": 20.0,
+      "id": 189,
+      "name": "Etat=Off",
+      "type": "COMPONENT",
+      "width": 20.0,
+      "x": 120.0,
+      "y": 20.0
+     }
+    ],
+    "clip": true,
+    "cornerRadius": 5.0,
+    "dashes": [
+     10.0,
+     5.0
+    ],
+    "height": 60.0,
+    "id": 190,
+    "name": "Puce",
+    "strokeAlign": "inside",
+    "strokeWeight": 1.0,
+    "strokes": [
+     {
+      "color": "#9747FF",
+      "type": "solid"
+     }
+    ],
+    "type": "COMPONENT_SET",
+    "width": 160.0,
+    "x": 1980.0,
+    "y": -20.0
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 196
+   },
+   {
+    "absoluteBounds": {
+     "height": 160.0,
+     "width": 580.0,
+     "x": 980.0,
+     "y": -20.0
+    },
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 100.0,
+       "width": 200.0,
+       "x": 1000.0,
+       "y": 0.0
+      },
+      "childCount": 2,
+      "clip": true,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#EEEEEE",
+        "type": "solid"
+       }
+      ],
+      "height": 100.0,
+      "id": 191,
+      "interactions": [
+       {
+        "actions": [
+         {
+          "dest": 193,
+          "type": "changeTo"
+         }
+        ],
+        "duration_ms": 300,
+        "easing": "easeOut",
+        "transition": {
+         "type": "instant"
+        },
+        "trigger": {
+         "type": "onClick"
+        }
+       }
+      ],
+      "name": "Mode=A",
+      "type": "COMPONENT",
+      "width": 200.0,
+      "x": 20.0,
+      "y": 20.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 120.0,
+       "width": 240.0,
+       "x": 1300.0,
+       "y": 0.0
+      },
+      "childCount": 2,
+      "clip": true,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#333333",
+        "type": "solid"
+       }
+      ],
+      "height": 120.0,
+      "id": 193,
+      "name": "Mode=B",
+      "type": "COMPONENT",
+      "width": 240.0,
+      "x": 320.0,
+      "y": 20.0
+     }
+    ],
+    "clip": true,
+    "cornerRadius": 5.0,
+    "dashes": [
+     10.0,
+     5.0
+    ],
+    "height": 160.0,
+    "id": 196,
+    "name": "Carte",
+    "strokeAlign": "inside",
+    "strokeWeight": 1.0,
+    "strokes": [
+     {
+      "color": "#9747FF",
+      "type": "solid"
+     }
+    ],
+    "type": "COMPONENT_SET",
+    "width": 580.0,
+    "x": 980.0,
+    "y": -20.0
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 197
+   },
+   {
+    "absoluteBounds": {
+     "height": 100.0,
+     "width": 200.0,
+     "x": 20.0,
+     "y": 100.0
+    },
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 30.0,
+       "width": 50.0,
+       "x": 30.0,
+       "y": 110.0
+      },
+      "clip": true,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#CCCCCC",
+        "type": "solid"
+       }
+      ],
+      "height": 30.0,
+      "id": 198,
+      "interactions": [
+       {
+        "actions": [
+         {
+          "dest": 201,
+          "type": "navigate"
+         }
+        ],
+        "duration_ms": 300,
+        "easing": "easeOut",
+        "transition": {
+         "type": "instant"
+        },
+        "trigger": {
+         "type": "onClick"
+        }
+       }
+      ],
+      "name": "Zone",
+      "type": "FRAME",
+      "width": 50.0,
+      "x": 10.0,
+      "y": 10.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 20.0,
+       "width": 20.0,
+       "x": 120.0,
+       "y": 110.0
+      },
+      "clip": true,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#00FF00",
+        "type": "solid"
+       }
+      ],
+      "height": 20.0,
+      "id": 199,
+      "interactions": [
+       {
+        "actions": [
+         {
+          "dest": 202,
+          "type": "navigate"
+         }
+        ],
+        "duration_ms": 300,
+        "easing": "easeOut",
+        "transition": {
+         "type": "instant"
+        },
+        "trigger": {
+         "type": "onHover"
+        }
+       }
+      ],
+      "mainComponent": 188,
+      "mainComponentName": "Etat=On",
+      "name": "Puce",
+      "type": "INSTANCE",
+      "width": 20.0,
+      "x": 100.0,
+      "y": 10.0
+     }
+    ],
+    "clip": true,
+    "constraints": {
+     "horizontal": "left",
+     "vertical": "top"
+    },
+    "fills": [
+     {
+      "color": "#EEEEEE",
+      "type": "solid"
+     }
+    ],
+    "height": 100.0,
+    "id": 197,
+    "mainComponent": 191,
+    "mainComponentName": "Mode=A",
+    "name": "Carte",
+    "type": "INSTANCE",
+    "width": 200.0,
+    "x": 20.0,
+    "y": 100.0
+   }
+  ],
+  [
+   "component.properties",
+   {
+    "id": 199
+   },
+   {
+    "component": 188,
+    "conflicts": [],
+    "properties": [
+     {
+      "default": "On",
+      "name": "Etat",
+      "options": [
+       "On",
+       "Off"
+      ],
+      "type": "variant",
+      "value": "On"
+     }
+    ],
+    "set": 190
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 191
+   },
+   {
+    "absoluteBounds": {
+     "height": 100.0,
+     "width": 200.0,
+     "x": 1000.0,
+     "y": 0.0
+    },
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 30.0,
+       "width": 50.0,
+       "x": 1010.0,
+       "y": 10.0
+      },
+      "clip": true,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#CCCCCC",
+        "type": "solid"
+       }
+      ],
+      "height": 30.0,
+      "id": 192,
+      "interactions": [
+       {
+        "actions": [
+         {
+          "dest": 201,
+          "type": "navigate"
+         }
+        ],
+        "duration_ms": 300,
+        "easing": "easeOut",
+        "transition": {
+         "type": "instant"
+        },
+        "trigger": {
+         "type": "onClick"
+        }
+       }
+      ],
+      "name": "Zone",
+      "type": "FRAME",
+      "width": 50.0,
+      "x": 10.0,
+      "y": 10.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 20.0,
+       "width": 20.0,
+       "x": 1100.0,
+       "y": 10.0
+      },
+      "clip": true,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#00FF00",
+        "type": "solid"
+       }
+      ],
+      "height": 20.0,
+      "id": 195,
+      "interactions": [
+       {
+        "actions": [
+         {
+          "dest": 202,
+          "type": "navigate"
+         }
+        ],
+        "duration_ms": 300,
+        "easing": "easeOut",
+        "transition": {
+         "type": "instant"
+        },
+        "trigger": {
+         "type": "onHover"
+        }
+       }
+      ],
+      "mainComponent": 188,
+      "mainComponentName": "Etat=On",
+      "name": "Puce",
+      "type": "INSTANCE",
+      "width": 20.0,
+      "x": 100.0,
+      "y": 10.0
+     }
+    ],
+    "clip": true,
+    "constraints": {
+     "horizontal": "left",
+     "vertical": "top"
+    },
+    "fills": [
+     {
+      "color": "#EEEEEE",
+      "type": "solid"
+     }
+    ],
+    "height": 100.0,
+    "id": 191,
+    "interactions": [
+     {
+      "actions": [
+       {
+        "dest": 193,
+        "type": "changeTo"
+       }
+      ],
+      "duration_ms": 300,
+      "easing": "easeOut",
+      "transition": {
+       "type": "instant"
+      },
+      "trigger": {
+       "type": "onClick"
+      }
+     }
+    ],
+    "name": "Mode=A",
+    "type": "COMPONENT",
+    "width": 200.0,
+    "x": 20.0,
+    "y": 20.0
+   }
+  ],
+  [
+   "component.properties",
+   {
+    "id": 195
+   },
+   {
+    "component": 188,
+    "conflicts": [],
+    "properties": [
+     {
+      "default": "On",
+      "name": "Etat",
+      "options": [
+       "On",
+       "Off"
+      ],
+      "type": "variant",
+      "value": "On"
+     }
+    ],
+    "set": 190
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 189
+   },
+   {
+    "absoluteBounds": {
+     "height": 20.0,
+     "width": 20.0,
+     "x": 2100.0,
+     "y": 0.0
+    },
+    "clip": true,
+    "constraints": {
+     "horizontal": "left",
+     "vertical": "top"
+    },
+    "fills": [
+     {
+      "color": "#FF0000",
+      "type": "solid"
+     }
+    ],
+    "height": 20.0,
+    "id": 189,
+    "name": "Etat=Off",
+    "type": "COMPONENT",
+    "width": 20.0,
+    "x": 120.0,
+    "y": 20.0
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 193
+   },
+   {
+    "absoluteBounds": {
+     "height": 120.0,
+     "width": 240.0,
+     "x": 1300.0,
+     "y": 0.0
+    },
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 30.0,
+       "width": 50.0,
+       "x": 1310.0,
+       "y": 10.0
+      },
+      "clip": true,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#FFFFFF",
+        "type": "solid"
+       }
+      ],
+      "height": 30.0,
+      "id": 194,
+      "interactions": [
+       {
+        "actions": [
+         {
+          "expr": {
+           "op": {
+            "args": [
+             {
+              "value": {
+               "type": "alias",
+               "value": "VariableID:2"
+              }
+             },
+             {
+              "value": {
+               "type": "number",
+               "value": 1.0
+              }
+             }
+            ],
+            "op": "add"
+           }
+          },
+          "type": "setVariable",
+          "value": null,
+          "variable": "VariableID:2"
+         }
+        ],
+        "duration_ms": 300,
+        "easing": "easeOut",
+        "transition": {
+         "type": "instant"
+        },
+        "trigger": {
+         "type": "onClick"
+        }
+       }
+      ],
+      "name": "Zone",
+      "type": "FRAME",
+      "width": 50.0,
+      "x": 10.0,
+      "y": 10.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 20.0,
+       "width": 20.0,
+       "x": 1420.0,
+       "y": 10.0
+      },
+      "clip": true,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#00FF00",
+        "type": "solid"
+       }
+      ],
+      "height": 20.0,
+      "id": 200,
+      "interactions": [
+       {
+        "actions": [
+         {
+          "background": null,
+          "close_on_outside": true,
+          "dest": 203,
+          "position": "center",
+          "type": "openOverlay"
+         }
+        ],
+        "duration_ms": 300,
+        "easing": "easeOut",
+        "transition": {
+         "type": "instant"
+        },
+        "trigger": {
+         "type": "onClick"
+        }
+       },
+       {
+        "actions": [
+         {
+          "dest": 189,
+          "type": "changeTo"
+         }
+        ],
+        "duration_ms": 300,
+        "easing": "easeOut",
+        "transition": {
+         "type": "instant"
+        },
+        "trigger": {
+         "type": "onHover"
+        }
+       }
+      ],
+      "mainComponent": 188,
+      "mainComponentName": "Etat=On",
+      "name": "Puce",
+      "type": "INSTANCE",
+      "width": 20.0,
+      "x": 120.0,
+      "y": 10.0
+     }
+    ],
+    "clip": true,
+    "constraints": {
+     "horizontal": "left",
+     "vertical": "top"
+    },
+    "fills": [
+     {
+      "color": "#333333",
+      "type": "solid"
+     }
+    ],
+    "height": 120.0,
+    "id": 193,
+    "name": "Mode=B",
+    "type": "COMPONENT",
+    "width": 240.0,
+    "x": 320.0,
+    "y": 20.0
+   }
+  ],
+  [
+   "component.properties",
+   {
+    "id": 200
+   },
+   {
+    "component": 188,
+    "conflicts": [],
+    "properties": [
+     {
+      "default": "On",
+      "name": "Etat",
+      "options": [
+       "On",
+       "Off"
+      ],
+      "type": "variant",
+      "value": "On"
+     }
+    ],
+    "set": 190
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 201
+   },
+   {
+    "absoluteBounds": {
+     "height": 100.0,
+     "width": 100.0,
+     "x": 0.0,
+     "y": 1000.0
+    },
+    "clip": true,
+    "fills": [
+     {
+      "color": "#FFFFFF",
+      "type": "solid"
+     }
+    ],
+    "height": 100.0,
+    "id": 201,
+    "name": "Cible zone",
+    "type": "FRAME",
+    "width": 100.0,
+    "x": 0.0,
+    "y": 1000.0
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 202
+   },
+   {
+    "absoluteBounds": {
+     "height": 100.0,
+     "width": 100.0,
+     "x": 200.0,
+     "y": 1000.0
+    },
+    "clip": true,
+    "fills": [
+     {
+      "color": "#FFFFFF",
+      "type": "solid"
+     }
+    ],
+    "height": 100.0,
+    "id": 202,
+    "name": "Cible puce",
+    "type": "FRAME",
+    "width": 100.0,
+    "x": 200.0,
+    "y": 1000.0
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 188
+   },
+   {
+    "absoluteBounds": {
+     "height": 20.0,
+     "width": 20.0,
+     "x": 2000.0,
+     "y": 0.0
+    },
+    "clip": true,
+    "constraints": {
+     "horizontal": "left",
+     "vertical": "top"
+    },
+    "fills": [
+     {
+      "color": "#00FF00",
+      "type": "solid"
+     }
+    ],
+    "height": 20.0,
+    "id": 188,
+    "interactions": [
+     {
+      "actions": [
+       {
+        "dest": 189,
+        "type": "changeTo"
+       }
+      ],
+      "duration_ms": 300,
+      "easing": "easeOut",
+      "transition": {
+       "type": "instant"
+      },
+      "trigger": {
+       "type": "onClick"
+      }
+     }
+    ],
+    "name": "Etat=On",
+    "type": "COMPONENT",
+    "width": 20.0,
+    "x": 20.0,
+    "y": 20.0
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 203
+   },
+   {
+    "absoluteBounds": {
+     "height": 100.0,
+     "width": 100.0,
+     "x": 400.0,
+     "y": 1000.0
+    },
+    "clip": true,
+    "fills": [
+     {
+      "color": "#FFFFFF",
+      "type": "solid"
+     }
+    ],
+    "height": 100.0,
+    "id": 203,
+    "name": "Cible overlay B",
+    "type": "FRAME",
+    "width": 100.0,
+    "x": 400.0,
+    "y": 1000.0
+   }
+  ],
+  [
+   "variable.list",
+   {},
+   {
+    "collections": [
+     {
+      "id": "VariableCollectionId:1",
+      "modes": [
+       {
+        "id": "VariableCollectionId:1/mode1",
+        "name": "Mode 1"
+       }
+      ],
+      "name": "Data"
+     },
+     {
+      "id": "VariableCollectionId:2",
+      "modes": [
+       {
+        "id": "VariableCollectionId:2/mode1",
+        "name": "Light"
+       },
+       {
+        "id": "VariableCollectionId:2/mode2",
+        "name": "Dark"
+       }
+      ],
+      "name": "Theme"
+     }
+    ],
+    "variables": [
+     {
+      "collection": "VariableCollectionId:1",
+      "description": "",
+      "id": "VariableID:1",
+      "name": "username",
+      "resolvedType": "string",
+      "values": {
+       "VariableCollectionId:1/mode1": {
+        "type": "string",
+        "value": "Élodie"
+       }
+      }
+     },
+     {
+      "collection": "VariableCollectionId:1",
+      "description": "",
+      "id": "VariableID:2",
+      "name": "count",
+      "resolvedType": "number",
+      "values": {
+       "VariableCollectionId:1/mode1": {
+        "type": "number",
+        "value": 0.0
+       }
+      }
+     },
+     {
+      "collection": "VariableCollectionId:1",
+      "description": "",
+      "id": "VariableID:3",
+      "name": "showBadge",
+      "resolvedType": "boolean",
+      "values": {
+       "VariableCollectionId:1/mode1": {
+        "type": "boolean",
+        "value": false
+       }
+      }
+     },
+     {
+      "collection": "VariableCollectionId:2",
+      "description": "",
+      "id": "VariableID:4",
+      "name": "surface",
+      "resolvedType": "color",
+      "values": {
+       "VariableCollectionId:2/mode1": {
+        "type": "color",
+        "value": {
+         "a": 1.0,
+         "b": 1.0,
+         "g": 1.0,
+         "r": 1.0
+        }
+       },
+       "VariableCollectionId:2/mode2": {
+        "type": "color",
+        "value": {
+         "a": 1.0,
+         "b": 0.06666667014360428,
+         "g": 0.06666667014360428,
+         "r": 0.06666667014360428
+        }
+       }
+      }
+     }
+    ]
+   }
+  ]
+ ]
+}

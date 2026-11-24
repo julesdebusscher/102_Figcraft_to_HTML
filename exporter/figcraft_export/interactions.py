@@ -105,7 +105,10 @@ def _action(a, transition, variant_key):
         nt = a.get("new_tab", a.get("openInNewTab"))
         return {"type": kind, "url": a.get("url", ""), "newTab": True if nt is None else bool(nt)}
     if kind == "changeTo":
-        return {"type": kind, "variant": variant_key(a.get("dest")), "transition": transition}
+        key = variant_key(a.get("dest"))
+        if key is None:
+            return None  # missing variant: the caller reports it
+        return {"type": kind, "variant": key, "transition": transition}
     if kind == "setVariable":
         out = {"type": kind, "variable": a.get("variable")}
         if a.get("expr") is not None:
@@ -121,20 +124,25 @@ def _action(a, transition, variant_key):
             nb = {}
             if b.get("condition") is not None:
                 nb["condition"] = b["condition"]
-            nb["actions"] = [_action(x, transition, variant_key) for x in b.get("actions") or []]
+            nb["actions"] = _actions(b.get("actions"), transition, variant_key)
             blocks.append(nb)
         return {"type": kind, "blocks": blocks}
     raise ValueError(str(kind))
 
 
+def _actions(actions, transition, variant_key):
+    out = (_action(x, transition, variant_key) for x in actions or [])
+    return [x for x in out if x is not None]
+
+
 def convert(raw, variant_key=None):
     """Contract Interaction; raises ValueError (message = the unknown kind) on an unknown
-    trigger, action or easing. `variant_key(dest_id) -> VariantKey` names changeTo targets
-    (default: the id as a string)."""
+    trigger, action or easing. `variant_key(dest_id) -> VariantKey | None` names changeTo
+    targets (default: the id as a string); None drops that changeTo (missing variant)."""
     vk = variant_key or (lambda d: str(d))
     trigger = _trigger(raw)
     transition = _transition(raw)
-    return {"trigger": trigger, "actions": [_action(a, transition, vk) for a in raw.get("actions") or []]}
+    return {"trigger": trigger, "actions": _actions(raw.get("actions"), transition, vk)}
 
 
 def _walk_actions(actions):

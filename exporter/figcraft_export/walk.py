@@ -49,13 +49,16 @@ class _Walker(object):
         return self.cache[fc_id]
 
     def warn(self, msg, skipped=True):
+        if msg in self.warnings:
+            return
         self.warnings.append(msg)
         if skipped:
             self.skipped.append(msg)
 
     # -- selection ---------------------------------------------------------
     def _top_frames(self, container, section, order, section_of, tops):
-        for c in container.get("children") or []:
+        # layers-panel order: topmost first = reverse of `children`
+        for c in reversed(container.get("children") or []):
             tops[c["id"]] = c
             if c.get("type") == "FRAME":
                 order.append(c["id"])
@@ -135,8 +138,7 @@ class _Walker(object):
         todo = deque([(raw, None, None, [])])
         while todo:
             r, parent_raw, inst, hidden = todo.popleft()
-            for item in self._node(r, parent_raw, inst, hidden, nid):
-                todo.append(item)
+            todo.extend(self._node(r, parent_raw, inst, hidden, nid)[0])
 
     def _children(self, raw):
         if raw.get("type") == "BOOLEAN_OPERATION" or (raw.get("type") == "GROUP" and "booleanOperation" in raw):
@@ -147,13 +149,15 @@ class _Walker(object):
             return (self.get(raw["id"]) or {}).get("children") or []
         return []
 
-    def _node(self, raw, parent_raw, inst, hidden, screen):
+    def _node(self, raw, parent_raw, inst, hidden, screen, flat=False):
+        """Adds one contract node; returns ([child work items], its own job or None).
+        flat: drawn as one paint (a mask layer), children not listed."""
         fc, nid, t = raw["id"], str(raw["id"]), raw.get("type")
-        kids = [c for c in self._children(raw) if c.get("type") not in _SKIP_TYPES]
+        kids = [] if flat else [c for c in self._children(raw) if c.get("type") not in _SKIP_TYPES]
         mask = None
         if t == "GROUP" and kids and kids[0].get("isMask"):
             mask, kids = kids[0], kids[1:]
-        kind = "leaf" if t == "GROUP" and "booleanOperation" in raw else _KINDS.get(t, "leaf")
+        kind = "leaf" if flat or (t == "GROUP" and "booleanOperation" in raw) else _KINDS.get(t, "leaf")
         if parent_raw is None:
             x = y = 0
         elif parent_raw.get("type") == "GROUP":
@@ -164,6 +168,8 @@ class _Walker(object):
             hidden = hidden + [fc]
         ex = self.extras.get(nid, {})
         css, strip, approx = effects_css(raw, bool(kids))
+        if raw.get("opacity", 1) < 1:
+            strip.append("opacity")  # the element's own opacity applies it
         name = raw.get("name", "")
         if mask is not None:
             approx.append("masque")
@@ -190,20 +196,40 @@ class _Walker(object):
             self.bound[nid] = dict(bv)
         if ex.get("varModes"):
             self.modes[nid] = dict(ex["varModes"])
+        job_node, job_kids = nid, bool(kids)
         if t == "INSTANCE":
             inst = nid
             self.inst_links.setdefault(nid, [])
-            self.pending.append((raw, hidden))
+            key0 = self._key0(raw)
+            self.pending.append((raw, hidden, key0))
+            job_node, job_kids = self._self_node(raw, node, key0, screen), True
         self._interactions(raw, node, inst)
+        job = None
         if kind != "group" and live is None:
-            job = {"node": nid, "fc_id": fc, "kind": "own", "hide_children": bool(kids), "strip_effects": strip}
+            job = {"node": job_node, "fc_id": fc, "kind": "own", "hide_children": job_kids, "strip_effects": strip}
             if hidden:
                 job["unhide"] = list(hidden)
             self.jobs.append(job)
         if mask is not None:
-            self._node(mask, raw, inst, hidden, screen)  # kept in nodes, drawn by no parent
-            self.jobs[-1]["mask_for"] = nid
-        return [(c, raw, inst, hidden) for c in kids]
+            mjob = self._node(mask, raw, inst, hidden, screen, flat=True)[1]  # in nodes, drawn by no parent
+            if mjob is not None:
+                mjob["mask_for"] = nid
+        return [(c, raw, inst, hidden) for c in kids], job
+
+    def _self_node(self, raw, node, key0, screen):
+        """The instance's own paint as a first child "<inst>~<key>~self" (the instance
+        element keeps opacity/css/interactions; its paint lives in variants[key])."""
+        nid = node["id"]
+        sid = "%s~%s~self" % (nid, key0)
+        self.nodes[sid] = {"id": sid, "name": node["name"], "kind": "leaf", "x": 0, "y": 0, "w": node["w"],
+                           "h": node["h"], "rotation": 0, "opacity": 1, "visible": True, "clip": False,
+                           "overflow": "none", "position": "scroll", "paint": None, "alts": [], "css": {},
+                           "liveText": None, "bindings": {}, "instance": None, "children": [], "interactions": []}
+        node["children"].insert(0, sid)
+        self.parent[sid], self.screen_of[sid] = nid, screen
+        if nid in self.bound:
+            self.bound[sid] = dict(self.bound[nid])
+        return sid
 
     def _interactions(self, raw, node, inst):
         for ri in raw.get("interactions") or []:
@@ -217,10 +243,15 @@ class _Walker(object):
                 self.enqueue(d, node["name"])
 
     def _convert(self, ri, name):
+        for d in interactions.links(ri)["variants"]:
+            if self._component(d) is None:
+                self.warn("Lien ignoré : la variante %s du calque « %s » est introuvable." % (d, name))
         try:
             conv = interactions.convert(ri, variant_key=self._variant_key)
         except ValueError as e:
             self.warn("Interaction ignorée sur « %s » : type inconnu « %s »." % (name, e))
+            return None
+        if ri.get("actions") and not conv["actions"]:
             return None
         self.actions.extend(interactions.flat_actions(conv))
         return conv
@@ -232,22 +263,70 @@ class _Walker(object):
             raw = self.get(cid)
             info = None
             if raw is not None:
+                # nested: per nested instance, [its main component] + its own changeTo dests
                 info = {"name": raw.get("name", str(cid)), "raw": raw.get("interactions") or [],
-                        "screens": [], "variants": [], "conv": None}
-                todo = [raw]
+                        "screens": [], "variants": [], "nested": [], "desc": [], "conv": None, "linked": False}
+                todo = [(raw, None)]
                 while todo:
-                    r = todo.pop(0)
+                    r, nest = todo.pop(0)
                     for ri in r.get("interactions") or []:
                         lk = interactions.links(ri)
                         info["screens"] += lk["screens"]
-                        info["variants"] += lk["variants"]
-                    todo.extend(c for c in self._children(r) if c.get("type") != "INSTANCE")
+                        (info["variants"] if nest is None else nest).extend(lk["variants"])
+                        if r is not raw:
+                            info["desc"].append(ri)
+                    for c in self._children(r):
+                        if c.get("type") == "INSTANCE":
+                            lst = [c.get("mainComponent")]
+                            info["nested"].append(lst)
+                            todo.append((c, lst))
+                        else:
+                            todo.append((c, nest))
             self.comps[cid] = info
         return self.comps[cid]
 
     def _variant_key(self, dest):
         comp = self._component(dest)
-        return comp["name"] if comp else str(dest)
+        return comp["name"] if comp else None
+
+    def _reach(self, start):
+        """Component ids reachable from `start` through changeTo chains (missing ones dropped)."""
+        out, todo = [], list(start)
+        while todo:
+            cid = todo.pop(0)
+            comp = self._component(cid) if cid is not None else None
+            if comp is None or cid in out:
+                continue
+            out.append(cid)
+            todo.extend(comp["variants"])
+        return out
+
+    def _comp_conv(self, cid):
+        comp = self._component(cid)
+        if comp["conv"] is None:
+            comp["conv"] = [c for c in (self._convert(ri, comp["name"]) for ri in comp["raw"]) if c]
+        return comp["conv"]
+
+    def _comp_links(self, cid):
+        """Once per component: follow its screen links, nested instances' variants, and add
+        its descendants' actions to `actions` (Task 9 builds the nodes)."""
+        comp = self._component(cid)
+        if comp["linked"]:
+            return
+        comp["linked"] = True
+        self._comp_conv(cid)
+        for d in comp["screens"]:
+            self.enqueue(d, comp["name"])
+        for ri in comp["desc"]:
+            self._convert(ri, comp["name"])
+        for lst in comp["nested"]:
+            for c2 in self._reach(lst):
+                self._comp_links(c2)
+
+    def _key0(self, raw):
+        main = raw.get("mainComponent")
+        first = self._component(main) if main is not None and not raw.get("mainComponentName") else None
+        return raw.get("mainComponentName") or (first["name"] if first else str(raw["id"]))
 
     def _set_name(self, raw):
         main = raw.get("mainComponent")
@@ -262,30 +341,16 @@ class _Walker(object):
 
     def _finish_instances(self):
         while self.pending:
-            raw, hidden = self.pending.pop(0)
+            raw, hidden, key0 = self.pending.pop(0)
             nid, node = str(raw["id"]), self.nodes[str(raw["id"])]
             main = raw.get("mainComponent")
-            first = self._component(main) if main is not None else None
-            key0 = raw.get("mainComponentName") or (first["name"] if first else nid)
-            reach, todo = {}, [main] + self.inst_links.get(nid, [])
-            while todo:
-                cid = todo.pop(0)
-                comp = self._component(cid) if cid is not None else None
-                if comp is None:
-                    continue
-                key = key0 if cid == main else comp["name"]
-                if key in reach:
-                    continue
-                reach[key] = cid
-                todo.extend(comp["variants"])
-                for d in comp["screens"]:
-                    self.enqueue(d, comp["name"])
-            vi = {}
-            for key, cid in reach.items():
-                comp = self._component(cid)
-                if comp["conv"] is None:
-                    comp["conv"] = [c for c in (self._convert(ri, comp["name"]) for ri in comp["raw"]) if c]
-                vi[key] = comp["conv"]
+            reach = {}
+            for cid in self._reach([main] + self.inst_links.get(nid, [])):
+                key = key0 if cid == main else self._component(cid)["name"]
+                if key not in reach:
+                    reach[key] = cid
+                    self._comp_links(cid)
+            vi = {key: self._comp_conv(cid) for key, cid in reach.items()}
             variants = {key0: list(node["children"])}
             for key, cid in reach.items():
                 if key == key0:
