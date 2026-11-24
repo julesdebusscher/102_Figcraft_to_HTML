@@ -1,0 +1,59 @@
+{
+ "_note": "Raw `component.properties` replies from inside the plugin.",
+ "instance_367": {
+  "component": 175,
+  "conflicts": [],
+  "properties": [
+   {
+    "default": "Primary",
+    "name": "Style",
+    "options": [
+     "Primary",
+     "Tonal",
+     "Outline"
+    ],
+    "type": "variant",
+    "value": "Primary"
+   },
+   {
+    "default": "Default",
+    "name": "State",
+    "options": [
+     "Default",
+     "Hover",
+     "Disabled"
+    ],
+    "type": "variant",
+    "value": "Default"
+   }
+  ],
+  "set": 211
+ },
+ "set_211": {
+  "component": 175,
+  "conflicts": [],
+  "properties": [
+   {
+    "default": "Primary",
+    "name": "Style",
+    "options": [
+     "Primary",
+     "Tonal",
+     "Outline"
+    ],
+    "type": "variant"
+   },
+   {
+    "default": "Default",
+    "name": "State",
+    "options": [
+     "Default",
+     "Hover",
+     "Disabled"
+    ],
+    "type": "variant"
+   }
+  ],
+  "set": 211
+ }
+}

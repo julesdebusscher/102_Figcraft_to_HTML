@@ -1,0 +1,19 @@
+[package]
+name = "fc-probe"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+figcraft-plugin-sdk = { path = "../figcraft/plugins/sdk" }
+serde_json = { version = "1", default-features = false, features = ["alloc"] }
+
+[workspace]
+
+[profile.release]
+opt-level = "z"
+lto = true
+panic = "abort"
+strip = true

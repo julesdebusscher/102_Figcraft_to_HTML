@@ -1,0 +1,31 @@
+from probe import *
+fc.execute('doc.switch',{'index':1})
+def x(c,p):
+    try:
+        r=fc.execute(c,p); print('OK',c,json.dumps(r)[:200]); return r
+    except Exception as e: print('ERR',c,str(e)[:500])
+F=364
+x('variable.createCollection',{'name':'Theme','modes':['Light','Dark']})
+x('variable.create',{'collection':'Theme','name':'surface','type':'color','values':{'Light':'#FFFFFF','Dark':'#111111'}})
+x('variable.create',{'collection':'Theme','name':'gap','type':'number','values':{'Light':8,'Dark':16}})
+x('node.set',{'ids':[F],'props':{'fill':{'$var':'Theme/surface'},'overflow':'vertical','clip':True,'layout':'vertical','gap':8,'padding':16}})
+x('variable.bind',{'ids':[F],'field':'gap','variable':'Theme/gap'})
+x('variable.setMode',{'ids':[F],'collection':'Theme','mode':'Light'})
+hdr=x('node.create',{'type':'frame','parent':F,'width':358,'height':44,'name':'Header'})
+x('node.set',{'ids':[hdr['id']],'props':{'scrollPosition':'fixed','fill':'#EEEEEE'}})
+st=x('node.create',{'type':'rectangle','parent':F,'width':358,'height':20,'name':'Sticky bar'})
+x('node.set',{'ids':[st['id']],'props':{'scrollPosition':'sticky','blend':'multiply','opacity':0.5,'effects':[{'type':'dropShadow','color':'#00000040','offset':[0,2],'radius':4}]}})
+b=x('instance.create',{'component':211,'parent':F})
+t=x('instance.create',{'component':221,'parent':F})
+m1=x('node.create',{'type':'ellipse','parent':F,'width':60,'height':60,'name':'Mask shape'})
+m2=x('node.create',{'type':'rectangle','parent':F,'width':80,'height':40,'name':'Masked','props':{'fill':'#FF0000'}})
+g=x('object.mask',{'ids':[m1['id'],m2['id']]})
+x('proto.interaction.add',{'id':b['id'],'trigger':{'type':'onHover'},'action':{'type':'changeTo'},'dest':179})
+x('proto.interaction.add',{'id':hdr['id'],'trigger':{'type':'afterDelay','ms':800},'action':{'type':'navigate'},'dest':2,'transition':{'type':'smartAnimate'},'durationMs':300,'easing':{'customBezier':{'x1':0.2,'y1':0,'x2':0,'y2':1}}})
+x('proto.interaction.add',{'id':st['id'],'trigger':{'type':'onClick'},'action':{'type':'openOverlay','position':'center','background':'#00000066'},'dest':2,'transition':{'type':'moveIn','direction':'bottom'},'easing':'bouncy'})
+x('proto.interaction.add',{'id':m2['id'],'trigger':{'type':'keyPress','key':'Shift+K'},'action':{'type':'setVariableMode','collection':'Theme','mode':'Dark'}})
+x('proto.interaction.add',{'id':m2['id'],'trigger':{'type':'mouseEnter'},'action':{'type':'scrollTo','offset':[0,44]},'dest':hdr['id'],'delayMs':200})
+x('proto.interaction.add',{'id':t['id'],'trigger':{'type':'onClick'},'action':{'type':'openUrl','url':'https://example.com'}})
+x('proto.flow.add',{'start':F,'name':'Probe flow'})
+x('proto.settings',{'device':'iPhone 16'})
+print(json.dumps({'F':F,'hdr':hdr,'st':st,'b':b,'t':t,'m1':m1,'m2':m2,'g':g}))

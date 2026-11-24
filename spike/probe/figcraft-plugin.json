@@ -1,0 +1,14 @@
+{
+  "id": "local.spike.probe",
+  "name": "Spike probe",
+  "version": "0.1.0",
+  "description": "Runs a JSON script of host calls and returns their replies.",
+  "main": "fc_probe.wasm",
+  "api": 4,
+  "permissions": { "access": "write", "saveFile": true },
+  "commands": [
+    { "id": "probe", "label": "Probe…", "params": [
+      { "name": "script", "label": "Script (JSON)", "type": "text", "default": "[]" }
+    ] }
+  ]
+}

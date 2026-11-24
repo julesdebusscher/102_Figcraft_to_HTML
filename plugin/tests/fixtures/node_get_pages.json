@@ -1,0 +1,399 @@
+{
+ "_note": "Raw engine `node.get` replies (one level of children), fetched from inside the spike plugin via the `call` import, FigCraft 0.18.1. Keyed by layer id; `root` is the frame.",
+ "design_system_page_1_with_probe_flow": {
+  "background": "#1E1E1E",
+  "children": [
+   {
+    "absoluteBounds": {
+     "height": 3007.4,
+     "width": 1440.0,
+     "x": 0.0,
+     "y": 0.0
+    },
+    "childCount": 7,
+    "clip": false,
+    "fills": [
+     {
+      "color": "#FFFFFF",
+      "type": "solid"
+     }
+    ],
+    "height": 3007.4,
+    "id": 2,
+    "layout": {
+     "columnTracks": [],
+     "contentAlign": "auto",
+     "crossAlign": "min",
+     "crossGap": 10.0,
+     "gap": 64.0,
+     "gridColumns": 2,
+     "gridRows": 2,
+     "mainAlign": "min",
+     "mode": "vertical",
+     "padding": [
+      72.0,
+      72.0,
+      72.0,
+      72.0
+     ],
+     "reverseZ": false,
+     "rowTracks": [],
+     "strokesIncluded": true,
+     "wrap": false
+    },
+    "name": "Ridgeline UI — Foundations",
+    "sizing": {
+     "horizontal": "fixed",
+     "vertical": "hug"
+    },
+    "type": "FRAME",
+    "width": 1440.0,
+    "x": 0.0,
+    "y": 0.0
+   },
+   {
+    "absoluteBounds": {
+     "height": 548.6,
+     "width": 1392.0,
+     "x": 24.0,
+     "y": 238.1
+    },
+    "height": 548.6,
+    "id": 363,
+    "name": "Export/Colour ramps",
+    "type": "SLICE",
+    "width": 1392.0,
+    "x": 24.0,
+    "y": 238.1
+   },
+   {
+    "absoluteBounds": {
+     "height": 500.0,
+     "width": 390.0,
+     "x": 3000.0,
+     "y": 0.0
+    },
+    "boundVariables": {
+     "fill": "VariableID:1",
+     "gap": "VariableID:2"
+    },
+    "childCount": 5,
+    "clip": true,
+    "fills": [
+     {
+      "color": "#FFFFFF",
+      "type": "solid"
+     }
+    ],
+    "height": 500.0,
+    "id": 364,
+    "layout": {
+     "columnTracks": [],
+     "contentAlign": "auto",
+     "crossAlign": "min",
+     "crossGap": 10.0,
+     "gap": 8.0,
+     "gridColumns": 2,
+     "gridRows": 2,
+     "mainAlign": "min",
+     "mode": "vertical",
+     "padding": [
+      16.0,
+      16.0,
+      16.0,
+      16.0
+     ],
+     "reverseZ": false,
+     "rowTracks": [],
+     "strokesIncluded": true,
+     "wrap": false
+    },
+    "name": "Probe screen",
+    "sizing": {
+     "horizontal": "fixed",
+     "vertical": "fixed"
+    },
+    "type": "FRAME",
+    "width": 390.0,
+    "x": 3000.0,
+    "y": 0.0
+   },
+   {
+    "absoluteBounds": {
+     "height": 200.0,
+     "width": 200.0,
+     "x": 3500.0,
+     "y": 0.0
+    },
+    "boundVariables": {
+     "fill": "VariableID:1"
+    },
+    "childCount": 1,
+    "clip": true,
+    "fills": [
+     {
+      "color": "#FFFFFF",
+      "type": "solid"
+     }
+    ],
+    "height": 200.0,
+    "id": 376,
+    "name": "Auto-mode frame",
+    "type": "FRAME",
+    "width": 200.0,
+    "x": 3500.0,
+    "y": 0.0
+   }
+  ],
+  "flows": [
+   {
+    "description": "",
+    "name": "Probe flow",
+    "start": 364
+   }
+  ],
+  "id": 1,
+  "name": "Foundations",
+  "type": "PAGE"
+ },
+ "design_system_variant_219_with_changeTo_spring": {
+  "absoluteBounds": {
+   "height": 28.0,
+   "width": 48.0,
+   "x": 157.0,
+   "y": 2464.4
+  },
+  "children": [
+   {
+    "absoluteBounds": {
+     "height": 22.0,
+     "width": 22.0,
+     "x": 160.0,
+     "y": 2467.4
+    },
+    "constraints": {
+     "horizontal": "left",
+     "vertical": "top"
+    },
+    "effects": [
+     {
+      "blend": "normal",
+      "color": {
+       "a": 0.20000000298023224,
+       "b": 0.16470588743686676,
+       "g": 0.09019608050584792,
+       "r": 0.05882352963089943
+      },
+      "offset": [
+       0.0,
+       1.0
+      ],
+      "radius": 3.0,
+      "showBehind": false,
+      "spread": 0.0,
+      "type": "dropShadow",
+      "visible": true
+     }
+    ],
+    "fills": [
+     {
+      "color": "#FFFFFF",
+      "type": "solid"
+     }
+    ],
+    "height": 22.0,
+    "id": 220,
+    "name": "Knob",
+    "type": "ELLIPSE",
+    "width": 22.0,
+    "x": 3.0,
+    "y": 3.0
+   }
+  ],
+  "clip": true,
+  "cornerRadius": 14.0,
+  "fills": [
+   {
+    "color": "#CBD5E1",
+    "type": "solid"
+   }
+  ],
+  "height": 28.0,
+  "id": 219,
+  "interactions": [
+   {
+    "actions": [
+     {
+      "dest": 217,
+      "type": "changeTo"
+     }
+    ],
+    "duration_ms": 300,
+    "easing": {
+     "customSpring": {
+      "damping": 20.0,
+      "mass": 1.0,
+      "stiffness": 300.0
+     }
+    },
+    "transition": {
+     "type": "smartAnimate"
+    },
+    "trigger": {
+     "type": "onClick"
+    }
+   }
+  ],
+  "name": "State=Off",
+  "sizing": {
+   "horizontal": "fixed",
+   "vertical": "fixed"
+  },
+  "type": "COMPONENT",
+  "width": 48.0,
+  "x": 85.0,
+  "y": 21.0
+ },
+ "onboarding_page_1": {
+  "background": "#1E1E1E",
+  "children": [
+   {
+    "absoluteBounds": {
+     "height": 852.0,
+     "width": 393.0,
+     "x": 0.0,
+     "y": 0.0
+    },
+    "childCount": 3,
+    "clip": true,
+    "fills": [
+     {
+      "color": "#1C2046",
+      "type": "solid"
+     }
+    ],
+    "height": 852.0,
+    "id": 2,
+    "name": "1 Welcome",
+    "type": "FRAME",
+    "width": 393.0,
+    "x": 0.0,
+    "y": 0.0
+   },
+   {
+    "absoluteBounds": {
+     "height": 852.0,
+     "width": 393.0,
+     "x": 553.0,
+     "y": 0.0
+    },
+    "childCount": 3,
+    "clip": true,
+    "fills": [
+     {
+      "color": "#F4F6F8",
+      "type": "solid"
+     }
+    ],
+    "height": 852.0,
+    "id": 24,
+    "name": "2 Interests",
+    "type": "FRAME",
+    "width": 393.0,
+    "x": 553.0,
+    "y": 0.0
+   },
+   {
+    "absoluteBounds": {
+     "height": 852.0,
+     "width": 393.0,
+     "x": 1106.0,
+     "y": 0.0
+    },
+    "childCount": 5,
+    "clip": true,
+    "fills": [
+     {
+      "color": "#FFFFFF",
+      "type": "solid"
+     }
+    ],
+    "height": 852.0,
+    "id": 89,
+    "name": "3 Location",
+    "type": "FRAME",
+    "width": 393.0,
+    "x": 1106.0,
+    "y": 0.0
+   },
+   {
+    "absoluteBounds": {
+     "height": 852.0,
+     "width": 393.0,
+     "x": 1659.0,
+     "y": 0.0
+    },
+    "childCount": 5,
+    "clip": true,
+    "fills": [
+     {
+      "blend": "normal",
+      "from": [
+       0.2,
+       0.0
+      ],
+      "kind": "linear",
+      "opacity": 1.0,
+      "stops": [
+       {
+        "color": {
+         "a": 1.0,
+         "b": 0.5215686559677124,
+         "g": 0.6274510025978088,
+         "r": 0.0784313753247261
+        },
+        "position": 0.0
+       },
+       {
+        "color": {
+         "a": 1.0,
+         "b": 0.25882354378700256,
+         "g": 0.30980393290519714,
+         "r": 0.03921568766236305
+        },
+        "position": 1.0
+       }
+      ],
+      "to": [
+       0.8,
+       1.0
+      ],
+      "type": "gradient",
+      "visible": true,
+      "width": [
+       -0.3,
+       0.30000000000000004
+      ]
+     }
+    ],
+    "height": 852.0,
+    "id": 129,
+    "name": "4 All set",
+    "type": "FRAME",
+    "width": 393.0,
+    "x": 1659.0,
+    "y": 0.0
+   }
+  ],
+  "flows": [
+   {
+    "description": "",
+    "name": "Onboarding",
+    "start": 2
+   }
+  ],
+  "id": 1,
+  "name": "Onboarding",
+  "type": "PAGE"
+ }
+}

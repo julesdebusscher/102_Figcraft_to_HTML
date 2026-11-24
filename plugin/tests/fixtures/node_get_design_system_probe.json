@@ -1,0 +1,1032 @@
+{
+ "_note": "Raw engine `node.get` replies (one level of children), fetched from inside the spike plugin via the `call` import, FigCraft 0.18.1. Keyed by layer id; `root` is the frame.",
+ "nodes": {
+  "364": {
+   "absoluteBounds": {
+    "height": 500.0,
+    "width": 390.0,
+    "x": 3000.0,
+    "y": 0.0
+   },
+   "boundVariables": {
+    "fill": "VariableID:1",
+    "gap": "VariableID:2"
+   },
+   "children": [
+    {
+     "absoluteBounds": {
+      "height": 44.0,
+      "width": 358.0,
+      "x": 3016.0,
+      "y": 16.0
+     },
+     "clip": true,
+     "fills": [
+      {
+       "color": "#EEEEEE",
+       "type": "solid"
+      }
+     ],
+     "height": 44.0,
+     "id": 365,
+     "interactions": [
+      {
+       "actions": [
+        {
+         "dest": 2,
+         "type": "navigate"
+        }
+       ],
+       "duration_ms": 300,
+       "easing": {
+        "customBezier": {
+         "x1": 0.2,
+         "x2": 0.0,
+         "y1": 0.0,
+         "y2": 1.0
+        }
+       },
+       "transition": {
+        "type": "smartAnimate"
+       },
+       "trigger": {
+        "ms": 800,
+        "type": "afterDelay"
+       }
+      }
+     ],
+     "name": "Header",
+     "sizing": {
+      "horizontal": "fixed",
+      "vertical": "fixed"
+     },
+     "type": "FRAME",
+     "width": 358.0,
+     "x": 16.0,
+     "y": 16.0
+    },
+    {
+     "absoluteBounds": {
+      "height": 20.0,
+      "width": 358.0,
+      "x": 3016.0,
+      "y": 68.0
+     },
+     "blend": "multiply",
+     "effects": [
+      {
+       "blend": "normal",
+       "color": {
+        "a": 0.250980406999588,
+        "b": 0.0,
+        "g": 0.0,
+        "r": 0.0
+       },
+       "offset": [
+        0.0,
+        2.0
+       ],
+       "radius": 4.0,
+       "showBehind": false,
+       "spread": 0.0,
+       "type": "dropShadow",
+       "visible": true
+      }
+     ],
+     "fills": [
+      {
+       "color": "#D9D9D9",
+       "type": "solid"
+      }
+     ],
+     "height": 20.0,
+     "id": 366,
+     "interactions": [
+      {
+       "actions": [
+        {
+         "background": {
+          "a": 0.4000000059604645,
+          "b": 0.0,
+          "g": 0.0,
+          "r": 0.0
+         },
+         "close_on_outside": true,
+         "dest": 2,
+         "position": "center",
+         "type": "openOverlay"
+        }
+       ],
+       "duration_ms": 300,
+       "easing": "bouncy",
+       "transition": {
+        "direction": "bottom",
+        "type": "moveIn"
+       },
+       "trigger": {
+        "type": "onClick"
+       }
+      }
+     ],
+     "name": "Sticky bar",
+     "opacity": 0.5,
+     "sizing": {
+      "horizontal": "fixed",
+      "vertical": "fixed"
+     },
+     "type": "RECTANGLE",
+     "width": 358.0,
+     "x": 16.0,
+     "y": 68.0
+    },
+    {
+     "absoluteBounds": {
+      "height": 48.0,
+      "width": 125.0,
+      "x": 3016.0,
+      "y": 96.0
+     },
+     "childCount": 2,
+     "clip": false,
+     "cornerRadius": 14.0,
+     "fills": [
+      {
+       "color": "#0E7C66",
+       "type": "solid"
+      }
+     ],
+     "height": 48.0,
+     "id": 367,
+     "interactions": [
+      {
+       "actions": [
+        {
+         "dest": 179,
+         "type": "changeTo"
+        }
+       ],
+       "duration_ms": 300,
+       "easing": "easeOut",
+       "transition": {
+        "type": "instant"
+       },
+       "trigger": {
+        "type": "onHover"
+       }
+      }
+     ],
+     "layout": {
+      "columnTracks": [],
+      "contentAlign": "auto",
+      "crossAlign": "center",
+      "crossGap": 10.0,
+      "gap": 8.0,
+      "gridColumns": 2,
+      "gridRows": 2,
+      "mainAlign": "center",
+      "mode": "horizontal",
+      "padding": [
+       0.0,
+       22.0,
+       0.0,
+       22.0
+      ],
+      "reverseZ": false,
+      "rowTracks": [],
+      "strokesIncluded": true,
+      "wrap": false
+     },
+     "mainComponent": 175,
+     "mainComponentName": "Style=Primary, State=Default",
+     "name": "Button",
+     "opacity": 0.800000011920929,
+     "overrides": [
+      "opacity"
+     ],
+     "sizing": {
+      "horizontal": "hug",
+      "vertical": "fixed"
+     },
+     "type": "INSTANCE",
+     "width": 125.0,
+     "x": 16.0,
+     "y": 96.0
+    },
+    {
+     "absoluteBounds": {
+      "height": 28.0,
+      "width": 48.0,
+      "x": 3016.0,
+      "y": 152.0
+     },
+     "childCount": 1,
+     "clip": true,
+     "cornerRadius": 14.0,
+     "fills": [
+      {
+       "color": "#0E7C66",
+       "type": "solid"
+      }
+     ],
+     "height": 28.0,
+     "id": 371,
+     "interactions": [
+      {
+       "actions": [
+        {
+         "type": "openUrl",
+         "url": "https://example.com"
+        }
+       ],
+       "duration_ms": 300,
+       "easing": "easeOut",
+       "transition": {
+        "type": "instant"
+       },
+       "trigger": {
+        "type": "onClick"
+       }
+      }
+     ],
+     "mainComponent": 217,
+     "mainComponentName": "State=On",
+     "name": "Toggle",
+     "sizing": {
+      "horizontal": "fixed",
+      "vertical": "fixed"
+     },
+     "type": "INSTANCE",
+     "width": 48.0,
+     "x": 16.0,
+     "y": 152.0
+    },
+    {
+     "absoluteBounds": {
+      "height": 60.0,
+      "width": 60.0,
+      "x": 3016.0,
+      "y": 188.0
+     },
+     "childCount": 2,
+     "height": 60.0,
+     "id": 375,
+     "name": "Mask group",
+     "sizing": {
+      "horizontal": "fixed",
+      "vertical": "fixed"
+     },
+     "type": "GROUP",
+     "width": 60.0,
+     "x": 16.0,
+     "y": 188.0
+    }
+   ],
+   "clip": true,
+   "fills": [
+    {
+     "color": "#FFFFFF",
+     "type": "solid"
+    }
+   ],
+   "height": 500.0,
+   "id": 364,
+   "layout": {
+    "columnTracks": [],
+    "contentAlign": "auto",
+    "crossAlign": "min",
+    "crossGap": 10.0,
+    "gap": 8.0,
+    "gridColumns": 2,
+    "gridRows": 2,
+    "mainAlign": "min",
+    "mode": "vertical",
+    "padding": [
+     16.0,
+     16.0,
+     16.0,
+     16.0
+    ],
+    "reverseZ": false,
+    "rowTracks": [],
+    "strokesIncluded": true,
+    "wrap": false
+   },
+   "name": "Probe screen",
+   "sizing": {
+    "horizontal": "fixed",
+    "vertical": "fixed"
+   },
+   "type": "FRAME",
+   "width": 390.0,
+   "x": 3000.0,
+   "y": 0.0
+  },
+  "365": {
+   "absoluteBounds": {
+    "height": 44.0,
+    "width": 358.0,
+    "x": 3016.0,
+    "y": 16.0
+   },
+   "clip": true,
+   "fills": [
+    {
+     "color": "#EEEEEE",
+     "type": "solid"
+    }
+   ],
+   "height": 44.0,
+   "id": 365,
+   "interactions": [
+    {
+     "actions": [
+      {
+       "dest": 2,
+       "type": "navigate"
+      }
+     ],
+     "duration_ms": 300,
+     "easing": {
+      "customBezier": {
+       "x1": 0.2,
+       "x2": 0.0,
+       "y1": 0.0,
+       "y2": 1.0
+      }
+     },
+     "transition": {
+      "type": "smartAnimate"
+     },
+     "trigger": {
+      "ms": 800,
+      "type": "afterDelay"
+     }
+    }
+   ],
+   "name": "Header",
+   "sizing": {
+    "horizontal": "fixed",
+    "vertical": "fixed"
+   },
+   "type": "FRAME",
+   "width": 358.0,
+   "x": 16.0,
+   "y": 16.0
+  },
+  "366": {
+   "absoluteBounds": {
+    "height": 20.0,
+    "width": 358.0,
+    "x": 3016.0,
+    "y": 68.0
+   },
+   "blend": "multiply",
+   "effects": [
+    {
+     "blend": "normal",
+     "color": {
+      "a": 0.250980406999588,
+      "b": 0.0,
+      "g": 0.0,
+      "r": 0.0
+     },
+     "offset": [
+      0.0,
+      2.0
+     ],
+     "radius": 4.0,
+     "showBehind": false,
+     "spread": 0.0,
+     "type": "dropShadow",
+     "visible": true
+    }
+   ],
+   "fills": [
+    {
+     "color": "#D9D9D9",
+     "type": "solid"
+    }
+   ],
+   "height": 20.0,
+   "id": 366,
+   "interactions": [
+    {
+     "actions": [
+      {
+       "background": {
+        "a": 0.4000000059604645,
+        "b": 0.0,
+        "g": 0.0,
+        "r": 0.0
+       },
+       "close_on_outside": true,
+       "dest": 2,
+       "position": "center",
+       "type": "openOverlay"
+      }
+     ],
+     "duration_ms": 300,
+     "easing": "bouncy",
+     "transition": {
+      "direction": "bottom",
+      "type": "moveIn"
+     },
+     "trigger": {
+      "type": "onClick"
+     }
+    }
+   ],
+   "name": "Sticky bar",
+   "opacity": 0.5,
+   "sizing": {
+    "horizontal": "fixed",
+    "vertical": "fixed"
+   },
+   "type": "RECTANGLE",
+   "width": 358.0,
+   "x": 16.0,
+   "y": 68.0
+  },
+  "367": {
+   "absoluteBounds": {
+    "height": 48.0,
+    "width": 125.0,
+    "x": 3016.0,
+    "y": 96.0
+   },
+   "children": [
+    {
+     "absoluteBounds": {
+      "height": 18.0,
+      "width": 18.0,
+      "x": 3038.0,
+      "y": 111.0
+     },
+     "childCount": 1,
+     "clip": true,
+     "height": 18.0,
+     "id": 368,
+     "name": "Icon",
+     "sizing": {
+      "horizontal": "fixed",
+      "vertical": "fixed"
+     },
+     "type": "FRAME",
+     "width": 18.0,
+     "x": 22.0,
+     "y": 15.0
+    },
+    {
+     "absoluteBounds": {
+      "height": 21.0,
+      "width": 55.0,
+      "x": 3064.0,
+      "y": 109.5
+     },
+     "characters": "Go now",
+     "fills": [
+      {
+       "color": "#FFFFFF",
+       "type": "solid"
+      }
+     ],
+     "fontFamily": "Inter",
+     "fontSize": 15.0,
+     "fontStyle": "SemiBold",
+     "height": 21.0,
+     "id": 370,
+     "letterSpacing": "0%",
+     "lineHeight": "140%",
+     "name": "Label",
+     "overrides": [
+      "characters"
+     ],
+     "sizing": {
+      "horizontal": "hug",
+      "vertical": "hug"
+     },
+     "textAlign": "left",
+     "textAutoResize": "widthAndHeight",
+     "type": "TEXT",
+     "width": 55.0,
+     "x": 48.0,
+     "y": 13.5
+    }
+   ],
+   "clip": false,
+   "cornerRadius": 14.0,
+   "fills": [
+    {
+     "color": "#0E7C66",
+     "type": "solid"
+    }
+   ],
+   "height": 48.0,
+   "id": 367,
+   "interactions": [
+    {
+     "actions": [
+      {
+       "dest": 179,
+       "type": "changeTo"
+      }
+     ],
+     "duration_ms": 300,
+     "easing": "easeOut",
+     "transition": {
+      "type": "instant"
+     },
+     "trigger": {
+      "type": "onHover"
+     }
+    }
+   ],
+   "layout": {
+    "columnTracks": [],
+    "contentAlign": "auto",
+    "crossAlign": "center",
+    "crossGap": 10.0,
+    "gap": 8.0,
+    "gridColumns": 2,
+    "gridRows": 2,
+    "mainAlign": "center",
+    "mode": "horizontal",
+    "padding": [
+     0.0,
+     22.0,
+     0.0,
+     22.0
+    ],
+    "reverseZ": false,
+    "rowTracks": [],
+    "strokesIncluded": true,
+    "wrap": false
+   },
+   "mainComponent": 175,
+   "mainComponentName": "Style=Primary, State=Default",
+   "name": "Button",
+   "opacity": 0.800000011920929,
+   "overrides": [
+    "opacity"
+   ],
+   "sizing": {
+    "horizontal": "hug",
+    "vertical": "fixed"
+   },
+   "type": "INSTANCE",
+   "width": 125.0,
+   "x": 16.0,
+   "y": 96.0
+  },
+  "368": {
+   "absoluteBounds": {
+    "height": 18.0,
+    "width": 18.0,
+    "x": 3038.0,
+    "y": 111.0
+   },
+   "children": [
+    {
+     "absoluteBounds": {
+      "height": 13.5,
+      "width": 12.0,
+      "x": 3041.0,
+      "y": 113.25
+     },
+     "constraints": {
+      "horizontal": "scale",
+      "vertical": "scale"
+     },
+     "height": 13.5,
+     "id": 369,
+     "name": "route",
+     "segments": 15,
+     "strokeAlign": "center",
+     "strokeJoin": "round",
+     "strokeWeight": 2.0,
+     "strokes": [
+      {
+       "color": "#FFFFFF",
+       "type": "solid"
+      }
+     ],
+     "type": "VECTOR",
+     "vertices": 16,
+     "width": 12.0,
+     "x": 3.0,
+     "y": 2.25
+    }
+   ],
+   "clip": true,
+   "height": 18.0,
+   "id": 368,
+   "name": "Icon",
+   "sizing": {
+    "horizontal": "fixed",
+    "vertical": "fixed"
+   },
+   "type": "FRAME",
+   "width": 18.0,
+   "x": 22.0,
+   "y": 15.0
+  },
+  "369": {
+   "absoluteBounds": {
+    "height": 13.5,
+    "width": 12.0,
+    "x": 3041.0,
+    "y": 113.25
+   },
+   "constraints": {
+    "horizontal": "scale",
+    "vertical": "scale"
+   },
+   "height": 13.5,
+   "id": 369,
+   "name": "route",
+   "segments": 15,
+   "strokeAlign": "center",
+   "strokeJoin": "round",
+   "strokeWeight": 2.0,
+   "strokes": [
+    {
+     "color": "#FFFFFF",
+     "type": "solid"
+    }
+   ],
+   "type": "VECTOR",
+   "vertices": 16,
+   "width": 12.0,
+   "x": 3.0,
+   "y": 2.25
+  },
+  "370": {
+   "absoluteBounds": {
+    "height": 21.0,
+    "width": 55.0,
+    "x": 3064.0,
+    "y": 109.5
+   },
+   "characters": "Go now",
+   "fills": [
+    {
+     "color": "#FFFFFF",
+     "type": "solid"
+    }
+   ],
+   "fontFamily": "Inter",
+   "fontSize": 15.0,
+   "fontStyle": "SemiBold",
+   "height": 21.0,
+   "id": 370,
+   "letterSpacing": "0%",
+   "lineHeight": "140%",
+   "name": "Label",
+   "overrides": [
+    "characters"
+   ],
+   "sizing": {
+    "horizontal": "hug",
+    "vertical": "hug"
+   },
+   "textAlign": "left",
+   "textAutoResize": "widthAndHeight",
+   "type": "TEXT",
+   "width": 55.0,
+   "x": 48.0,
+   "y": 13.5
+  },
+  "371": {
+   "absoluteBounds": {
+    "height": 28.0,
+    "width": 48.0,
+    "x": 3016.0,
+    "y": 152.0
+   },
+   "children": [
+    {
+     "absoluteBounds": {
+      "height": 22.0,
+      "width": 22.0,
+      "x": 3039.0,
+      "y": 155.0
+     },
+     "constraints": {
+      "horizontal": "left",
+      "vertical": "top"
+     },
+     "effects": [
+      {
+       "blend": "normal",
+       "color": {
+        "a": 0.20000000298023224,
+        "b": 0.16470588743686676,
+        "g": 0.09019608050584792,
+        "r": 0.05882352963089943
+       },
+       "offset": [
+        0.0,
+        1.0
+       ],
+       "radius": 3.0,
+       "showBehind": false,
+       "spread": 0.0,
+       "type": "dropShadow",
+       "visible": true
+      }
+     ],
+     "fills": [
+      {
+       "color": "#FFFFFF",
+       "type": "solid"
+      }
+     ],
+     "height": 22.0,
+     "id": 372,
+     "name": "Knob",
+     "type": "ELLIPSE",
+     "width": 22.0,
+     "x": 23.0,
+     "y": 3.0
+    }
+   ],
+   "clip": true,
+   "cornerRadius": 14.0,
+   "fills": [
+    {
+     "color": "#0E7C66",
+     "type": "solid"
+    }
+   ],
+   "height": 28.0,
+   "id": 371,
+   "interactions": [
+    {
+     "actions": [
+      {
+       "type": "openUrl",
+       "url": "https://example.com"
+      }
+     ],
+     "duration_ms": 300,
+     "easing": "easeOut",
+     "transition": {
+      "type": "instant"
+     },
+     "trigger": {
+      "type": "onClick"
+     }
+    }
+   ],
+   "mainComponent": 217,
+   "mainComponentName": "State=On",
+   "name": "Toggle",
+   "sizing": {
+    "horizontal": "fixed",
+    "vertical": "fixed"
+   },
+   "type": "INSTANCE",
+   "width": 48.0,
+   "x": 16.0,
+   "y": 152.0
+  },
+  "372": {
+   "absoluteBounds": {
+    "height": 22.0,
+    "width": 22.0,
+    "x": 3039.0,
+    "y": 155.0
+   },
+   "constraints": {
+    "horizontal": "left",
+    "vertical": "top"
+   },
+   "effects": [
+    {
+     "blend": "normal",
+     "color": {
+      "a": 0.20000000298023224,
+      "b": 0.16470588743686676,
+      "g": 0.09019608050584792,
+      "r": 0.05882352963089943
+     },
+     "offset": [
+      0.0,
+      1.0
+     ],
+     "radius": 3.0,
+     "showBehind": false,
+     "spread": 0.0,
+     "type": "dropShadow",
+     "visible": true
+    }
+   ],
+   "fills": [
+    {
+     "color": "#FFFFFF",
+     "type": "solid"
+    }
+   ],
+   "height": 22.0,
+   "id": 372,
+   "name": "Knob",
+   "type": "ELLIPSE",
+   "width": 22.0,
+   "x": 23.0,
+   "y": 3.0
+  },
+  "373": {
+   "absoluteBounds": {
+    "height": 60.0,
+    "width": 60.0,
+    "x": 3016.0,
+    "y": 188.0
+   },
+   "fills": [
+    {
+     "color": "#D9D9D9",
+     "type": "solid"
+    }
+   ],
+   "height": 60.0,
+   "id": 373,
+   "isMask": true,
+   "maskType": "alpha",
+   "name": "Mask shape",
+   "type": "ELLIPSE",
+   "width": 60.0,
+   "x": 16.0,
+   "y": 188.0
+  },
+  "374": {
+   "absoluteBounds": {
+    "height": 40.0,
+    "width": 80.0,
+    "x": 3016.0,
+    "y": 256.0
+   },
+   "fills": [
+    {
+     "color": "#FF0000",
+     "type": "solid"
+    }
+   ],
+   "height": 40.0,
+   "id": 374,
+   "interactions": [
+    {
+     "actions": [
+      {
+       "collection": "VariableCollectionId:1",
+       "mode": "VariableCollectionId:1/mode2",
+       "type": "setVariableMode"
+      }
+     ],
+     "duration_ms": 300,
+     "easing": "easeOut",
+     "transition": {
+      "type": "instant"
+     },
+     "trigger": {
+      "key": "Shift+K",
+      "type": "keyPress"
+     }
+    },
+    {
+     "actions": [
+      {
+       "dest": 365,
+       "offset": [
+        0.0,
+        44.0
+       ],
+       "type": "scrollTo"
+      }
+     ],
+     "delay_ms": 200,
+     "duration_ms": 300,
+     "easing": "easeOut",
+     "transition": {
+      "type": "instant"
+     },
+     "trigger": {
+      "type": "mouseEnter"
+     }
+    }
+   ],
+   "name": "Masked",
+   "type": "RECTANGLE",
+   "width": 80.0,
+   "x": 16.0,
+   "y": 256.0
+  },
+  "375": {
+   "absoluteBounds": {
+    "height": 60.0,
+    "width": 60.0,
+    "x": 3016.0,
+    "y": 188.0
+   },
+   "children": [
+    {
+     "absoluteBounds": {
+      "height": 60.0,
+      "width": 60.0,
+      "x": 3016.0,
+      "y": 188.0
+     },
+     "fills": [
+      {
+       "color": "#D9D9D9",
+       "type": "solid"
+      }
+     ],
+     "height": 60.0,
+     "id": 373,
+     "isMask": true,
+     "maskType": "alpha",
+     "name": "Mask shape",
+     "type": "ELLIPSE",
+     "width": 60.0,
+     "x": 16.0,
+     "y": 188.0
+    },
+    {
+     "absoluteBounds": {
+      "height": 40.0,
+      "width": 80.0,
+      "x": 3016.0,
+      "y": 256.0
+     },
+     "fills": [
+      {
+       "color": "#FF0000",
+       "type": "solid"
+      }
+     ],
+     "height": 40.0,
+     "id": 374,
+     "interactions": [
+      {
+       "actions": [
+        {
+         "collection": "VariableCollectionId:1",
+         "mode": "VariableCollectionId:1/mode2",
+         "type": "setVariableMode"
+        }
+       ],
+       "duration_ms": 300,
+       "easing": "easeOut",
+       "transition": {
+        "type": "instant"
+       },
+       "trigger": {
+        "key": "Shift+K",
+        "type": "keyPress"
+       }
+      },
+      {
+       "actions": [
+        {
+         "dest": 365,
+         "offset": [
+          0.0,
+          44.0
+         ],
+         "type": "scrollTo"
+        }
+       ],
+       "delay_ms": 200,
+       "duration_ms": 300,
+       "easing": "easeOut",
+       "transition": {
+        "type": "instant"
+       },
+       "trigger": {
+        "type": "mouseEnter"
+       }
+      }
+     ],
+     "name": "Masked",
+     "type": "RECTANGLE",
+     "width": 80.0,
+     "x": 16.0,
+     "y": 256.0
+    }
+   ],
+   "height": 60.0,
+   "id": 375,
+   "name": "Mask group",
+   "sizing": {
+    "horizontal": "fixed",
+    "vertical": "fixed"
+   },
+   "type": "GROUP",
+   "width": 60.0,
+   "x": 16.0,
+   "y": 188.0
+  }
+ },
+ "root": 364,
+ "source": "SYNTHETIC: frame \"Probe screen\" added by the spike to ridgeline-design-system (never saved): instances, Theme variable modes, bound variables, blend, effects, mask group, overflow vertical, fixed header, sticky bar, interactions of every kind tried"
+}

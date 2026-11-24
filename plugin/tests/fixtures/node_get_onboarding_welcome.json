@@ -1,0 +1,1793 @@
+{
+ "_note": "Raw engine `node.get` replies (one level of children), fetched from inside the spike plugin via the `call` import, FigCraft 0.18.1. Keyed by layer id; `root` is the frame.",
+ "nodes": {
+  "10": {
+   "absoluteBounds": {
+    "height": 21.0,
+    "width": 32.0,
+    "x": 30.0,
+    "y": 16.5
+   },
+   "characters": "9:41",
+   "fills": [
+    {
+     "color": "#FFFFFF",
+     "type": "solid"
+    }
+   ],
+   "fontFamily": "Inter",
+   "fontSize": 15.0,
+   "fontStyle": "SemiBold",
+   "height": 21.0,
+   "id": 10,
+   "letterSpacing": "0%",
+   "lineHeight": "140%",
+   "name": "9:41",
+   "sizing": {
+    "horizontal": "hug",
+    "vertical": "hug"
+   },
+   "textAlign": "left",
+   "textAutoResize": "widthAndHeight",
+   "type": "TEXT",
+   "width": 32.0,
+   "x": 30.0,
+   "y": 16.5
+  },
+  "11": {
+   "absoluteBounds": {
+    "height": 12.0,
+    "width": 25.0,
+    "x": 338.0,
+    "y": 21.0
+   },
+   "children": [
+    {
+     "absoluteBounds": {
+      "height": 8.0,
+      "width": 17.0,
+      "x": 340.0,
+      "y": 23.0
+     },
+     "constraints": {
+      "horizontal": "left",
+      "vertical": "top"
+     },
+     "cornerRadius": 1.5,
+     "fills": [
+      {
+       "color": "#FFFFFF",
+       "type": "solid"
+      }
+     ],
+     "height": 8.0,
+     "id": 12,
+     "name": "Level",
+     "type": "RECTANGLE",
+     "width": 17.0,
+     "x": 2.0,
+     "y": 2.0
+    }
+   ],
+   "clip": true,
+   "cornerRadius": 3.5,
+   "height": 12.0,
+   "id": 11,
+   "name": "Battery",
+   "sizing": {
+    "horizontal": "fixed",
+    "vertical": "fixed"
+   },
+   "strokeAlign": "inside",
+   "strokeWeight": 1.0,
+   "strokes": [
+    {
+     "color": "#FFFFFF",
+     "type": "solid"
+    }
+   ],
+   "type": "FRAME",
+   "width": 25.0,
+   "x": 338.0,
+   "y": 21.0
+  },
+  "12": {
+   "absoluteBounds": {
+    "height": 8.0,
+    "width": 17.0,
+    "x": 340.0,
+    "y": 23.0
+   },
+   "constraints": {
+    "horizontal": "left",
+    "vertical": "top"
+   },
+   "cornerRadius": 1.5,
+   "fills": [
+    {
+     "color": "#FFFFFF",
+     "type": "solid"
+    }
+   ],
+   "height": 8.0,
+   "id": 12,
+   "name": "Level",
+   "type": "RECTANGLE",
+   "width": 17.0,
+   "x": 2.0,
+   "y": 2.0
+  },
+  "13": {
+   "absoluteBounds": {
+    "height": 382.0,
+    "width": 393.0,
+    "x": 0.0,
+    "y": 470.0
+   },
+   "children": [
+    {
+     "absoluteBounds": {
+      "height": 8.0,
+      "width": 50.0,
+      "x": 28.0,
+      "y": 502.0
+     },
+     "childCount": 3,
+     "clip": false,
+     "height": 8.0,
+     "id": 14,
+     "layout": {
+      "columnTracks": [],
+      "contentAlign": "auto",
+      "crossAlign": "center",
+      "crossGap": 10.0,
+      "gap": 6.0,
+      "gridColumns": 2,
+      "gridRows": 2,
+      "mainAlign": "min",
+      "mode": "horizontal",
+      "padding": [
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      "reverseZ": false,
+      "rowTracks": [],
+      "strokesIncluded": true,
+      "wrap": false
+     },
+     "name": "Progress",
+     "sizing": {
+      "horizontal": "hug",
+      "vertical": "hug"
+     },
+     "type": "FRAME",
+     "width": 50.0,
+     "x": 28.0,
+     "y": 32.0
+    },
+    {
+     "absoluteBounds": {
+      "height": 36.0,
+      "width": 314.0,
+      "x": 28.0,
+      "y": 526.0
+     },
+     "characters": "Find your next summit",
+     "fills": [
+      {
+       "color": "#0F172A",
+       "type": "solid"
+      }
+     ],
+     "fontFamily": "Inter",
+     "fontSize": 30.0,
+     "fontStyle": "Bold",
+     "height": 36.0,
+     "id": 18,
+     "letterSpacing": "-2%",
+     "lineHeight": "120%",
+     "name": "Find your next summit",
+     "sizing": {
+      "horizontal": "hug",
+      "vertical": "hug"
+     },
+     "textAlign": "left",
+     "textAutoResize": "widthAndHeight",
+     "type": "TEXT",
+     "width": 314.0,
+     "x": 28.0,
+     "y": 56.0
+    },
+    {
+     "absoluteBounds": {
+      "height": 45.0,
+      "width": 337.0,
+      "x": 28.0,
+      "y": 578.0
+     },
+     "characters": "Hand-picked trails, live conditions and offline maps for every weekend in the mountains.",
+     "fills": [
+      {
+       "color": "#64748B",
+       "type": "solid"
+      }
+     ],
+     "fontFamily": "Inter",
+     "fontSize": 15.0,
+     "fontStyle": "Regular",
+     "height": 45.0,
+     "id": 19,
+     "letterSpacing": "0%",
+     "lineHeight": "150%",
+     "name": "Hand-picked trails, live conditions and offline maps for every w",
+     "sizing": {
+      "horizontal": "fixed",
+      "vertical": "hug"
+     },
+     "textAlign": "left",
+     "textAutoResize": "height",
+     "type": "TEXT",
+     "width": 337.0,
+     "x": 28.0,
+     "y": 108.0
+    },
+    {
+     "absoluteBounds": {
+      "height": 4.0,
+      "width": 10.0,
+      "x": 28.0,
+      "y": 639.0
+     },
+     "clip": true,
+     "height": 4.0,
+     "id": 20,
+     "name": "Spacer",
+     "sizing": {
+      "horizontal": "fixed",
+      "vertical": "fixed"
+     },
+     "type": "FRAME",
+     "width": 10.0,
+     "x": 28.0,
+     "y": 169.0
+    },
+    {
+     "absoluteBounds": {
+      "height": 54.0,
+      "width": 337.0,
+      "x": 28.0,
+      "y": 659.0
+     },
+     "childCount": 1,
+     "clip": false,
+     "cornerRadius": 16.0,
+     "fills": [
+      {
+       "color": "#0E7C66",
+       "type": "solid"
+      }
+     ],
+     "height": 54.0,
+     "id": 21,
+     "interactions": [
+      {
+       "actions": [
+        {
+         "dest": 24,
+         "type": "navigate"
+        }
+       ],
+       "duration_ms": 400,
+       "easing": "easeOut",
+       "transition": {
+        "direction": "left",
+        "type": "push"
+       },
+       "trigger": {
+        "type": "onClick"
+       }
+      }
+     ],
+     "layout": {
+      "columnTracks": [],
+      "contentAlign": "auto",
+      "crossAlign": "center",
+      "crossGap": 10.0,
+      "gap": 8.0,
+      "gridColumns": 2,
+      "gridRows": 2,
+      "mainAlign": "center",
+      "mode": "horizontal",
+      "padding": [
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      "reverseZ": false,
+      "rowTracks": [],
+      "strokesIncluded": true,
+      "wrap": false
+     },
+     "name": "Get started",
+     "sizing": {
+      "horizontal": "fill",
+      "vertical": "fixed"
+     },
+     "type": "FRAME",
+     "width": 337.0,
+     "x": 28.0,
+     "y": 189.0
+    },
+    {
+     "absoluteBounds": {
+      "height": 18.2,
+      "width": 337.0,
+      "x": 28.0,
+      "y": 729.0
+     },
+     "characters": "I already have an account",
+     "fills": [
+      {
+       "color": "#0E7C66",
+       "type": "solid"
+      }
+     ],
+     "fontFamily": "Inter",
+     "fontSize": 13.0,
+     "fontStyle": "Medium",
+     "height": 18.2,
+     "id": 23,
+     "letterSpacing": "0%",
+     "lineHeight": "140%",
+     "name": "I already have an account",
+     "sizing": {
+      "horizontal": "fixed",
+      "vertical": "hug"
+     },
+     "textAlign": "center",
+     "textAutoResize": "height",
+     "type": "TEXT",
+     "width": 337.0,
+     "x": 28.0,
+     "y": 259.0
+    }
+   ],
+   "clip": false,
+   "constraints": {
+    "horizontal": "left",
+    "vertical": "top"
+   },
+   "cornerRadius": [
+    32.0,
+    32.0,
+    0.0,
+    0.0
+   ],
+   "fills": [
+    {
+     "color": "#FFFFFF",
+     "type": "solid"
+    }
+   ],
+   "height": 382.0,
+   "id": 13,
+   "layout": {
+    "columnTracks": [],
+    "contentAlign": "auto",
+    "crossAlign": "min",
+    "crossGap": 10.0,
+    "gap": 16.0,
+    "gridColumns": 2,
+    "gridRows": 2,
+    "mainAlign": "min",
+    "mode": "vertical",
+    "padding": [
+     32.0,
+     28.0,
+     28.0,
+     28.0
+    ],
+    "reverseZ": false,
+    "rowTracks": [],
+    "strokesIncluded": true,
+    "wrap": false
+   },
+   "name": "Panel",
+   "sizing": {
+    "horizontal": "fixed",
+    "vertical": "fixed"
+   },
+   "type": "FRAME",
+   "width": 393.0,
+   "x": 0.0,
+   "y": 470.0
+  },
+  "14": {
+   "absoluteBounds": {
+    "height": 8.0,
+    "width": 50.0,
+    "x": 28.0,
+    "y": 502.0
+   },
+   "children": [
+    {
+     "absoluteBounds": {
+      "height": 8.0,
+      "width": 22.0,
+      "x": 28.0,
+      "y": 502.0
+     },
+     "cornerRadius": 4.0,
+     "fills": [
+      {
+       "color": "#0E7C66",
+       "type": "solid"
+      }
+     ],
+     "height": 8.0,
+     "id": 15,
+     "name": "Step 1",
+     "sizing": {
+      "horizontal": "fixed",
+      "vertical": "fixed"
+     },
+     "type": "RECTANGLE",
+     "width": 22.0,
+     "x": 0.0,
+     "y": 0.0
+    },
+    {
+     "absoluteBounds": {
+      "height": 8.0,
+      "width": 8.0,
+      "x": 56.0,
+      "y": 502.0
+     },
+     "cornerRadius": 4.0,
+     "fills": [
+      {
+       "color": "#CBD5E1",
+       "type": "solid"
+      }
+     ],
+     "height": 8.0,
+     "id": 16,
+     "name": "Step 2",
+     "sizing": {
+      "horizontal": "fixed",
+      "vertical": "fixed"
+     },
+     "type": "RECTANGLE",
+     "width": 8.0,
+     "x": 28.0,
+     "y": 0.0
+    },
+    {
+     "absoluteBounds": {
+      "height": 8.0,
+      "width": 8.0,
+      "x": 70.0,
+      "y": 502.0
+     },
+     "cornerRadius": 4.0,
+     "fills": [
+      {
+       "color": "#CBD5E1",
+       "type": "solid"
+      }
+     ],
+     "height": 8.0,
+     "id": 17,
+     "name": "Step 3",
+     "sizing": {
+      "horizontal": "fixed",
+      "vertical": "fixed"
+     },
+     "type": "RECTANGLE",
+     "width": 8.0,
+     "x": 42.0,
+     "y": 0.0
+    }
+   ],
+   "clip": false,
+   "height": 8.0,
+   "id": 14,
+   "layout": {
+    "columnTracks": [],
+    "contentAlign": "auto",
+    "crossAlign": "center",
+    "crossGap": 10.0,
+    "gap": 6.0,
+    "gridColumns": 2,
+    "gridRows": 2,
+    "mainAlign": "min",
+    "mode": "horizontal",
+    "padding": [
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "reverseZ": false,
+    "rowTracks": [],
+    "strokesIncluded": true,
+    "wrap": false
+   },
+   "name": "Progress",
+   "sizing": {
+    "horizontal": "hug",
+    "vertical": "hug"
+   },
+   "type": "FRAME",
+   "width": 50.0,
+   "x": 28.0,
+   "y": 32.0
+  },
+  "15": {
+   "absoluteBounds": {
+    "height": 8.0,
+    "width": 22.0,
+    "x": 28.0,
+    "y": 502.0
+   },
+   "cornerRadius": 4.0,
+   "fills": [
+    {
+     "color": "#0E7C66",
+     "type": "solid"
+    }
+   ],
+   "height": 8.0,
+   "id": 15,
+   "name": "Step 1",
+   "sizing": {
+    "horizontal": "fixed",
+    "vertical": "fixed"
+   },
+   "type": "RECTANGLE",
+   "width": 22.0,
+   "x": 0.0,
+   "y": 0.0
+  },
+  "16": {
+   "absoluteBounds": {
+    "height": 8.0,
+    "width": 8.0,
+    "x": 56.0,
+    "y": 502.0
+   },
+   "cornerRadius": 4.0,
+   "fills": [
+    {
+     "color": "#CBD5E1",
+     "type": "solid"
+    }
+   ],
+   "height": 8.0,
+   "id": 16,
+   "name": "Step 2",
+   "sizing": {
+    "horizontal": "fixed",
+    "vertical": "fixed"
+   },
+   "type": "RECTANGLE",
+   "width": 8.0,
+   "x": 28.0,
+   "y": 0.0
+  },
+  "17": {
+   "absoluteBounds": {
+    "height": 8.0,
+    "width": 8.0,
+    "x": 70.0,
+    "y": 502.0
+   },
+   "cornerRadius": 4.0,
+   "fills": [
+    {
+     "color": "#CBD5E1",
+     "type": "solid"
+    }
+   ],
+   "height": 8.0,
+   "id": 17,
+   "name": "Step 3",
+   "sizing": {
+    "horizontal": "fixed",
+    "vertical": "fixed"
+   },
+   "type": "RECTANGLE",
+   "width": 8.0,
+   "x": 42.0,
+   "y": 0.0
+  },
+  "18": {
+   "absoluteBounds": {
+    "height": 36.0,
+    "width": 314.0,
+    "x": 28.0,
+    "y": 526.0
+   },
+   "characters": "Find your next summit",
+   "fills": [
+    {
+     "color": "#0F172A",
+     "type": "solid"
+    }
+   ],
+   "fontFamily": "Inter",
+   "fontSize": 30.0,
+   "fontStyle": "Bold",
+   "height": 36.0,
+   "id": 18,
+   "letterSpacing": "-2%",
+   "lineHeight": "120%",
+   "name": "Find your next summit",
+   "sizing": {
+    "horizontal": "hug",
+    "vertical": "hug"
+   },
+   "textAlign": "left",
+   "textAutoResize": "widthAndHeight",
+   "type": "TEXT",
+   "width": 314.0,
+   "x": 28.0,
+   "y": 56.0
+  },
+  "19": {
+   "absoluteBounds": {
+    "height": 45.0,
+    "width": 337.0,
+    "x": 28.0,
+    "y": 578.0
+   },
+   "characters": "Hand-picked trails, live conditions and offline maps for every weekend in the mountains.",
+   "fills": [
+    {
+     "color": "#64748B",
+     "type": "solid"
+    }
+   ],
+   "fontFamily": "Inter",
+   "fontSize": 15.0,
+   "fontStyle": "Regular",
+   "height": 45.0,
+   "id": 19,
+   "letterSpacing": "0%",
+   "lineHeight": "150%",
+   "name": "Hand-picked trails, live conditions and offline maps for every w",
+   "sizing": {
+    "horizontal": "fixed",
+    "vertical": "hug"
+   },
+   "textAlign": "left",
+   "textAutoResize": "height",
+   "type": "TEXT",
+   "width": 337.0,
+   "x": 28.0,
+   "y": 108.0
+  },
+  "2": {
+   "absoluteBounds": {
+    "height": 852.0,
+    "width": 393.0,
+    "x": 0.0,
+    "y": 0.0
+   },
+   "children": [
+    {
+     "absoluteBounds": {
+      "height": 522.0,
+      "width": 940.0,
+      "x": -300.0,
+      "y": 0.0
+     },
+     "childCount": 5,
+     "clip": true,
+     "constraints": {
+      "horizontal": "left",
+      "vertical": "top"
+     },
+     "fills": [
+      {
+       "blend": "normal",
+       "from": [
+        0.5,
+        0.0
+       ],
+       "kind": "linear",
+       "opacity": 1.0,
+       "stops": [
+        {
+         "color": {
+          "a": 1.0,
+          "b": 0.5568627715110779,
+          "g": 0.22745098173618317,
+          "r": 0.29019609093666077
+         },
+         "position": 0.0
+        },
+        {
+         "color": {
+          "a": 1.0,
+          "b": 0.5882353186607361,
+          "g": 0.4156862795352936,
+          "r": 0.7686274647712708
+         },
+         "position": 0.5
+        },
+        {
+         "color": {
+          "a": 1.0,
+          "b": 0.47843137383461,
+          "g": 0.7019608020782471,
+          "r": 1.0
+         },
+         "position": 1.0
+        }
+       ],
+       "to": [
+        0.5,
+        1.0
+       ],
+       "type": "gradient",
+       "visible": true,
+       "width": [
+        0.0,
+        0.0
+       ]
+      }
+     ],
+     "height": 522.0,
+     "id": 3,
+     "name": "Illustration",
+     "type": "FRAME",
+     "width": 940.0,
+     "x": -300.0,
+     "y": 0.0
+    },
+    {
+     "absoluteBounds": {
+      "height": 48.0,
+      "width": 393.0,
+      "x": 0.0,
+      "y": 0.0
+     },
+     "childCount": 2,
+     "clip": false,
+     "constraints": {
+      "horizontal": "left",
+      "vertical": "top"
+     },
+     "height": 48.0,
+     "id": 9,
+     "layout": {
+      "columnTracks": [],
+      "contentAlign": "auto",
+      "crossAlign": "center",
+      "crossGap": 10.0,
+      "gap": 0.0,
+      "gridColumns": 2,
+      "gridRows": 2,
+      "mainAlign": "spaceBetween",
+      "mode": "horizontal",
+      "padding": [
+       6.0,
+       30.0,
+       0.0,
+       30.0
+      ],
+      "reverseZ": false,
+      "rowTracks": [],
+      "strokesIncluded": true,
+      "wrap": false
+     },
+     "name": "Status bar",
+     "sizing": {
+      "horizontal": "fixed",
+      "vertical": "fixed"
+     },
+     "type": "FRAME",
+     "width": 393.0,
+     "x": 0.0,
+     "y": 0.0
+    },
+    {
+     "absoluteBounds": {
+      "height": 382.0,
+      "width": 393.0,
+      "x": 0.0,
+      "y": 470.0
+     },
+     "childCount": 6,
+     "clip": false,
+     "constraints": {
+      "horizontal": "left",
+      "vertical": "top"
+     },
+     "cornerRadius": [
+      32.0,
+      32.0,
+      0.0,
+      0.0
+     ],
+     "fills": [
+      {
+       "color": "#FFFFFF",
+       "type": "solid"
+      }
+     ],
+     "height": 382.0,
+     "id": 13,
+     "layout": {
+      "columnTracks": [],
+      "contentAlign": "auto",
+      "crossAlign": "min",
+      "crossGap": 10.0,
+      "gap": 16.0,
+      "gridColumns": 2,
+      "gridRows": 2,
+      "mainAlign": "min",
+      "mode": "vertical",
+      "padding": [
+       32.0,
+       28.0,
+       28.0,
+       28.0
+      ],
+      "reverseZ": false,
+      "rowTracks": [],
+      "strokesIncluded": true,
+      "wrap": false
+     },
+     "name": "Panel",
+     "sizing": {
+      "horizontal": "fixed",
+      "vertical": "fixed"
+     },
+     "type": "FRAME",
+     "width": 393.0,
+     "x": 0.0,
+     "y": 470.0
+    }
+   ],
+   "clip": true,
+   "fills": [
+    {
+     "color": "#1C2046",
+     "type": "solid"
+    }
+   ],
+   "height": 852.0,
+   "id": 2,
+   "name": "1 Welcome",
+   "type": "FRAME",
+   "width": 393.0,
+   "x": 0.0,
+   "y": 0.0
+  },
+  "20": {
+   "absoluteBounds": {
+    "height": 4.0,
+    "width": 10.0,
+    "x": 28.0,
+    "y": 639.0
+   },
+   "clip": true,
+   "height": 4.0,
+   "id": 20,
+   "name": "Spacer",
+   "sizing": {
+    "horizontal": "fixed",
+    "vertical": "fixed"
+   },
+   "type": "FRAME",
+   "width": 10.0,
+   "x": 28.0,
+   "y": 169.0
+  },
+  "21": {
+   "absoluteBounds": {
+    "height": 54.0,
+    "width": 337.0,
+    "x": 28.0,
+    "y": 659.0
+   },
+   "children": [
+    {
+     "absoluteBounds": {
+      "height": 21.0,
+      "width": 83.0,
+      "x": 155.0,
+      "y": 675.5
+     },
+     "characters": "Get started",
+     "fills": [
+      {
+       "color": "#FFFFFF",
+       "type": "solid"
+      }
+     ],
+     "fontFamily": "Inter",
+     "fontSize": 15.0,
+     "fontStyle": "SemiBold",
+     "height": 21.0,
+     "id": 22,
+     "letterSpacing": "0%",
+     "lineHeight": "140%",
+     "name": "Get started",
+     "sizing": {
+      "horizontal": "hug",
+      "vertical": "hug"
+     },
+     "textAlign": "left",
+     "textAutoResize": "widthAndHeight",
+     "type": "TEXT",
+     "width": 83.0,
+     "x": 127.0,
+     "y": 16.5
+    }
+   ],
+   "clip": false,
+   "cornerRadius": 16.0,
+   "fills": [
+    {
+     "color": "#0E7C66",
+     "type": "solid"
+    }
+   ],
+   "height": 54.0,
+   "id": 21,
+   "interactions": [
+    {
+     "actions": [
+      {
+       "dest": 24,
+       "type": "navigate"
+      }
+     ],
+     "duration_ms": 400,
+     "easing": "easeOut",
+     "transition": {
+      "direction": "left",
+      "type": "push"
+     },
+     "trigger": {
+      "type": "onClick"
+     }
+    }
+   ],
+   "layout": {
+    "columnTracks": [],
+    "contentAlign": "auto",
+    "crossAlign": "center",
+    "crossGap": 10.0,
+    "gap": 8.0,
+    "gridColumns": 2,
+    "gridRows": 2,
+    "mainAlign": "center",
+    "mode": "horizontal",
+    "padding": [
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "reverseZ": false,
+    "rowTracks": [],
+    "strokesIncluded": true,
+    "wrap": false
+   },
+   "name": "Get started",
+   "sizing": {
+    "horizontal": "fill",
+    "vertical": "fixed"
+   },
+   "type": "FRAME",
+   "width": 337.0,
+   "x": 28.0,
+   "y": 189.0
+  },
+  "22": {
+   "absoluteBounds": {
+    "height": 21.0,
+    "width": 83.0,
+    "x": 155.0,
+    "y": 675.5
+   },
+   "characters": "Get started",
+   "fills": [
+    {
+     "color": "#FFFFFF",
+     "type": "solid"
+    }
+   ],
+   "fontFamily": "Inter",
+   "fontSize": 15.0,
+   "fontStyle": "SemiBold",
+   "height": 21.0,
+   "id": 22,
+   "letterSpacing": "0%",
+   "lineHeight": "140%",
+   "name": "Get started",
+   "sizing": {
+    "horizontal": "hug",
+    "vertical": "hug"
+   },
+   "textAlign": "left",
+   "textAutoResize": "widthAndHeight",
+   "type": "TEXT",
+   "width": 83.0,
+   "x": 127.0,
+   "y": 16.5
+  },
+  "23": {
+   "absoluteBounds": {
+    "height": 18.2,
+    "width": 337.0,
+    "x": 28.0,
+    "y": 729.0
+   },
+   "characters": "I already have an account",
+   "fills": [
+    {
+     "color": "#0E7C66",
+     "type": "solid"
+    }
+   ],
+   "fontFamily": "Inter",
+   "fontSize": 13.0,
+   "fontStyle": "Medium",
+   "height": 18.2,
+   "id": 23,
+   "letterSpacing": "0%",
+   "lineHeight": "140%",
+   "name": "I already have an account",
+   "sizing": {
+    "horizontal": "fixed",
+    "vertical": "hug"
+   },
+   "textAlign": "center",
+   "textAutoResize": "height",
+   "type": "TEXT",
+   "width": 337.0,
+   "x": 28.0,
+   "y": 259.0
+  },
+  "3": {
+   "absoluteBounds": {
+    "height": 522.0,
+    "width": 940.0,
+    "x": -300.0,
+    "y": 0.0
+   },
+   "children": [
+    {
+     "absoluteBounds": {
+      "height": 120.11,
+      "width": 120.11,
+      "x": 320.4,
+      "y": 93.96
+     },
+     "constraints": {
+      "horizontal": "scale",
+      "vertical": "scale"
+     },
+     "fills": [
+      {
+       "blend": "normal",
+       "from": [
+        0.5,
+        0.5
+       ],
+       "kind": "radial",
+       "opacity": 1.0,
+       "stops": [
+        {
+         "color": {
+          "a": 1.0,
+          "b": 0.8392156958580017,
+          "g": 0.945098042488098,
+          "r": 1.0
+         },
+         "position": 0.0
+        },
+        {
+         "color": {
+          "a": 1.0,
+          "b": 0.3843137323856354,
+          "g": 0.6039215922355652,
+          "r": 1.0
+         },
+         "position": 1.0
+        }
+       ],
+       "to": [
+        0.5,
+        1.0
+       ],
+       "type": "gradient",
+       "visible": true,
+       "width": [
+        1.0,
+        0.5
+       ]
+      }
+     ],
+     "height": 120.11,
+     "id": 4,
+     "name": "Sun",
+     "type": "ELLIPSE",
+     "width": 120.11,
+     "x": 620.4,
+     "y": 93.96
+    },
+    {
+     "absoluteBounds": {
+      "height": 365.62,
+      "width": 940.0,
+      "x": -300.0,
+      "y": 156.6
+     },
+     "constraints": {
+      "horizontal": "scale",
+      "vertical": "scale"
+     },
+     "fills": [
+      {
+       "blend": "normal",
+       "from": [
+        0.5,
+        0.0
+       ],
+       "kind": "linear",
+       "opacity": 1.0,
+       "stops": [
+        {
+         "color": {
+          "a": 1.0,
+          "b": 0.6274510025978088,
+          "g": 0.364705890417099,
+          "r": 0.48235294222831726
+         },
+         "position": 0.0
+        },
+        {
+         "color": {
+          "a": 1.0,
+          "b": 0.7333333492279053,
+          "g": 0.4941176474094391,
+          "r": 0.6274510025978088
+         },
+         "position": 1.0
+        }
+       ],
+       "to": [
+        0.5,
+        1.0
+       ],
+       "type": "gradient",
+       "visible": true,
+       "width": [
+        0.0,
+        0.0
+       ]
+      }
+     ],
+     "height": 365.62,
+     "id": 5,
+     "name": "Far ridge",
+     "segments": 12,
+     "type": "VECTOR",
+     "vertices": 12,
+     "width": 940.0,
+     "x": 0.0,
+     "y": 156.6
+    },
+    {
+     "absoluteBounds": {
+      "height": 271.66,
+      "width": 940.0,
+      "x": -300.0,
+      "y": 250.56
+     },
+     "constraints": {
+      "horizontal": "scale",
+      "vertical": "scale"
+     },
+     "fills": [
+      {
+       "blend": "normal",
+       "from": [
+        0.5,
+        0.0
+       ],
+       "kind": "linear",
+       "opacity": 1.0,
+       "stops": [
+        {
+         "color": {
+          "a": 1.0,
+          "b": 0.4745098054409027,
+          "g": 0.250980406999588,
+          "r": 0.24705882370471952
+         },
+         "position": 0.0
+        },
+        {
+         "color": {
+          "a": 1.0,
+          "b": 0.5960784554481506,
+          "g": 0.3607843220233917,
+          "r": 0.3607843220233917
+         },
+         "position": 1.0
+        }
+       ],
+       "to": [
+        0.5,
+        1.0
+       ],
+       "type": "gradient",
+       "visible": true,
+       "width": [
+        0.0,
+        0.0
+       ]
+      }
+     ],
+     "height": 271.66,
+     "id": 6,
+     "name": "Mid ridge",
+     "segments": 11,
+     "type": "VECTOR",
+     "vertices": 11,
+     "width": 940.0,
+     "x": 0.0,
+     "y": 250.56
+    },
+    {
+     "absoluteBounds": {
+      "height": 41.76,
+      "width": 49.62,
+      "x": -7.56,
+      "y": 182.7
+     },
+     "constraints": {
+      "horizontal": "scale",
+      "vertical": "scale"
+     },
+     "fills": [
+      {
+       "color": "#FFFFFF",
+       "opacity": 0.8500000238418579,
+       "type": "solid"
+      }
+     ],
+     "height": 41.76,
+     "id": 7,
+     "name": "Snow",
+     "segments": 5,
+     "type": "VECTOR",
+     "vertices": 5,
+     "width": 49.62,
+     "x": 292.44,
+     "y": 182.7
+    },
+    {
+     "absoluteBounds": {
+      "height": 116.53,
+      "width": 940.0,
+      "x": -300.0,
+      "y": 405.69
+     },
+     "constraints": {
+      "horizontal": "scale",
+      "vertical": "scale"
+     },
+     "fills": [
+      {
+       "blend": "normal",
+       "from": [
+        0.5,
+        0.0
+       ],
+       "kind": "linear",
+       "opacity": 1.0,
+       "stops": [
+        {
+         "color": {
+          "a": 1.0,
+          "b": 0.27450981736183167,
+          "g": 0.125490203499794,
+          "r": 0.10980392247438432
+         },
+         "position": 0.0
+        },
+        {
+         "color": {
+          "a": 1.0,
+          "b": 0.3725490272045135,
+          "g": 0.18039216101169583,
+          "r": 0.16470588743686676
+         },
+         "position": 1.0
+        }
+       ],
+       "to": [
+        0.5,
+        1.0
+       ],
+       "type": "gradient",
+       "visible": true,
+       "width": [
+        0.0,
+        0.0
+       ]
+      }
+     ],
+     "height": 116.53,
+     "id": 8,
+     "name": "Near hills",
+     "segments": 5,
+     "type": "VECTOR",
+     "vertices": 5,
+     "width": 940.0,
+     "x": 0.0,
+     "y": 405.69
+    }
+   ],
+   "clip": true,
+   "constraints": {
+    "horizontal": "left",
+    "vertical": "top"
+   },
+   "fills": [
+    {
+     "blend": "normal",
+     "from": [
+      0.5,
+      0.0
+     ],
+     "kind": "linear",
+     "opacity": 1.0,
+     "stops": [
+      {
+       "color": {
+        "a": 1.0,
+        "b": 0.5568627715110779,
+        "g": 0.22745098173618317,
+        "r": 0.29019609093666077
+       },
+       "position": 0.0
+      },
+      {
+       "color": {
+        "a": 1.0,
+        "b": 0.5882353186607361,
+        "g": 0.4156862795352936,
+        "r": 0.7686274647712708
+       },
+       "position": 0.5
+      },
+      {
+       "color": {
+        "a": 1.0,
+        "b": 0.47843137383461,
+        "g": 0.7019608020782471,
+        "r": 1.0
+       },
+       "position": 1.0
+      }
+     ],
+     "to": [
+      0.5,
+      1.0
+     ],
+     "type": "gradient",
+     "visible": true,
+     "width": [
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "height": 522.0,
+   "id": 3,
+   "name": "Illustration",
+   "type": "FRAME",
+   "width": 940.0,
+   "x": -300.0,
+   "y": 0.0
+  },
+  "4": {
+   "absoluteBounds": {
+    "height": 120.11,
+    "width": 120.11,
+    "x": 320.4,
+    "y": 93.96
+   },
+   "constraints": {
+    "horizontal": "scale",
+    "vertical": "scale"
+   },
+   "fills": [
+    {
+     "blend": "normal",
+     "from": [
+      0.5,
+      0.5
+     ],
+     "kind": "radial",
+     "opacity": 1.0,
+     "stops": [
+      {
+       "color": {
+        "a": 1.0,
+        "b": 0.8392156958580017,
+        "g": 0.945098042488098,
+        "r": 1.0
+       },
+       "position": 0.0
+      },
+      {
+       "color": {
+        "a": 1.0,
+        "b": 0.3843137323856354,
+        "g": 0.6039215922355652,
+        "r": 1.0
+       },
+       "position": 1.0
+      }
+     ],
+     "to": [
+      0.5,
+      1.0
+     ],
+     "type": "gradient",
+     "visible": true,
+     "width": [
+      1.0,
+      0.5
+     ]
+    }
+   ],
+   "height": 120.11,
+   "id": 4,
+   "name": "Sun",
+   "type": "ELLIPSE",
+   "width": 120.11,
+   "x": 620.4,
+   "y": 93.96
+  },
+  "5": {
+   "absoluteBounds": {
+    "height": 365.62,
+    "width": 940.0,
+    "x": -300.0,
+    "y": 156.6
+   },
+   "constraints": {
+    "horizontal": "scale",
+    "vertical": "scale"
+   },
+   "fills": [
+    {
+     "blend": "normal",
+     "from": [
+      0.5,
+      0.0
+     ],
+     "kind": "linear",
+     "opacity": 1.0,
+     "stops": [
+      {
+       "color": {
+        "a": 1.0,
+        "b": 0.6274510025978088,
+        "g": 0.364705890417099,
+        "r": 0.48235294222831726
+       },
+       "position": 0.0
+      },
+      {
+       "color": {
+        "a": 1.0,
+        "b": 0.7333333492279053,
+        "g": 0.4941176474094391,
+        "r": 0.6274510025978088
+       },
+       "position": 1.0
+      }
+     ],
+     "to": [
+      0.5,
+      1.0
+     ],
+     "type": "gradient",
+     "visible": true,
+     "width": [
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "height": 365.62,
+   "id": 5,
+   "name": "Far ridge",
+   "segments": 12,
+   "type": "VECTOR",
+   "vertices": 12,
+   "width": 940.0,
+   "x": 0.0,
+   "y": 156.6
+  },
+  "6": {
+   "absoluteBounds": {
+    "height": 271.66,
+    "width": 940.0,
+    "x": -300.0,
+    "y": 250.56
+   },
+   "constraints": {
+    "horizontal": "scale",
+    "vertical": "scale"
+   },
+   "fills": [
+    {
+     "blend": "normal",
+     "from": [
+      0.5,
+      0.0
+     ],
+     "kind": "linear",
+     "opacity": 1.0,
+     "stops": [
+      {
+       "color": {
+        "a": 1.0,
+        "b": 0.4745098054409027,
+        "g": 0.250980406999588,
+        "r": 0.24705882370471952
+       },
+       "position": 0.0
+      },
+      {
+       "color": {
+        "a": 1.0,
+        "b": 0.5960784554481506,
+        "g": 0.3607843220233917,
+        "r": 0.3607843220233917
+       },
+       "position": 1.0
+      }
+     ],
+     "to": [
+      0.5,
+      1.0
+     ],
+     "type": "gradient",
+     "visible": true,
+     "width": [
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "height": 271.66,
+   "id": 6,
+   "name": "Mid ridge",
+   "segments": 11,
+   "type": "VECTOR",
+   "vertices": 11,
+   "width": 940.0,
+   "x": 0.0,
+   "y": 250.56
+  },
+  "7": {
+   "absoluteBounds": {
+    "height": 41.76,
+    "width": 49.62,
+    "x": -7.56,
+    "y": 182.7
+   },
+   "constraints": {
+    "horizontal": "scale",
+    "vertical": "scale"
+   },
+   "fills": [
+    {
+     "color": "#FFFFFF",
+     "opacity": 0.8500000238418579,
+     "type": "solid"
+    }
+   ],
+   "height": 41.76,
+   "id": 7,
+   "name": "Snow",
+   "segments": 5,
+   "type": "VECTOR",
+   "vertices": 5,
+   "width": 49.62,
+   "x": 292.44,
+   "y": 182.7
+  },
+  "8": {
+   "absoluteBounds": {
+    "height": 116.53,
+    "width": 940.0,
+    "x": -300.0,
+    "y": 405.69
+   },
+   "constraints": {
+    "horizontal": "scale",
+    "vertical": "scale"
+   },
+   "fills": [
+    {
+     "blend": "normal",
+     "from": [
+      0.5,
+      0.0
+     ],
+     "kind": "linear",
+     "opacity": 1.0,
+     "stops": [
+      {
+       "color": {
+        "a": 1.0,
+        "b": 0.27450981736183167,
+        "g": 0.125490203499794,
+        "r": 0.10980392247438432
+       },
+       "position": 0.0
+      },
+      {
+       "color": {
+        "a": 1.0,
+        "b": 0.3725490272045135,
+        "g": 0.18039216101169583,
+        "r": 0.16470588743686676
+       },
+       "position": 1.0
+      }
+     ],
+     "to": [
+      0.5,
+      1.0
+     ],
+     "type": "gradient",
+     "visible": true,
+     "width": [
+      0.0,
+      0.0
+     ]
+    }
+   ],
+   "height": 116.53,
+   "id": 8,
+   "name": "Near hills",
+   "segments": 5,
+   "type": "VECTOR",
+   "vertices": 5,
+   "width": 940.0,
+   "x": 0.0,
+   "y": 405.69
+  },
+  "9": {
+   "absoluteBounds": {
+    "height": 48.0,
+    "width": 393.0,
+    "x": 0.0,
+    "y": 0.0
+   },
+   "children": [
+    {
+     "absoluteBounds": {
+      "height": 21.0,
+      "width": 32.0,
+      "x": 30.0,
+      "y": 16.5
+     },
+     "characters": "9:41",
+     "fills": [
+      {
+       "color": "#FFFFFF",
+       "type": "solid"
+      }
+     ],
+     "fontFamily": "Inter",
+     "fontSize": 15.0,
+     "fontStyle": "SemiBold",
+     "height": 21.0,
+     "id": 10,
+     "letterSpacing": "0%",
+     "lineHeight": "140%",
+     "name": "9:41",
+     "sizing": {
+      "horizontal": "hug",
+      "vertical": "hug"
+     },
+     "textAlign": "left",
+     "textAutoResize": "widthAndHeight",
+     "type": "TEXT",
+     "width": 32.0,
+     "x": 30.0,
+     "y": 16.5
+    },
+    {
+     "absoluteBounds": {
+      "height": 12.0,
+      "width": 25.0,
+      "x": 338.0,
+      "y": 21.0
+     },
+     "childCount": 1,
+     "clip": true,
+     "cornerRadius": 3.5,
+     "height": 12.0,
+     "id": 11,
+     "name": "Battery",
+     "sizing": {
+      "horizontal": "fixed",
+      "vertical": "fixed"
+     },
+     "strokeAlign": "inside",
+     "strokeWeight": 1.0,
+     "strokes": [
+      {
+       "color": "#FFFFFF",
+       "type": "solid"
+      }
+     ],
+     "type": "FRAME",
+     "width": 25.0,
+     "x": 338.0,
+     "y": 21.0
+    }
+   ],
+   "clip": false,
+   "constraints": {
+    "horizontal": "left",
+    "vertical": "top"
+   },
+   "height": 48.0,
+   "id": 9,
+   "layout": {
+    "columnTracks": [],
+    "contentAlign": "auto",
+    "crossAlign": "center",
+    "crossGap": 10.0,
+    "gap": 0.0,
+    "gridColumns": 2,
+    "gridRows": 2,
+    "mainAlign": "spaceBetween",
+    "mode": "horizontal",
+    "padding": [
+     6.0,
+     30.0,
+     0.0,
+     30.0
+    ],
+    "reverseZ": false,
+    "rowTracks": [],
+    "strokesIncluded": true,
+    "wrap": false
+   },
+   "name": "Status bar",
+   "sizing": {
+    "horizontal": "fixed",
+    "vertical": "fixed"
+   },
+   "type": "FRAME",
+   "width": 393.0,
+   "x": 0.0,
+   "y": 0.0
+  }
+ },
+ "root": 2,
+ "source": "examples/ridgeline-onboarding.figcraft, frame \"1 Welcome\""
+}

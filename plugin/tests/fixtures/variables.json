@@ -1,0 +1,71 @@
+{
+ "_note": "Raw `variable.list {}` replies from inside the plugin. design_system includes the SYNTHETIC Theme collection (Light/Dark) added by the spike; both example files ship with 0 variables.",
+ "design_system_with_probe": {
+  "collections": [
+   {
+    "id": "VariableCollectionId:1",
+    "modes": [
+     {
+      "id": "VariableCollectionId:1/mode1",
+      "name": "Light"
+     },
+     {
+      "id": "VariableCollectionId:1/mode2",
+      "name": "Dark"
+     }
+    ],
+    "name": "Theme"
+   }
+  ],
+  "variables": [
+   {
+    "collection": "VariableCollectionId:1",
+    "description": "",
+    "id": "VariableID:1",
+    "name": "surface",
+    "resolvedType": "color",
+    "values": {
+     "VariableCollectionId:1/mode1": {
+      "type": "color",
+      "value": {
+       "a": 1.0,
+       "b": 1.0,
+       "g": 1.0,
+       "r": 1.0
+      }
+     },
+     "VariableCollectionId:1/mode2": {
+      "type": "color",
+      "value": {
+       "a": 1.0,
+       "b": 0.06666667014360428,
+       "g": 0.06666667014360428,
+       "r": 0.06666667014360428
+      }
+     }
+    }
+   },
+   {
+    "collection": "VariableCollectionId:1",
+    "description": "",
+    "id": "VariableID:2",
+    "name": "gap",
+    "resolvedType": "number",
+    "values": {
+     "VariableCollectionId:1/mode1": {
+      "type": "number",
+      "value": 8.0
+     },
+     "VariableCollectionId:1/mode2": {
+      "type": "number",
+      "value": 16.0
+     }
+    }
+   }
+  ]
+ },
+ "onboarding": {
+  "collections": [],
+  "variables": []
+ }
+}
