@@ -88,6 +88,8 @@ Transition = { type: "instant"|"dissolve"|"smartAnimate"|"moveIn"|"moveOut"|"pus
 Expr = { value: { type, value } } | { op: { op, args: [Expr] } }  // FigCraft's own shape, passed through
 ```
 
+Contract extension: `Node.instance` may carry optional `variantInteractions: {[VariantKey]: [Interaction]}` (the interactions of each variant's component); the player plays the shown variant's, overridden per trigger type by the instance's own `interactions`.
+
 `position` values for overlays are FigCraft's (`center`, `topLeft`, …, `manual`). Easing `type` names are FigCraft's 13 (record the exact ids in Task 1).
 
 ## File Structure
