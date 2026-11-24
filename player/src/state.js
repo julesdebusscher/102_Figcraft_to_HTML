@@ -18,23 +18,38 @@ FCP.createState = function (proto) {
   var history = [];      // [{screen, transition}] screen we left + the transition used to leave it
   var ovTrans = [];      // parallel to State.overlays: transition used to open each overlay
 
-  function resetVars() {
-    State.vars = {}; State.modes = {};
-    Object.keys(colls).forEach(function (c) { State.modes[c] = colls[c].defaultMode; });
+  var overrides = {};    // setVariable writes apply in every mode
+  function clearObj(o) { Object.keys(o).forEach(function (k) { delete o[k]; }); }
+  function recompute() {
     Object.keys(varDefs).forEach(function (v) {
-      var d = varDefs[v], c = colls[d.collection];
-      var mode = c ? c.defaultMode : undefined;
-      State.vars[v] = d.valuesByMode ? d.valuesByMode[mode] : undefined;
+      if (Object.prototype.hasOwnProperty.call(overrides, v)) { State.vars[v] = overrides[v]; return; }
+      var d = varDefs[v];
+      State.vars[v] = d.valuesByMode ? d.valuesByMode[State.modes[d.collection]] : undefined;
     });
+  }
+  function resetVars() {
+    overrides = {};
+    clearObj(State.vars); clearObj(State.modes);
+    Object.keys(colls).forEach(function (c) { State.modes[c] = colls[c].defaultMode; });
+    recompute();
+  }
+  function overlayEntry(a, ctx) {
+    return { id: a.dest, sourceNodeId: ctx && ctx.nodeId, position: a.position, anchor: a.anchor,
+             offset: a.offset, closeOnClickOutside: a.closeOnClickOutside, background: a.background };
+  }
+  function overlayFx(kind, e, a) {
+    return { kind: kind, id: e.id, transition: a.transition, position: e.position, anchor: e.anchor,
+             offset: e.offset, closeOnClickOutside: e.closeOnClickOutside, background: e.background,
+             sourceNodeId: e.sourceNodeId };
   }
   function getVar(id) { return State.vars[id]; }
   function hasScreen(id) { return Object.prototype.hasOwnProperty.call(screens, id); }
-  function instanceOf(nodeId) {
+  function instanceFor(nodeId, variant) {
     var id = nodeId, guard = 0;
     while (id !== undefined && guard++ < 10000) {
       var n = nodes[id];
       if (!n) return null;
-      if (n.instance) return id;
+      if (n.instance && n.instance.variants && Object.prototype.hasOwnProperty.call(n.instance.variants, variant)) return id;
       id = parent[id];
     }
     return null;
@@ -53,7 +68,7 @@ FCP.createState = function (proto) {
         if (!hasScreen(a.dest)) return;
         closeAll(fx);
         history.push({ screen: State.screen, transition: a.transition });
-        fx.push({ kind: "screen", from: State.screen, to: a.dest, transition: a.transition });
+        fx.push({ kind: "screen", from: State.screen, to: a.dest, transition: a.transition, preserveScroll: !!a.preserveScroll });
         State.screen = a.dest;
         return;
       case "back":
@@ -74,20 +89,23 @@ FCP.createState = function (proto) {
         return;
       case "openOverlay":
         if (!hasScreen(a.dest)) return;
-        State.overlays.push({ id: a.dest, sourceNodeId: ctx && ctx.nodeId });
+        var oe = overlayEntry(a, ctx);
+        State.overlays.push(oe);
         ovTrans.push(a.transition);
-        fx.push({ kind: "overlayOpen", id: a.dest, transition: a.transition });
+        fx.push(overlayFx("overlayOpen", oe, a));
         return;
       case "swapOverlay":
         if (!hasScreen(a.dest)) return;
         if (State.overlays.length) {
-          State.overlays[State.overlays.length - 1] = { id: a.dest, sourceNodeId: ctx && ctx.nodeId };
+          var se = overlayEntry(a, ctx);
+          State.overlays[State.overlays.length - 1] = se;
           ovTrans[ovTrans.length - 1] = a.transition;
-          fx.push({ kind: "overlaySwap", id: a.dest, transition: a.transition });
+          fx.push(overlayFx("overlaySwap", se, a));
         } else {
-          State.overlays.push({ id: a.dest, sourceNodeId: ctx && ctx.nodeId });
+          var ne = overlayEntry(a, ctx);
+          State.overlays.push(ne);
           ovTrans.push(a.transition);
-          fx.push({ kind: "overlayOpen", id: a.dest, transition: a.transition });
+          fx.push(overlayFx("overlayOpen", ne, a));
         }
         return;
       case "scrollTo":
@@ -98,27 +116,25 @@ FCP.createState = function (proto) {
         fx.push({ kind: "url", url: a.url, newTab: !!a.newTab });
         return;
       case "changeTo":
-        var inst = instanceOf(ctx && ctx.nodeId);
+        var inst = instanceFor(ctx && ctx.nodeId, a.variant);
         if (inst === null) return;
         var meta = nodes[inst].instance;
-        if (!meta.variants || !Object.prototype.hasOwnProperty.call(meta.variants, a.variant)) return;
         var from = State.variants[inst] !== undefined ? State.variants[inst] : meta.variant;
+        if (from === a.variant) return;
         State.variants[inst] = a.variant;
         fx.push({ kind: "variant", node: inst, from: from, to: a.variant, transition: a.transition });
         return;
       case "setVariable":
         if (!Object.prototype.hasOwnProperty.call(varDefs, a.variable)) return;
-        State.vars[a.variable] = a.expr !== undefined ? FCP.evalExpr(a.expr, getVar) : a.value;
+        overrides[a.variable] = a.expr !== undefined ? FCP.evalExpr(a.expr, getVar) : a.value;
+        recompute();
         fx.push({ kind: "vars" });
         return;
       case "setVariableMode":
         if (!Object.prototype.hasOwnProperty.call(colls, a.collection)) return;
+        if (!colls[a.collection].modes || !Object.prototype.hasOwnProperty.call(colls[a.collection].modes, a.mode)) return;
         State.modes[a.collection] = a.mode;
-        // Variables of this collection take the value defined for the new mode.
-        Object.keys(varDefs).forEach(function (v) {
-          var d = varDefs[v];
-          if (d.collection === a.collection && d.valuesByMode && a.mode in d.valuesByMode) State.vars[v] = d.valuesByMode[a.mode];
-        });
+        recompute();
         fx.push({ kind: "vars" });
         return;
       case "conditional":
@@ -142,7 +158,7 @@ FCP.createState = function (proto) {
     return fx;
   };
   State.restart = function () {
-    State.screen = proto.start; State.overlays = []; State.variants = {};
+    State.screen = proto.start; State.overlays.length = 0; clearObj(State.variants);
     history = []; ovTrans = [];
     resetVars();
   };

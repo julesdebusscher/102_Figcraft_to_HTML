@@ -131,3 +131,41 @@ test("scroll_and_url_effects", function () {
   var fx = s.run([{ type: "scrollTo", dest: "B", offset: [0, 5], transition: T() }, { type: "openUrl", url: "http://x", newTab: true }], ctx);
   assertEq(fx[0].kind, "scroll"); assertEq(fx[0].target, "B"); assertEq(fx[1].kind, "url"); assertEq(fx[1].newTab, true);
 });
+
+test("set_variable_survives_mode_switch", function () {
+  var s = FCP.createState(mkProto());
+  s.run([{ type: "setVariable", variable: "count", value: 9 }, { type: "setVariableMode", collection: "c1", mode: "m2" }], ctx);
+  assertEq(s.vars.count, 9);
+  s.restart(); assertEq(s.vars.count, 0);
+});
+test("unset_variable_follows_mode", function () {
+  var s = FCP.createState(mkProto());
+  s.run([{ type: "setVariableMode", collection: "c1", mode: "m2" }], ctx);
+  assertEq(s.vars.count, 5);
+  assertEq(s.run([{ type: "setVariableMode", collection: "c1", mode: "bogus" }], ctx).length, 0);
+  assertEq(s.modes.c1, "m2");
+});
+test("change_to_from_icon_inside_button_changes_button", function () {
+  var p = mkProto();
+  p.nodes.inst.children = ["btn"];
+  p.nodes.btn = { id: "btn", kind: "instance", children: ["icon"], instance: { set: "I", variant: "a", variants: { a: ["icon"], b: ["icon2"] } } };
+  p.nodes.icon = { id: "icon", children: [] };
+  var s = FCP.createState(p);
+  var fx = s.run([{ type: "changeTo", variant: "on", transition: T() }], { nodeId: "icon" });
+  assertEq(fx[0].node, "inst"); assertEq(s.variants.inst, "on");
+  var fx2 = s.run([{ type: "changeTo", variant: "b", transition: T() }], { nodeId: "icon" });
+  assertEq(fx2[0].node, "btn");
+  assertEq(s.run([{ type: "changeTo", variant: "b", transition: T() }], { nodeId: "icon" }).length, 0, "already active");
+});
+test("overlay_and_navigate_effects_carry_renderer_data", function () {
+  var s = FCP.createState(mkProto());
+  var a = { type: "openOverlay", dest: "O1", position: "topLeft", anchor: "triggerInside", offset: [1, 2], closeOnClickOutside: true, background: "#000", transition: T() };
+  var fx = s.run([a], ctx);
+  assertEq(fx[0].position, "topLeft"); assertEq(fx[0].anchor, "triggerInside"); assertEq(fx[0].offset[1], 2);
+  assertEq(fx[0].closeOnClickOutside, true); assertEq(fx[0].background, "#000");
+  assertEq(s.overlays[0].position, "topLeft"); assertEq(s.overlays[0].background, "#000");
+  var sw = s.run([{ type: "swapOverlay", dest: "O2", position: "center", closeOnClickOutside: false, transition: T() }], ctx);
+  assertEq(sw[0].position, "center"); assertEq(sw[0].closeOnClickOutside, false);
+  var nv = s.run([{ type: "navigate", dest: "B", preserveScroll: true, transition: T() }], ctx);
+  assertEq(nv[nv.length - 1].preserveScroll, true);
+});
