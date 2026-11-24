@@ -1,0 +1,2281 @@
+{
+ "_note": "Recorded over control (FigCraft 0.18.1) on a scratch scenario built in ridgeline-onboarding (never saved): page 145 'Scénario' (frames Accueil 146, section Parcours 169 with Détails 160 / Fin 161, overlay 162, Thème sombre 163 with Bouton instances 181/183, free rectangle 164, component set Bouton 180 with variants 172/174/176/178), page 144 'Annexes' (Paramètres 170). Selection: 146,160,161,163,164 + nested 150. Interaction on 167 to deleted layer 185 (node.get -> null). Each entry: [command_or_method, params, reply].",
+ "calls": [
+  [
+   "document.inspect",
+   {
+    "depth": 0
+   },
+   {
+    "colorProfile": "srgb",
+    "currentPage": 145,
+    "dirty": true,
+    "id": 1,
+    "images": 0,
+    "kind": "design",
+    "name": "Ridgeline onboarding",
+    "pages": [
+     {
+      "background": "#1E1E1E",
+      "childCount": 4,
+      "flows": [
+       {
+        "description": "",
+        "name": "Onboarding",
+        "start": 2
+       }
+      ],
+      "id": 1,
+      "name": "Onboarding",
+      "type": "PAGE"
+     },
+     {
+      "background": "#1E1E1E",
+      "childCount": 1,
+      "id": 144,
+      "name": "Annexes",
+      "type": "PAGE"
+     },
+     {
+      "background": "#1E1E1E",
+      "childCount": 6,
+      "flows": [
+       {
+        "description": "",
+        "name": "Parcours",
+        "start": 160
+       }
+      ],
+      "id": 145,
+      "name": "Scénario",
+      "type": "PAGE"
+     }
+    ],
+    "path": null,
+    "selection": [
+     146,
+     160,
+     161,
+     163,
+     164,
+     150
+    ],
+    "styles": [],
+    "textEdit": null,
+    "variables": 4
+   }
+  ],
+  [
+   "page.list",
+   {},
+   [
+    {
+     "children": 4,
+     "current": false,
+     "divider": false,
+     "id": 1,
+     "name": "Onboarding"
+    },
+    {
+     "children": 1,
+     "current": false,
+     "divider": false,
+     "id": 144,
+     "name": "Annexes"
+    },
+    {
+     "children": 6,
+     "current": true,
+     "divider": false,
+     "id": 145,
+     "name": "Scénario"
+    }
+   ]
+  ],
+  [
+   "node.get",
+   {
+    "id": 145
+   },
+   {
+    "background": "#1E1E1E",
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 844.0,
+       "width": 390.0,
+       "x": 0.0,
+       "y": 0.0
+      },
+      "boundVariables": {
+       "fill": "VariableID:4"
+      },
+      "childCount": 10,
+      "clip": true,
+      "fills": [
+       {
+        "color": "#FFFFFF",
+        "type": "solid"
+       }
+      ],
+      "height": 844.0,
+      "id": 146,
+      "name": "Accueil",
+      "type": "FRAME",
+      "width": 390.0,
+      "x": 0.0,
+      "y": 0.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 924.0,
+       "width": 970.0,
+       "x": 460.0,
+       "y": -40.0
+      },
+      "childCount": 2,
+      "cornerRadius": 2.0,
+      "fills": [
+       {
+        "color": "#FFFFFF",
+        "type": "solid"
+       }
+      ],
+      "height": 924.0,
+      "id": 169,
+      "name": "Parcours",
+      "sectionContentsHidden": false,
+      "strokeAlign": "inside",
+      "strokeWeight": 1.0,
+      "strokes": [
+       {
+        "color": "#E6E6E6",
+        "type": "solid"
+       }
+      ],
+      "type": "SECTION",
+      "width": 970.0,
+      "x": 460.0,
+      "y": -40.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 300.0,
+       "width": 260.0,
+       "x": 1500.0,
+       "y": 0.0
+      },
+      "childCount": 1,
+      "clip": true,
+      "fills": [
+       {
+        "color": "#FFFFFF",
+        "type": "solid"
+       }
+      ],
+      "height": 300.0,
+      "id": 162,
+      "name": "Menu overlay",
+      "type": "FRAME",
+      "width": 260.0,
+      "x": 1500.0,
+      "y": 0.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 844.0,
+       "width": 390.0,
+       "x": 2000.0,
+       "y": 0.0
+      },
+      "boundVariables": {
+       "fill": "VariableID:4"
+      },
+      "childCount": 2,
+      "clip": true,
+      "fills": [
+       {
+        "color": "#111111",
+        "type": "solid"
+       }
+      ],
+      "height": 844.0,
+      "id": 163,
+      "name": "Thème sombre",
+      "type": "FRAME",
+      "width": 390.0,
+      "x": 2000.0,
+      "y": 0.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 100.0,
+       "width": 100.0,
+       "x": 2500.0,
+       "y": 0.0
+      },
+      "fills": [
+       {
+        "color": "#D9D9D9",
+        "type": "solid"
+       }
+      ],
+      "height": 100.0,
+      "id": 164,
+      "name": "Rectangle libre",
+      "type": "RECTANGLE",
+      "width": 100.0,
+      "x": 2500.0,
+      "y": 0.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 88.0,
+       "width": 760.0,
+       "x": 2980.0,
+       "y": -20.0
+      },
+      "childCount": 4,
+      "clip": true,
+      "cornerRadius": 5.0,
+      "dashes": [
+       10.0,
+       5.0
+      ],
+      "height": 88.0,
+      "id": 180,
+      "name": "Bouton",
+      "strokeAlign": "inside",
+      "strokeWeight": 1.0,
+      "strokes": [
+       {
+        "color": "#9747FF",
+        "type": "solid"
+       }
+      ],
+      "type": "COMPONENT_SET",
+      "width": 760.0,
+      "x": 2980.0,
+      "y": -20.0
+     }
+    ],
+    "flows": [
+     {
+      "description": "",
+      "name": "Parcours",
+      "start": 160
+     }
+    ],
+    "id": 145,
+    "name": "Scénario",
+    "type": "PAGE"
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 144
+   },
+   {
+    "background": "#1E1E1E",
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 844.0,
+       "width": 390.0,
+       "x": 0.0,
+       "y": 0.0
+      },
+      "childCount": 1,
+      "clip": true,
+      "fills": [
+       {
+        "color": "#FAFAFA",
+        "type": "solid"
+       }
+      ],
+      "height": 844.0,
+      "id": 170,
+      "name": "Paramètres",
+      "type": "FRAME",
+      "width": 390.0,
+      "x": 0.0,
+      "y": 0.0
+     }
+    ],
+    "id": 144,
+    "name": "Annexes",
+    "type": "PAGE"
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 146
+   },
+   {
+    "absoluteBounds": {
+     "height": 844.0,
+     "width": 390.0,
+     "x": 0.0,
+     "y": 0.0
+    },
+    "boundVariables": {
+     "fill": "VariableID:4"
+    },
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 30.0,
+       "width": 65.0,
+       "x": 20.0,
+       "y": 60.0
+      },
+      "boundVariables": {
+       "characters": "VariableID:1"
+      },
+      "characters": "Élodie",
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#222222",
+        "type": "solid"
+       }
+      ],
+      "fontFamily": "Inter",
+      "fontSize": 20.0,
+      "fontStyle": "Bold",
+      "height": 30.0,
+      "id": 147,
+      "letterSpacing": "1",
+      "lineHeight": "150%",
+      "name": "Bonjour",
+      "sizing": {
+       "horizontal": "hug",
+       "vertical": "hug"
+      },
+      "textAlign": "center",
+      "textAutoResize": "widthAndHeight",
+      "type": "TEXT",
+      "width": 65.0,
+      "x": 20.0,
+      "y": 60.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 19.0,
+       "width": 11.0,
+       "x": 20.0,
+       "y": 100.0
+      },
+      "boundVariables": {
+       "characters": "VariableID:2"
+      },
+      "characters": "0",
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#000000",
+        "type": "solid"
+       }
+      ],
+      "fontFamily": "Inter",
+      "fontSize": 16.0,
+      "fontStyle": "Regular",
+      "height": 19.0,
+      "id": 148,
+      "letterSpacing": "0%",
+      "lineHeight": "Auto",
+      "name": "Compteur",
+      "sizing": {
+       "horizontal": "hug",
+       "vertical": "hug"
+      },
+      "textAlign": "left",
+      "textAutoResize": "widthAndHeight",
+      "type": "TEXT",
+      "width": 11.0,
+      "x": 20.0,
+      "y": 100.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 20.0,
+       "width": 40.0,
+       "x": 300.0,
+       "y": 60.0
+      },
+      "boundVariables": {
+       "visible": "VariableID:3"
+      },
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#FF0000",
+        "type": "solid"
+       }
+      ],
+      "height": 20.0,
+      "id": 149,
+      "name": "Badge",
+      "type": "RECTANGLE",
+      "visible": false,
+      "width": 40.0,
+      "x": 300.0,
+      "y": 60.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 56.0,
+       "width": 350.0,
+       "x": 20.0,
+       "y": 700.0
+      },
+      "childCount": 1,
+      "clip": true,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "cornerRadius": 12.0,
+      "fills": [
+       {
+        "color": "#0E7C66",
+        "type": "solid"
+       }
+      ],
+      "height": 56.0,
+      "id": 150,
+      "interactions": [
+       {
+        "actions": [
+         {
+          "dest": 160,
+          "type": "navigate"
+         }
+        ],
+        "duration_ms": 400,
+        "easing": "easeOut",
+        "transition": {
+         "direction": "left",
+         "type": "push"
+        },
+        "trigger": {
+         "type": "onClick"
+        }
+       }
+      ],
+      "name": "CTA",
+      "type": "FRAME",
+      "width": 350.0,
+      "x": 20.0,
+      "y": 700.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 60.0,
+       "width": 100.0,
+       "x": 20.0,
+       "y": 200.0
+      },
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "effects": [
+       {
+        "blurType": "uniform",
+        "end": [
+         0.5,
+         1.0
+        ],
+        "radius": 12.0,
+        "start": [
+         0.5,
+         0.0
+        ],
+        "startRadius": 0.0,
+        "type": "backgroundBlur",
+        "visible": true
+       }
+      ],
+      "fills": [
+       {
+        "color": "#FFFFFF",
+        "opacity": 0.501960813999176,
+        "type": "solid"
+       }
+      ],
+      "height": 60.0,
+      "id": 152,
+      "name": "Verre",
+      "type": "RECTANGLE",
+      "width": 100.0,
+      "x": 20.0,
+      "y": 200.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 60.0,
+       "width": 100.0,
+       "x": 140.0,
+       "y": 200.0
+      },
+      "blend": "multiply",
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#00AAFF",
+        "type": "solid"
+       }
+      ],
+      "height": 60.0,
+      "id": 153,
+      "name": "Mult",
+      "type": "RECTANGLE",
+      "width": 100.0,
+      "x": 140.0,
+      "y": 200.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 84.64,
+       "width": 106.6,
+       "x": 256.7,
+       "y": 177.68
+      },
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#FFAA00",
+        "type": "solid"
+       }
+      ],
+      "height": 40.0,
+      "id": 154,
+      "name": "Tourné",
+      "rotation": 30.0,
+      "type": "RECTANGLE",
+      "width": 100.0,
+      "x": 256.7,
+      "y": 227.68
+     },
+     {
+      "absoluteBounds": {
+       "height": 60.0,
+       "width": 60.0,
+       "x": 20.0,
+       "y": 300.0
+      },
+      "childCount": 2,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "height": 60.0,
+      "id": 159,
+      "name": "Mask group",
+      "type": "GROUP",
+      "width": 60.0,
+      "x": 20.0,
+      "y": 300.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 44.0,
+       "width": 390.0,
+       "x": 0.0,
+       "y": 0.0
+      },
+      "clip": true,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#EEEEEE",
+        "type": "solid"
+       }
+      ],
+      "height": 44.0,
+      "id": 157,
+      "name": "Barre",
+      "type": "FRAME",
+      "width": 390.0,
+      "x": 0.0,
+      "y": 0.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 28.0,
+       "width": 28.0,
+       "x": 340.0,
+       "y": 8.0
+      },
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#333333",
+        "type": "solid"
+       }
+      ],
+      "height": 28.0,
+      "id": 158,
+      "interactions": [
+       {
+        "actions": [
+         {
+          "background": {
+           "a": 0.4000000059604645,
+           "b": 0.0,
+           "g": 0.0,
+           "r": 0.0
+          },
+          "close_on_outside": true,
+          "dest": 162,
+          "position": "center",
+          "type": "openOverlay"
+         }
+        ],
+        "duration_ms": 300,
+        "easing": "easeOut",
+        "transition": {
+         "type": "dissolve"
+        },
+        "trigger": {
+         "type": "onClick"
+        }
+       }
+      ],
+      "name": "Menu",
+      "type": "RECTANGLE",
+      "width": 28.0,
+      "x": 340.0,
+      "y": 8.0
+     }
+    ],
+    "clip": true,
+    "fills": [
+     {
+      "color": "#FFFFFF",
+      "type": "solid"
+     }
+    ],
+    "height": 844.0,
+    "id": 146,
+    "name": "Accueil",
+    "type": "FRAME",
+    "width": 390.0,
+    "x": 0.0,
+    "y": 0.0
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 169
+   },
+   {
+    "absoluteBounds": {
+     "height": 924.0,
+     "width": 970.0,
+     "x": 460.0,
+     "y": -40.0
+    },
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 844.0,
+       "width": 390.0,
+       "x": 500.0,
+       "y": 0.0
+      },
+      "childCount": 2,
+      "clip": true,
+      "fills": [
+       {
+        "color": "#F4F6F8",
+        "type": "solid"
+       }
+      ],
+      "height": 844.0,
+      "id": 160,
+      "name": "Détails",
+      "type": "FRAME",
+      "width": 390.0,
+      "x": 40.0,
+      "y": 40.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 844.0,
+       "width": 390.0,
+       "x": 1000.0,
+       "y": 0.0
+      },
+      "childCount": 1,
+      "clip": true,
+      "fills": [
+       {
+        "color": "#FFFFFF",
+        "type": "solid"
+       }
+      ],
+      "height": 844.0,
+      "id": 161,
+      "name": "Fin",
+      "type": "FRAME",
+      "width": 390.0,
+      "x": 540.0,
+      "y": 40.0
+     }
+    ],
+    "cornerRadius": 2.0,
+    "fills": [
+     {
+      "color": "#FFFFFF",
+      "type": "solid"
+     }
+    ],
+    "height": 924.0,
+    "id": 169,
+    "name": "Parcours",
+    "sectionContentsHidden": false,
+    "strokeAlign": "inside",
+    "strokeWeight": 1.0,
+    "strokes": [
+     {
+      "color": "#E6E6E6",
+      "type": "solid"
+     }
+    ],
+    "type": "SECTION",
+    "width": 970.0,
+    "x": 460.0,
+    "y": -40.0
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 162
+   },
+   {
+    "absoluteBounds": {
+     "height": 300.0,
+     "width": 260.0,
+     "x": 1500.0,
+     "y": 0.0
+    },
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 40.0,
+       "width": 80.0,
+       "x": 1516.0,
+       "y": 16.0
+      },
+      "clip": true,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#FFFFFF",
+        "type": "solid"
+       }
+      ],
+      "height": 40.0,
+      "id": 168,
+      "interactions": [
+       {
+        "actions": [
+         {
+          "type": "closeOverlay"
+         }
+        ],
+        "duration_ms": 300,
+        "easing": "easeOut",
+        "transition": {
+         "type": "instant"
+        },
+        "trigger": {
+         "type": "onClick"
+        }
+       }
+      ],
+      "name": "Fermer",
+      "type": "FRAME",
+      "width": 80.0,
+      "x": 16.0,
+      "y": 16.0
+     }
+    ],
+    "clip": true,
+    "fills": [
+     {
+      "color": "#FFFFFF",
+      "type": "solid"
+     }
+    ],
+    "height": 300.0,
+    "id": 162,
+    "name": "Menu overlay",
+    "type": "FRAME",
+    "width": 260.0,
+    "x": 1500.0,
+    "y": 0.0
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 163
+   },
+   {
+    "absoluteBounds": {
+     "height": 844.0,
+     "width": 390.0,
+     "x": 2000.0,
+     "y": 0.0
+    },
+    "boundVariables": {
+     "fill": "VariableID:4"
+    },
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 48.0,
+       "width": 120.0,
+       "x": 2040.0,
+       "y": 100.0
+      },
+      "childCount": 1,
+      "clip": true,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "cornerRadius": 14.0,
+      "fills": [
+       {
+        "color": "#0E7C66",
+        "type": "solid"
+       }
+      ],
+      "height": 48.0,
+      "id": 181,
+      "interactions": [
+       {
+        "actions": [
+         {
+          "dest": 178,
+          "type": "changeTo"
+         }
+        ],
+        "duration_ms": 300,
+        "easing": "easeOut",
+        "transition": {
+         "type": "instant"
+        },
+        "trigger": {
+         "key": "Shift+K",
+         "type": "keyPress"
+        }
+       }
+      ],
+      "mainComponent": 172,
+      "mainComponentName": "State=Default",
+      "name": "Bouton",
+      "type": "INSTANCE",
+      "width": 120.0,
+      "x": 40.0,
+      "y": 100.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 48.0,
+       "width": 120.0,
+       "x": 2040.0,
+       "y": 200.0
+      },
+      "childCount": 1,
+      "clip": true,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "cornerRadius": 14.0,
+      "fills": [
+       {
+        "color": "#0E7C66",
+        "type": "solid"
+       }
+      ],
+      "height": 48.0,
+      "id": 183,
+      "mainComponent": 172,
+      "mainComponentName": "State=Default",
+      "name": "Bouton",
+      "type": "INSTANCE",
+      "width": 120.0,
+      "x": 40.0,
+      "y": 200.0
+     }
+    ],
+    "clip": true,
+    "fills": [
+     {
+      "color": "#111111",
+      "type": "solid"
+     }
+    ],
+    "height": 844.0,
+    "id": 163,
+    "name": "Thème sombre",
+    "type": "FRAME",
+    "width": 390.0,
+    "x": 2000.0,
+    "y": 0.0
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 180
+   },
+   {
+    "absoluteBounds": {
+     "height": 88.0,
+     "width": 760.0,
+     "x": 2980.0,
+     "y": -20.0
+    },
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 48.0,
+       "width": 120.0,
+       "x": 3000.0,
+       "y": 0.0
+      },
+      "childCount": 1,
+      "clip": true,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "cornerRadius": 14.0,
+      "fills": [
+       {
+        "color": "#0E7C66",
+        "type": "solid"
+       }
+      ],
+      "height": 48.0,
+      "id": 172,
+      "interactions": [
+       {
+        "actions": [
+         {
+          "dest": 174,
+          "type": "changeTo"
+         }
+        ],
+        "duration_ms": 200,
+        "easing": "easeInOut",
+        "transition": {
+         "type": "smartAnimate"
+        },
+        "trigger": {
+         "type": "onHover"
+        }
+       }
+      ],
+      "name": "State=Default",
+      "type": "COMPONENT",
+      "width": 120.0,
+      "x": 20.0,
+      "y": 20.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 48.0,
+       "width": 120.0,
+       "x": 3200.0,
+       "y": 0.0
+      },
+      "childCount": 1,
+      "clip": true,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "cornerRadius": 14.0,
+      "fills": [
+       {
+        "color": "#13A385",
+        "type": "solid"
+       }
+      ],
+      "height": 48.0,
+      "id": 174,
+      "interactions": [
+       {
+        "actions": [
+         {
+          "dest": 176,
+          "type": "changeTo"
+         }
+        ],
+        "duration_ms": 300,
+        "easing": "easeOut",
+        "transition": {
+         "type": "instant"
+        },
+        "trigger": {
+         "type": "onPress"
+        }
+       }
+      ],
+      "name": "State=Hover",
+      "type": "COMPONENT",
+      "width": 120.0,
+      "x": 220.0,
+      "y": 20.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 48.0,
+       "width": 120.0,
+       "x": 3400.0,
+       "y": 0.0
+      },
+      "childCount": 1,
+      "clip": true,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "cornerRadius": 14.0,
+      "fills": [
+       {
+        "color": "#095244",
+        "type": "solid"
+       }
+      ],
+      "height": 48.0,
+      "id": 176,
+      "interactions": [
+       {
+        "actions": [
+         {
+          "dest": 161,
+          "type": "navigate"
+         }
+        ],
+        "duration_ms": 300,
+        "easing": "easeOut",
+        "transition": {
+         "type": "dissolve"
+        },
+        "trigger": {
+         "type": "onClick"
+        }
+       }
+      ],
+      "name": "State=Pressed",
+      "type": "COMPONENT",
+      "width": 120.0,
+      "x": 420.0,
+      "y": 20.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 48.0,
+       "width": 120.0,
+       "x": 3600.0,
+       "y": 0.0
+      },
+      "childCount": 1,
+      "clip": true,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "cornerRadius": 14.0,
+      "fills": [
+       {
+        "color": "#999999",
+        "type": "solid"
+       }
+      ],
+      "height": 48.0,
+      "id": 178,
+      "name": "State=Disabled",
+      "type": "COMPONENT",
+      "width": 120.0,
+      "x": 620.0,
+      "y": 20.0
+     }
+    ],
+    "clip": true,
+    "cornerRadius": 5.0,
+    "dashes": [
+     10.0,
+     5.0
+    ],
+    "height": 88.0,
+    "id": 180,
+    "name": "Bouton",
+    "strokeAlign": "inside",
+    "strokeWeight": 1.0,
+    "strokes": [
+     {
+      "color": "#9747FF",
+      "type": "solid"
+     }
+    ],
+    "type": "COMPONENT_SET",
+    "width": 760.0,
+    "x": 2980.0,
+    "y": -20.0
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 170
+   },
+   {
+    "absoluteBounds": {
+     "height": 844.0,
+     "width": 390.0,
+     "x": 0.0,
+     "y": 0.0
+    },
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 40.0,
+       "width": 120.0,
+       "x": 16.0,
+       "y": 16.0
+      },
+      "clip": true,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#FFFFFF",
+        "type": "solid"
+       }
+      ],
+      "height": 40.0,
+      "id": 171,
+      "interactions": [
+       {
+        "actions": [
+         {
+          "dest": 146,
+          "type": "navigate"
+         }
+        ],
+        "duration_ms": 300,
+        "easing": "easeOut",
+        "transition": {
+         "type": "instant"
+        },
+        "trigger": {
+         "type": "onClick"
+        }
+       }
+      ],
+      "name": "Accueil lien",
+      "type": "FRAME",
+      "width": 120.0,
+      "x": 16.0,
+      "y": 16.0
+     }
+    ],
+    "clip": true,
+    "fills": [
+     {
+      "color": "#FAFAFA",
+      "type": "solid"
+     }
+    ],
+    "height": 844.0,
+    "id": 170,
+    "name": "Paramètres",
+    "type": "FRAME",
+    "width": 390.0,
+    "x": 0.0,
+    "y": 0.0
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 150
+   },
+   {
+    "absoluteBounds": {
+     "height": 56.0,
+     "width": 350.0,
+     "x": 20.0,
+     "y": 700.0
+    },
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 15.0,
+       "width": 56.0,
+       "x": 160.0,
+       "y": 716.0
+      },
+      "characters": "Continuer",
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#FFFFFF",
+        "type": "solid"
+       }
+      ],
+      "fontFamily": "Inter",
+      "fontSize": 12.0,
+      "fontStyle": "Regular",
+      "height": 15.0,
+      "id": 151,
+      "letterSpacing": "0%",
+      "lineHeight": "Auto",
+      "name": "Libellé",
+      "sizing": {
+       "horizontal": "hug",
+       "vertical": "hug"
+      },
+      "textAlign": "left",
+      "textAutoResize": "widthAndHeight",
+      "type": "TEXT",
+      "width": 56.0,
+      "x": 140.0,
+      "y": 16.0
+     }
+    ],
+    "clip": true,
+    "constraints": {
+     "horizontal": "left",
+     "vertical": "top"
+    },
+    "cornerRadius": 12.0,
+    "fills": [
+     {
+      "color": "#0E7C66",
+      "type": "solid"
+     }
+    ],
+    "height": 56.0,
+    "id": 150,
+    "interactions": [
+     {
+      "actions": [
+       {
+        "dest": 160,
+        "type": "navigate"
+       }
+      ],
+      "duration_ms": 400,
+      "easing": "easeOut",
+      "transition": {
+       "direction": "left",
+       "type": "push"
+      },
+      "trigger": {
+       "type": "onClick"
+      }
+     }
+    ],
+    "name": "CTA",
+    "type": "FRAME",
+    "width": 350.0,
+    "x": 20.0,
+    "y": 700.0
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 160
+   },
+   {
+    "absoluteBounds": {
+     "height": 844.0,
+     "width": 390.0,
+     "x": 500.0,
+     "y": 0.0
+    },
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 40.0,
+       "width": 80.0,
+       "x": 516.0,
+       "y": 16.0
+      },
+      "clip": true,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#FFFFFF",
+        "type": "solid"
+       }
+      ],
+      "height": 40.0,
+      "id": 165,
+      "interactions": [
+       {
+        "actions": [
+         {
+          "type": "back"
+         }
+        ],
+        "duration_ms": 300,
+        "easing": "easeOut",
+        "transition": {
+         "type": "instant"
+        },
+        "trigger": {
+         "type": "onClick"
+        }
+       }
+      ],
+      "name": "Retour",
+      "type": "FRAME",
+      "width": 80.0,
+      "x": 16.0,
+      "y": 16.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 40.0,
+       "width": 200.0,
+       "x": 516.0,
+       "y": 700.0
+      },
+      "clip": true,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#FFFFFF",
+        "type": "solid"
+       }
+      ],
+      "height": 40.0,
+      "id": 166,
+      "interactions": [
+       {
+        "actions": [
+         {
+          "dest": 170,
+          "type": "navigate"
+         }
+        ],
+        "duration_ms": 300,
+        "easing": {
+         "customSpring": {
+          "damping": 20.0,
+          "mass": 1.0,
+          "stiffness": 300.0
+         }
+        },
+        "transition": {
+         "type": "smartAnimate"
+        },
+        "trigger": {
+         "type": "onClick"
+        }
+       }
+      ],
+      "name": "Suivant",
+      "type": "FRAME",
+      "width": 200.0,
+      "x": 16.0,
+      "y": 700.0
+     }
+    ],
+    "clip": true,
+    "fills": [
+     {
+      "color": "#F4F6F8",
+      "type": "solid"
+     }
+    ],
+    "height": 844.0,
+    "id": 160,
+    "name": "Détails",
+    "type": "FRAME",
+    "width": 390.0,
+    "x": 40.0,
+    "y": 40.0
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 159
+   },
+   {
+    "absoluteBounds": {
+     "height": 60.0,
+     "width": 60.0,
+     "x": 20.0,
+     "y": 300.0
+    },
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 60.0,
+       "width": 60.0,
+       "x": 20.0,
+       "y": 300.0
+      },
+      "fills": [
+       {
+        "color": "#000000",
+        "type": "solid"
+       }
+      ],
+      "height": 60.0,
+      "id": 155,
+      "isMask": true,
+      "maskType": "alpha",
+      "name": "Forme masque",
+      "type": "ELLIPSE",
+      "width": 60.0,
+      "x": 20.0,
+      "y": 300.0
+     },
+     {
+      "absoluteBounds": {
+       "height": 40.0,
+       "width": 80.0,
+       "x": 20.0,
+       "y": 300.0
+      },
+      "fills": [
+       {
+        "color": "#00FF00",
+        "type": "solid"
+       }
+      ],
+      "height": 40.0,
+      "id": 156,
+      "name": "Masqué",
+      "type": "RECTANGLE",
+      "width": 80.0,
+      "x": 20.0,
+      "y": 300.0
+     }
+    ],
+    "constraints": {
+     "horizontal": "left",
+     "vertical": "top"
+    },
+    "height": 60.0,
+    "id": 159,
+    "name": "Mask group",
+    "type": "GROUP",
+    "width": 60.0,
+    "x": 20.0,
+    "y": 300.0
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 161
+   },
+   {
+    "absoluteBounds": {
+     "height": 844.0,
+     "width": 390.0,
+     "x": 1000.0,
+     "y": 0.0
+    },
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 40.0,
+       "width": 200.0,
+       "x": 1016.0,
+       "y": 700.0
+      },
+      "clip": true,
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#FFFFFF",
+        "type": "solid"
+       }
+      ],
+      "height": 40.0,
+      "id": 167,
+      "interactions": [
+       {
+        "actions": [
+         {
+          "dest": 146,
+          "type": "navigate"
+         }
+        ],
+        "duration_ms": 300,
+        "easing": "easeOut",
+        "transition": {
+         "type": "instant"
+        },
+        "trigger": {
+         "type": "onClick"
+        }
+       },
+       {
+        "actions": [
+         {
+          "dest": 185,
+          "type": "navigate"
+         }
+        ],
+        "duration_ms": 300,
+        "easing": "easeOut",
+        "transition": {
+         "type": "instant"
+        },
+        "trigger": {
+         "type": "onHover"
+        }
+       }
+      ],
+      "name": "Recommencer",
+      "type": "FRAME",
+      "width": 200.0,
+      "x": 16.0,
+      "y": 700.0
+     }
+    ],
+    "clip": true,
+    "fills": [
+     {
+      "color": "#FFFFFF",
+      "type": "solid"
+     }
+    ],
+    "height": 844.0,
+    "id": 161,
+    "name": "Fin",
+    "type": "FRAME",
+    "width": 390.0,
+    "x": 540.0,
+    "y": 40.0
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 181
+   },
+   {
+    "absoluteBounds": {
+     "height": 48.0,
+     "width": 120.0,
+     "x": 2040.0,
+     "y": 100.0
+    },
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 15.0,
+       "width": 40.0,
+       "x": 2060.0,
+       "y": 114.0
+      },
+      "characters": "Valider",
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#FFFFFF",
+        "type": "solid"
+       }
+      ],
+      "fontFamily": "Inter",
+      "fontSize": 12.0,
+      "fontStyle": "Regular",
+      "height": 15.0,
+      "id": 182,
+      "letterSpacing": "0%",
+      "lineHeight": "Auto",
+      "name": "Label",
+      "sizing": {
+       "horizontal": "hug",
+       "vertical": "hug"
+      },
+      "textAlign": "left",
+      "textAutoResize": "widthAndHeight",
+      "type": "TEXT",
+      "width": 40.0,
+      "x": 20.0,
+      "y": 14.0
+     }
+    ],
+    "clip": true,
+    "constraints": {
+     "horizontal": "left",
+     "vertical": "top"
+    },
+    "cornerRadius": 14.0,
+    "fills": [
+     {
+      "color": "#0E7C66",
+      "type": "solid"
+     }
+    ],
+    "height": 48.0,
+    "id": 181,
+    "interactions": [
+     {
+      "actions": [
+       {
+        "dest": 178,
+        "type": "changeTo"
+       }
+      ],
+      "duration_ms": 300,
+      "easing": "easeOut",
+      "transition": {
+       "type": "instant"
+      },
+      "trigger": {
+       "key": "Shift+K",
+       "type": "keyPress"
+      }
+     }
+    ],
+    "mainComponent": 172,
+    "mainComponentName": "State=Default",
+    "name": "Bouton",
+    "type": "INSTANCE",
+    "width": 120.0,
+    "x": 40.0,
+    "y": 100.0
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 178
+   },
+   {
+    "absoluteBounds": {
+     "height": 48.0,
+     "width": 120.0,
+     "x": 3600.0,
+     "y": 0.0
+    },
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 15.0,
+       "width": 40.0,
+       "x": 3620.0,
+       "y": 14.0
+      },
+      "characters": "Valider",
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#FFFFFF",
+        "type": "solid"
+       }
+      ],
+      "fontFamily": "Inter",
+      "fontSize": 12.0,
+      "fontStyle": "Regular",
+      "height": 15.0,
+      "id": 179,
+      "letterSpacing": "0%",
+      "lineHeight": "Auto",
+      "name": "Label",
+      "sizing": {
+       "horizontal": "hug",
+       "vertical": "hug"
+      },
+      "textAlign": "left",
+      "textAutoResize": "widthAndHeight",
+      "type": "TEXT",
+      "width": 40.0,
+      "x": 20.0,
+      "y": 14.0
+     }
+    ],
+    "clip": true,
+    "constraints": {
+     "horizontal": "left",
+     "vertical": "top"
+    },
+    "cornerRadius": 14.0,
+    "fills": [
+     {
+      "color": "#999999",
+      "type": "solid"
+     }
+    ],
+    "height": 48.0,
+    "id": 178,
+    "name": "State=Disabled",
+    "type": "COMPONENT",
+    "width": 120.0,
+    "x": 620.0,
+    "y": 20.0
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 172
+   },
+   {
+    "absoluteBounds": {
+     "height": 48.0,
+     "width": 120.0,
+     "x": 3000.0,
+     "y": 0.0
+    },
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 15.0,
+       "width": 40.0,
+       "x": 3020.0,
+       "y": 14.0
+      },
+      "characters": "Valider",
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#FFFFFF",
+        "type": "solid"
+       }
+      ],
+      "fontFamily": "Inter",
+      "fontSize": 12.0,
+      "fontStyle": "Regular",
+      "height": 15.0,
+      "id": 173,
+      "letterSpacing": "0%",
+      "lineHeight": "Auto",
+      "name": "Label",
+      "sizing": {
+       "horizontal": "hug",
+       "vertical": "hug"
+      },
+      "textAlign": "left",
+      "textAutoResize": "widthAndHeight",
+      "type": "TEXT",
+      "width": 40.0,
+      "x": 20.0,
+      "y": 14.0
+     }
+    ],
+    "clip": true,
+    "constraints": {
+     "horizontal": "left",
+     "vertical": "top"
+    },
+    "cornerRadius": 14.0,
+    "fills": [
+     {
+      "color": "#0E7C66",
+      "type": "solid"
+     }
+    ],
+    "height": 48.0,
+    "id": 172,
+    "interactions": [
+     {
+      "actions": [
+       {
+        "dest": 174,
+        "type": "changeTo"
+       }
+      ],
+      "duration_ms": 200,
+      "easing": "easeInOut",
+      "transition": {
+       "type": "smartAnimate"
+      },
+      "trigger": {
+       "type": "onHover"
+      }
+     }
+    ],
+    "name": "State=Default",
+    "type": "COMPONENT",
+    "width": 120.0,
+    "x": 20.0,
+    "y": 20.0
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 183
+   },
+   {
+    "absoluteBounds": {
+     "height": 48.0,
+     "width": 120.0,
+     "x": 2040.0,
+     "y": 200.0
+    },
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 15.0,
+       "width": 40.0,
+       "x": 2060.0,
+       "y": 214.0
+      },
+      "characters": "Valider",
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#FFFFFF",
+        "type": "solid"
+       }
+      ],
+      "fontFamily": "Inter",
+      "fontSize": 12.0,
+      "fontStyle": "Regular",
+      "height": 15.0,
+      "id": 184,
+      "letterSpacing": "0%",
+      "lineHeight": "Auto",
+      "name": "Label",
+      "sizing": {
+       "horizontal": "hug",
+       "vertical": "hug"
+      },
+      "textAlign": "left",
+      "textAutoResize": "widthAndHeight",
+      "type": "TEXT",
+      "width": 40.0,
+      "x": 20.0,
+      "y": 14.0
+     }
+    ],
+    "clip": true,
+    "constraints": {
+     "horizontal": "left",
+     "vertical": "top"
+    },
+    "cornerRadius": 14.0,
+    "fills": [
+     {
+      "color": "#0E7C66",
+      "type": "solid"
+     }
+    ],
+    "height": 48.0,
+    "id": 183,
+    "mainComponent": 172,
+    "mainComponentName": "State=Default",
+    "name": "Bouton",
+    "type": "INSTANCE",
+    "width": 120.0,
+    "x": 40.0,
+    "y": 200.0
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 174
+   },
+   {
+    "absoluteBounds": {
+     "height": 48.0,
+     "width": 120.0,
+     "x": 3200.0,
+     "y": 0.0
+    },
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 15.0,
+       "width": 40.0,
+       "x": 3220.0,
+       "y": 14.0
+      },
+      "characters": "Valider",
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#FFFFFF",
+        "type": "solid"
+       }
+      ],
+      "fontFamily": "Inter",
+      "fontSize": 12.0,
+      "fontStyle": "Regular",
+      "height": 15.0,
+      "id": 175,
+      "letterSpacing": "0%",
+      "lineHeight": "Auto",
+      "name": "Label",
+      "sizing": {
+       "horizontal": "hug",
+       "vertical": "hug"
+      },
+      "textAlign": "left",
+      "textAutoResize": "widthAndHeight",
+      "type": "TEXT",
+      "width": 40.0,
+      "x": 20.0,
+      "y": 14.0
+     }
+    ],
+    "clip": true,
+    "constraints": {
+     "horizontal": "left",
+     "vertical": "top"
+    },
+    "cornerRadius": 14.0,
+    "fills": [
+     {
+      "color": "#13A385",
+      "type": "solid"
+     }
+    ],
+    "height": 48.0,
+    "id": 174,
+    "interactions": [
+     {
+      "actions": [
+       {
+        "dest": 176,
+        "type": "changeTo"
+       }
+      ],
+      "duration_ms": 300,
+      "easing": "easeOut",
+      "transition": {
+       "type": "instant"
+      },
+      "trigger": {
+       "type": "onPress"
+      }
+     }
+    ],
+    "name": "State=Hover",
+    "type": "COMPONENT",
+    "width": 120.0,
+    "x": 220.0,
+    "y": 20.0
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 176
+   },
+   {
+    "absoluteBounds": {
+     "height": 48.0,
+     "width": 120.0,
+     "x": 3400.0,
+     "y": 0.0
+    },
+    "children": [
+     {
+      "absoluteBounds": {
+       "height": 15.0,
+       "width": 40.0,
+       "x": 3420.0,
+       "y": 14.0
+      },
+      "characters": "Valider",
+      "constraints": {
+       "horizontal": "left",
+       "vertical": "top"
+      },
+      "fills": [
+       {
+        "color": "#FFFFFF",
+        "type": "solid"
+       }
+      ],
+      "fontFamily": "Inter",
+      "fontSize": 12.0,
+      "fontStyle": "Regular",
+      "height": 15.0,
+      "id": 177,
+      "letterSpacing": "0%",
+      "lineHeight": "Auto",
+      "name": "Label",
+      "sizing": {
+       "horizontal": "hug",
+       "vertical": "hug"
+      },
+      "textAlign": "left",
+      "textAutoResize": "widthAndHeight",
+      "type": "TEXT",
+      "width": 40.0,
+      "x": 20.0,
+      "y": 14.0
+     }
+    ],
+    "clip": true,
+    "constraints": {
+     "horizontal": "left",
+     "vertical": "top"
+    },
+    "cornerRadius": 14.0,
+    "fills": [
+     {
+      "color": "#095244",
+      "type": "solid"
+     }
+    ],
+    "height": 48.0,
+    "id": 176,
+    "interactions": [
+     {
+      "actions": [
+       {
+        "dest": 161,
+        "type": "navigate"
+       }
+      ],
+      "duration_ms": 300,
+      "easing": "easeOut",
+      "transition": {
+       "type": "dissolve"
+      },
+      "trigger": {
+       "type": "onClick"
+      }
+     }
+    ],
+    "name": "State=Pressed",
+    "type": "COMPONENT",
+    "width": 120.0,
+    "x": 420.0,
+    "y": 20.0
+   }
+  ],
+  [
+   "node.get",
+   {
+    "id": 185
+   },
+   null
+  ],
+  [
+   "component.properties",
+   {
+    "id": 181
+   },
+   {
+    "component": 172,
+    "conflicts": [],
+    "properties": [
+     {
+      "default": "Default",
+      "name": "State",
+      "options": [
+       "Default",
+       "Hover",
+       "Pressed",
+       "Disabled"
+      ],
+      "type": "variant",
+      "value": "Default"
+     }
+    ],
+    "set": 180
+   }
+  ],
+  [
+   "component.properties",
+   {
+    "id": 183
+   },
+   {
+    "component": 172,
+    "conflicts": [],
+    "properties": [
+     {
+      "default": "Default",
+      "name": "State",
+      "options": [
+       "Default",
+       "Hover",
+       "Pressed",
+       "Disabled"
+      ],
+      "type": "variant",
+      "value": "Default"
+     }
+    ],
+    "set": 180
+   }
+  ],
+  [
+   "variable.list",
+   {},
+   {
+    "collections": [
+     {
+      "id": "VariableCollectionId:1",
+      "modes": [
+       {
+        "id": "VariableCollectionId:1/mode1",
+        "name": "Mode 1"
+       }
+      ],
+      "name": "Data"
+     },
+     {
+      "id": "VariableCollectionId:2",
+      "modes": [
+       {
+        "id": "VariableCollectionId:2/mode1",
+        "name": "Light"
+       },
+       {
+        "id": "VariableCollectionId:2/mode2",
+        "name": "Dark"
+       }
+      ],
+      "name": "Theme"
+     }
+    ],
+    "variables": [
+     {
+      "collection": "VariableCollectionId:1",
+      "description": "",
+      "id": "VariableID:1",
+      "name": "username",
+      "resolvedType": "string",
+      "values": {
+       "VariableCollectionId:1/mode1": {
+        "type": "string",
+        "value": "Élodie"
+       }
+      }
+     },
+     {
+      "collection": "VariableCollectionId:1",
+      "description": "",
+      "id": "VariableID:2",
+      "name": "count",
+      "resolvedType": "number",
+      "values": {
+       "VariableCollectionId:1/mode1": {
+        "type": "number",
+        "value": 0.0
+       }
+      }
+     },
+     {
+      "collection": "VariableCollectionId:1",
+      "description": "",
+      "id": "VariableID:3",
+      "name": "showBadge",
+      "resolvedType": "boolean",
+      "values": {
+       "VariableCollectionId:1/mode1": {
+        "type": "boolean",
+        "value": false
+       }
+      }
+     },
+     {
+      "collection": "VariableCollectionId:2",
+      "description": "",
+      "id": "VariableID:4",
+      "name": "surface",
+      "resolvedType": "color",
+      "values": {
+       "VariableCollectionId:2/mode1": {
+        "type": "color",
+        "value": {
+         "a": 1.0,
+         "b": 1.0,
+         "g": 1.0,
+         "r": 1.0
+        }
+       },
+       "VariableCollectionId:2/mode2": {
+        "type": "color",
+        "value": {
+         "a": 1.0,
+         "b": 0.06666667014360428,
+         "g": 0.06666667014360428,
+         "r": 0.06666667014360428
+        }
+       }
+      }
+     }
+    ]
+   }
+  ]
+ ]
+}

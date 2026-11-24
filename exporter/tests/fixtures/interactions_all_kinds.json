@@ -1,0 +1,360 @@
+{
+ "_note": "Raw interaction objects as node.get returns them (FigCraft 0.18.1). scenario_164: recorded over control on layer 164 of the walk scenario (setVariable value/expr, conditional, openUrl new_tab, navigate preserve_scroll + slideOut, openOverlay manual/anchor/offset/no background, Gamepad key, onDrag, mouseLeave/Down/Up). spike: copied from node_get_design_system_probe.json / node_get_pages.json / walk_scenario.json (afterDelay + customBezier, openOverlay + background, onHover changeTo, openUrl, keyPress Shift+K setVariableMode, mouseEnter delay_ms scrollTo, customSpring, onPress).",
+ "scenario_164": [
+  {
+   "actions": [
+    {
+     "expr": {
+      "op": {
+       "args": [
+        {
+         "value": {
+          "type": "alias",
+          "value": "VariableID:2"
+         }
+        },
+        {
+         "value": {
+          "type": "number",
+          "value": 1.0
+         }
+        }
+       ],
+       "op": "add"
+      }
+     },
+     "type": "setVariable",
+     "value": null,
+     "variable": "VariableID:2"
+    }
+   ],
+   "duration_ms": 300,
+   "easing": "easeOut",
+   "transition": {
+    "type": "instant"
+   },
+   "trigger": {
+    "type": "onDrag"
+   }
+  },
+  {
+   "actions": [
+    {
+     "type": "setVariable",
+     "value": "Bob",
+     "variable": "VariableID:1"
+    }
+   ],
+   "duration_ms": 300,
+   "easing": "easeOut",
+   "transition": {
+    "type": "instant"
+   },
+   "trigger": {
+    "type": "mouseLeave"
+   }
+  },
+  {
+   "actions": [
+    {
+     "blocks": [
+      {
+       "actions": [
+        {
+         "type": "back"
+        }
+       ],
+       "condition": {
+        "op": {
+         "args": [
+          {
+           "value": {
+            "type": "alias",
+            "value": "VariableID:2"
+           }
+          },
+          {
+           "value": {
+            "type": "number",
+            "value": 3.0
+           }
+          }
+         ],
+         "op": "greaterOrEqual"
+        }
+       }
+      },
+      {
+       "actions": [
+        {
+         "dest": 162,
+         "type": "swapOverlay"
+        }
+       ]
+      }
+     ],
+     "type": "conditional"
+    }
+   ],
+   "duration_ms": 300,
+   "easing": "easeOut",
+   "transition": {
+    "type": "instant"
+   },
+   "trigger": {
+    "type": "mouseDown"
+   }
+  },
+  {
+   "actions": [
+    {
+     "new_tab": false,
+     "type": "openUrl",
+     "url": "https://example.com"
+    }
+   ],
+   "duration_ms": 300,
+   "easing": "easeOut",
+   "transition": {
+    "type": "instant"
+   },
+   "trigger": {
+    "type": "mouseUp"
+   }
+  },
+  {
+   "actions": [
+    {
+     "dest": 160,
+     "preserve_scroll": true,
+     "type": "navigate"
+    }
+   ],
+   "duration_ms": 300,
+   "easing": "easeOut",
+   "transition": {
+    "direction": "right",
+    "type": "slideOut"
+   },
+   "trigger": {
+    "type": "onClick"
+   }
+  },
+  {
+   "actions": [
+    {
+     "anchor": "triggerOutside",
+     "background": null,
+     "close_on_outside": false,
+     "dest": 162,
+     "offset": [
+      4.0,
+      8.0
+     ],
+     "position": "manual",
+     "type": "openOverlay"
+    }
+   ],
+   "duration_ms": 300,
+   "easing": "easeOut",
+   "transition": {
+    "type": "instant"
+   },
+   "trigger": {
+    "type": "onClick"
+   }
+  },
+  {
+   "actions": [
+    {
+     "type": "closeOverlay"
+    }
+   ],
+   "duration_ms": 300,
+   "easing": "easeOut",
+   "transition": {
+    "type": "instant"
+   },
+   "trigger": {
+    "key": "Gamepad A",
+    "type": "keyPress"
+   }
+  }
+ ],
+ "spike": [
+  {
+   "actions": [
+    {
+     "dest": 2,
+     "type": "navigate"
+    }
+   ],
+   "duration_ms": 300,
+   "easing": {
+    "customBezier": {
+     "x1": 0.2,
+     "x2": 0.0,
+     "y1": 0.0,
+     "y2": 1.0
+    }
+   },
+   "transition": {
+    "type": "smartAnimate"
+   },
+   "trigger": {
+    "ms": 800,
+    "type": "afterDelay"
+   }
+  },
+  {
+   "actions": [
+    {
+     "background": {
+      "a": 0.4000000059604645,
+      "b": 0.0,
+      "g": 0.0,
+      "r": 0.0
+     },
+     "close_on_outside": true,
+     "dest": 2,
+     "position": "center",
+     "type": "openOverlay"
+    }
+   ],
+   "duration_ms": 300,
+   "easing": "bouncy",
+   "transition": {
+    "direction": "bottom",
+    "type": "moveIn"
+   },
+   "trigger": {
+    "type": "onClick"
+   }
+  },
+  {
+   "actions": [
+    {
+     "dest": 179,
+     "type": "changeTo"
+    }
+   ],
+   "duration_ms": 300,
+   "easing": "easeOut",
+   "transition": {
+    "type": "instant"
+   },
+   "trigger": {
+    "type": "onHover"
+   }
+  },
+  {
+   "actions": [
+    {
+     "type": "openUrl",
+     "url": "https://example.com"
+    }
+   ],
+   "duration_ms": 300,
+   "easing": "easeOut",
+   "transition": {
+    "type": "instant"
+   },
+   "trigger": {
+    "type": "onClick"
+   }
+  },
+  {
+   "actions": [
+    {
+     "collection": "VariableCollectionId:1",
+     "mode": "VariableCollectionId:1/mode2",
+     "type": "setVariableMode"
+    }
+   ],
+   "duration_ms": 300,
+   "easing": "easeOut",
+   "transition": {
+    "type": "instant"
+   },
+   "trigger": {
+    "key": "Shift+K",
+    "type": "keyPress"
+   }
+  },
+  {
+   "actions": [
+    {
+     "dest": 365,
+     "offset": [
+      0.0,
+      44.0
+     ],
+     "type": "scrollTo"
+    }
+   ],
+   "delay_ms": 200,
+   "duration_ms": 300,
+   "easing": "easeOut",
+   "transition": {
+    "type": "instant"
+   },
+   "trigger": {
+    "type": "mouseEnter"
+   }
+  },
+  {
+   "actions": [
+    {
+     "dest": 217,
+     "type": "changeTo"
+    }
+   ],
+   "duration_ms": 300,
+   "easing": {
+    "customSpring": {
+     "damping": 20.0,
+     "mass": 1.0,
+     "stiffness": 300.0
+    }
+   },
+   "transition": {
+    "type": "smartAnimate"
+   },
+   "trigger": {
+    "type": "onClick"
+   }
+  },
+  {
+   "actions": [
+    {
+     "dest": 174,
+     "type": "changeTo"
+    }
+   ],
+   "duration_ms": 200,
+   "easing": "easeInOut",
+   "transition": {
+    "type": "smartAnimate"
+   },
+   "trigger": {
+    "type": "onHover"
+   }
+  },
+  {
+   "actions": [
+    {
+     "dest": 176,
+     "type": "changeTo"
+    }
+   ],
+   "duration_ms": 300,
+   "easing": "easeOut",
+   "transition": {
+    "type": "instant"
+   },
+   "trigger": {
+    "type": "onPress"
+   }
+  }
+ ]
+}

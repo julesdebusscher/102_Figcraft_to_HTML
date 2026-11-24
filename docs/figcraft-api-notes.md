@@ -239,3 +239,36 @@ Results:
 - **`edit.undo` / `edit.redo`** (`{}` -> `{undone:true}` / `{redone:true}`; `{undone:false}` when nothing to undo): every `node.set`, `instance.setProperties` and `variable.setMode` call adds exactly one history entry ("Set properties", "Set instance properties", "Set variable mode"; `document.inspect.history.undo` lists newest first) and one `edit.undo` reverts exactly that step (verified for node.set name/opacity and instance variant property; setMode's undo step verified by history, the mode itself is not readable). After undoing everything `dirty` stays `true`.
 - `node.get` cannot read `variableModes` (unknown field). `variable.list {}` -> `{collections:[{id,name,modes}], variables:[...]}`; `variable.bind` takes the variable id (`VariableID:1`), a `Collection/name` path was refused here.
 - `FigCraft.exe --version` on Windows is **unverified** (the exporter passes `CREATE_NO_WINDOW` and skips the version check if nothing is printed).
+
+## Walk facts (measured over control, FigCraft 0.18.1, task 7)
+
+- **`node.get` takes only `{id, fields?, outline?}`**: no depth. `outline:true` gives `{id,name,type,visible,childCount}` per child; without it each child is a full node object and `childCount` marks the ones with children (leaf frames have no `childCount`). The walk calls `node.get {id}` once per layer that has children (breadth-first, cached).
+- **Missing layer**: `node.get {id: <deleted or unknown>}` returns **`null`** (no error). Deleting a layer leaves interactions pointing at it in place (`dest` stays the old id).
+- `document.inspect {depth:N}` returns the same node objects nested N levels (and silently ignores unknown params); `document.inspect.name` is the document name.
+- **Coordinates**: `x`/`y` are relative to the nearest **non-group** ancestor (a group's children use the same origin as the group itself: child-in-group = `child.x - group.x`). Children of a **section** are relative to the section.
+- **Rotation**: `rotation` in degrees, counter-clockwise; `x`/`y` are where the box's own top-left corner sits after rotation (it rotates about its centre in the UI, the stored origin moves), `width`/`height` unrotated; `absoluteBounds` is the rotated bounding box. Matches the contract (rotate about the top-left by `-rotation` in CSS).
+- **Sections**: `type:"SECTION"` on the page; `object.wrapInSection {ids, name}`; the section's children are the frames (`sectionContentsHidden` flag).
+- **Masks**: `object.mask {ids}` makes a `GROUP` named "Mask group" whose **first** child has `isMask:true, maskType:"alpha"`.
+- **Effects** (node.set accepts): `dropShadow, innerShadow, layerBlur, backgroundBlur, noise, texture, glass`. Blurs: `{type, radius, blurType:"uniform"|"progressive", start, end, startRadius, visible}`; glass: `{type:"glass", frost, depth, dispersion, lightAngle, lightIntensity, refraction, splay, visible}`.
+- **boundVariables keys**: text content `characters`, visibility `visible`, first fill `fill` (e.g. `{"characters":"VariableID:1"}`, `{"visible":"VariableID:3"}`).
+- **Text**: `letterSpacing` `"0%"` / `"1"` (px), `lineHeight` `"150%"` / `"Auto"` / px; `fontStyle` `"Bold"`, `"SemiBold"`…; `textAlign` `left|center|right|justified`.
+- **Variants**: a variant's key is the variant COMPONENT's `name` (`"State=Hover"`), the same string as an instance's `mainComponentName`. `component.combineVariants {ids}` makes the set (`COMPONENT_SET`). `component.properties {id:<instance>}` gives `set`.
+- **Interaction replies** (more kinds than §2): `setVariable` → `{type, variable, value}` or `{type, variable, value:null, expr:{op:{op:"add", args:[{value:{type:"alias", value:"VariableID:2"}}, {value:{type:"number", value:1}}]}}}`; `conditional` → `{type, blocks:[{condition?: Expr, actions}]}`; `openUrl` → `new_tab: false` (absent = default true); `navigate` → `preserve_scroll: true`; `openOverlay` → `anchor`, `offset:[x,y]`, `position:"manual"`, `close_on_outside:false`, `background:null`. Keys: `Gamepad A`. The setter takes `dest` **inside** `action` (`proto.interaction.add {id, trigger, action:{type, dest}}`).
+- **Flows**: `proto.flow.add {name, start}`; page `flows:[{name,start,description}]`.
+
+### `document.json` (inside `file.saveAs {data:true}`)
+
+`data` is base64 of a zip with `document.json` and `thumbnail.png`. `document.json` =
+`{format:"figcraft", version:1, name, pages:[ids], nodes:{"<id>": node}, next_id, styles, variables, current_page, document_colors, comments, imageIndex}`.
+Nodes are snake_case and sparse (defaults omitted), with `parent`, `children:[ids]`, `transform:[a,b,c,d,tx,ty]`.
+Fields the exporter relies on (`docfile.extras`):
+
+| Field | Values | Default when absent |
+|---|---|---|
+| `overflow` | `"vertical"`, `"horizontal"`, `"both"` | none |
+| `scroll_position` | `"fixed"`, `"sticky"` (setter value `scrolls`) | scrolls with the content |
+| `var_modes` | `{"VariableCollectionId:2": "VariableCollectionId:2/mode2"}` (explicit modes only) | Auto (inherited) |
+
+Also seen: `bound` (same as node.get `boundVariables`), `component` / `source` on instances, `type` lower-case (`frame`, `section`, `componentSet`, `instance`, `text`, `page`). The digest (`docfile.digest`) is sha256 of the `document.json` bytes.
+
+Fixtures (task 7): `walk_scenario.json` (every control reply the walk makes on a scratch scenario: sections, second page, bound text/visibility, overlay, mask, blur, blend, rotation, Bouton variant set with two instances, a dangling link), `saveas_scenario.json` (trimmed saveAs reply), `interactions_all_kinds.json`.
