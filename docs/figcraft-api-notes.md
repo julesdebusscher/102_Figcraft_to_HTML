@@ -342,3 +342,5 @@ free port, quit without saving.
   layer's box in the group plus its paint offset (`x + dx`, `y + dy`) and the paint's size. Live
   (`object.mask {ids:[ellipse, rectangle]}` on a scratch copy): the group "Mask group" (146) takes the
   mask's bounds, the ellipse (first child, `isMask:true`) sits at 0,0 in it → `maskBox [0, 0, 120, 120]`.
+
+- **Rotation inside an instance** (verified live, 0.18.1): `node.set {props:{rotation}}` on a layer inside an instance is refused (``command `node.set` is not available right now: A layer's position comes from the main component in an instance…``); every other prop we set (visible, sizing, effects, blend, opacity, isMask) is accepted, and the instance root itself can be rotated. Setting the rotation on the main component's matching layer (instance `mainComponent`, same child index path) changes the instance at once and one `edit.undo` restores both. The exporter does that.
