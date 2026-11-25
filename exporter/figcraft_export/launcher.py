@@ -49,12 +49,13 @@ def candidates(env, platform):
 
 
 def find_figcraft(config, env=os.environ, platform=sys.platform):
-    for p in candidates(env, platform):
-        if p.is_file():
-            return p
+    """The configured `figcraft_path` when it exists, else the first default location found."""
     configured = (config or {}).get("figcraft_path")
     if configured and Path(configured).is_file():
         return Path(configured)
+    for p in candidates(env, platform):
+        if p.is_file():
+            return p
     return None
 
 

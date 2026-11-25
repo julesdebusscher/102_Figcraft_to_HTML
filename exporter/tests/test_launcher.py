@@ -21,6 +21,30 @@ class LauncherTests(unittest.TestCase):
             found = launcher.find_figcraft({}, env={"LOCALAPPDATA": tmp}, platform="win32")
             self.assertEqual(found, exe)
 
+    def test_find_figcraft_prefers_the_configured_path(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            default = Path(tmp) / "Programs" / "FigCraft" / "FigCraft.exe"
+            default.parent.mkdir(parents=True)
+            default.write_bytes(b"")
+            mine = Path(tmp) / "autre" / "FigCraft.exe"
+            mine.parent.mkdir()
+            mine.write_bytes(b"")
+            found = launcher.find_figcraft({"figcraft_path": str(mine)}, env={"LOCALAPPDATA": tmp}, platform="win32")
+            self.assertEqual(found, mine)
+            # a configured path that no longer exists: the default locations still work
+            found = launcher.find_figcraft({"figcraft_path": str(Path(tmp) / "absent.exe")},
+                                           env={"LOCALAPPDATA": tmp}, platform="win32")
+            self.assertEqual(found, default)
+
+    def test_bat_launchers_require_python_3_8_and_keep_crlf(self):
+        for name in ("Ouvrir FigCraft.bat", "Exporter la sélection.bat"):
+            raw = (ROOT / name).read_bytes()
+            self.assertNotIn(b"\n", raw.replace(b"\r\n", b""), name)   # CRLF only
+            text = raw.decode("utf-8")
+            self.assertEqual(text.count("sys.version_info >= (3, 8)"), 2, name)
+            self.assertLess(text.index("py -3 -c"), text.index("python -c"), name)   # interpreter first
+            self.assertIn("echo Python 3.8 ou plus récent est introuvable.", text, name)
+
     def test_find_figcraft_falls_back_to_config(self):
         with tempfile.TemporaryDirectory() as tmp:
             exe = Path(tmp) / "mon dossier" / "FigCraft.exe"
