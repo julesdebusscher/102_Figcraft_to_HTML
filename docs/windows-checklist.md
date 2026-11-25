@@ -12,7 +12,7 @@ d'écart, notez le numéro de l'étape (voir « Si quelque chose échoue » en b
 3. **Ouvrir FigCraft.** Fermez FigCraft, puis double-cliquez sur `Ouvrir FigCraft.bat`.
    Attendu : une fenêtre noire s'ouvre. Si FigCraft n'est pas trouvé automatiquement, elle demande le
    chemin de `FigCraft.exe` (collez-le, avec ou sans guillemets) ; il est ensuite retenu dans
-   `figcraft_export\config.json`. Elle affiche « FigCraft démarre (port 47917)... » puis
+   `config.json`, à côté des fichiers `.bat` (pas dans `figcraft_export`). Elle affiche « FigCraft démarre (port 47917)... » puis
    « FigCraft est prêt. » et FigCraft s'ouvre.
 4. **Contrôle de version.** Notez ce que la fenêtre a affiché : rien de plus (version acceptée ou contrôle
    ignoré silencieusement) est normal ; un message « FigCraft x.y.z ou plus récent est nécessaire (trouvé :
@@ -34,15 +34,23 @@ d'écart, notez le numéro de l'étape (voir « Si quelque chose échoue » en b
    `C:\Users\<votre nom>\Mes prototypes\<nom-du-prototype>\index.html` par double-clic avec Edge
    (clic droit > Ouvrir avec > Microsoft Edge).
    Attendu : le premier écran s'affiche (adresse `file:///...`), mise en page et images correctes.
-10. **Chrome.** Même chose avec Google Chrome.
+10. **Chrome et Firefox.** Même chose avec Google Chrome, puis avec Mozilla Firefox (s'il est installé).
+    Attendu : même affichage que dans Edge.
 11. **Parcours.** Cliquez dans le prototype : boutons de navigation, retour, survol, une superposition
     si le fichier en a une, texte et images nets.
     Attendu : comportement identique à celui du prototype dans FigCraft ; rien de cassé.
-12. **Ré-export dans le même dossier.** Refaites les étapes 6 à 8 en choisissant le même dossier
+12. **Masque, dégradé et superposition (Edge, Chrome et Firefox).** Exportez un fichier contenant un
+    calque masqué (groupe « Mask group »), un dégradé et une superposition (par exemple un fichier de
+    test préparé pour l'occasion), puis ouvrez son `index.html` par double-clic dans chacun des trois
+    navigateurs.
+    Attendu : le calque masqué n'apparaît que dans la forme du masque, au bon endroit (pas de carré
+    entier, pas de calque invisible) ; le dégradé a le même angle que dans FigCraft ; la superposition
+    s'ouvre et se ferme comme dans FigCraft. Notez tout écart par navigateur (Firefox surtout).
+13. **Ré-export dans le même dossier.** Refaites les étapes 6 à 8 en choisissant le même dossier
     `Mes prototypes`.
     Attendu : l'export précédent est remplacé sans erreur (même nom de sous-dossier), le résumé est de
     nouveau en français et le prototype s'ouvre.
-13. **FigCraft fermé.** Fermez FigCraft, puis double-cliquez sur `Exporter la sélection.bat`.
+14. **FigCraft fermé.** Fermez FigCraft, puis double-cliquez sur `Exporter la sélection.bat`.
     Attendu : le message « Impossible de joindre FigCraft. Ouvrez-le avec « Ouvrir FigCraft ». » (aucun
     plantage, aucun fichier écrit), puis la fenêtre attend une touche avant de se fermer (message de Windows).
 

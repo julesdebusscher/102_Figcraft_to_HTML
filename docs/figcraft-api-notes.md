@@ -278,7 +278,7 @@ Also seen: `bound` (same as node.get `boundVariables`), `component` / `source` o
 
 Fixtures (task 7): `walk_variants.json` (variant set Carte with nested Puce instances, differently sized variants, a setVariable inside a non-current variant), `walk_scenario.json` (every control reply the walk makes on a scratch scenario: sections, second page, bound text/visibility, overlay, mask, blur, blend, rotation, Bouton variant set with two instances, a dangling link), `saveas_scenario.json` (trimmed saveAs reply), `interactions_all_kinds.json`.
 
-- `variable.list` has no default-mode field (fixture `variables.json`); the exporter takes a collection's first mode as `defaultMode` (assumption, unverified against the UI).
+- `variable.list` has no default-mode field (fixture `variables.json`); the exporter takes a collection's first mode as `defaultMode`. **Verified** (final review, below): the first mode *is* the default.
 
 ## Render facts (measured over control, FigCraft 0.18.1, task 9)
 
@@ -291,3 +291,54 @@ Fixtures (task 7): `walk_variants.json` (variant set Carte with nested Puce inst
 - **Gradients in SVG**: FigCraft writes gradients in user space (`gradientUnits="userSpaceOnUse"`, endpoints scaled from the normalised `from`/`to`), which turns the angle on non-square layers compared with its raster renderer (onboarding "4 All set" background). The renderer exports gradient fills/strokes as PNG.
 - **Instances**: `instance.setProperties` keeps the instance children's ids (182 stays 182 across State variants); `node.get` after the switch gives the variant's fills/size.
 - **Labels**: `command.batch {label}` shows the label verbatim as the history entry (`document.inspect.history.undo[0]`), also for a batch of one command; the renderer labels every edit `Export HTML (temporaire) <nonce>#<n>` (nonce: 4 hex digits per run) and checks the top before each `edit.undo`, so a user step made meanwhile is never reverted.
+
+## Final review facts (measured over control, FigCraft 0.18.1, 2026-11-25)
+
+Probes on scratch copies of the examples, each in its own FigCraft launched with `--control` on a
+free port, quit without saving.
+
+- **Redo stack after an export.** `document.inspect.history.redo` is a **count** (e.g. `{"redo": 1,
+  "undo": []}`), not a list of labels. After a temporary step and its `edit.undo`, redo = 1 and
+  Cmd/Ctrl+Maj+Z would re-apply that step. Measured:
+  - `command.batch {label, commands: []}` → `[]`, adds no step and **does not** clear redo.
+  - `command.batch {label:"Export HTML (fin) …", commands:[node.set {visible:true} on a visible
+    top-level frame]}` → redo 0, undo `["Export HTML (fin) …"]`, `document.json` digest unchanged;
+    its `edit.undo` → redo 1 (only that no-op), digest unchanged; `edit.redo` of it → digest unchanged.
+  - No command clears the redo stack directly (`engine.commands` has only `edit.undo` / `edit.redo`).
+  So the renderer ends every export, when the history is back at the run's baseline, with that
+  no-op batch and its undo: redo then holds only "Export HTML (fin) <nonce>", which changes nothing.
+  `tools/e2e.py` checks it after every export (`check_redo`): live output on the onboarding example:
+  `Historique après l'export : 0 étape(s) à annuler, 1 à rétablir.` /
+  `Rétablir referait : Export HTML (fin) 9df5 (document inchangé : oui).`
+- **Key names.** `proto.interaction.add {trigger:{type:"keyPress", key}}` stores `key` **verbatim**
+  (read back with `node.get`): `ArrowUp`, `Up`, `up`, `Left`, `ArrowRight`, `Enter`, `Return`,
+  `Escape`, `Esc`, `Space`, `" "`, `Tab`, `Backspace`, `Delete`, `Shift+Enter`, `Ctrl+ArrowLeft`,
+  `K`, `k`, `PageUp`, `Home`, `F1`, `1` all come back unchanged. The in-app key recorder ("Click to
+  record a key" / "Press a key") is egui-based; its key-name table in the binary is egui's
+  (`Up Down Left Right Escape Tab Backspace Enter Space Insert Delete Home End PageUp PageDown`,
+  `Plus Minus Equals Comma Period Slash …`, `Num0`…), and FigCraft's own shortcut labels use
+  `Enter`, `Escape`, `Tab`, `Space` (`Shift+Tab`, `Ctrl+Space`). The recorder output itself could not
+  be driven over control (unverified). The player (`hit.js` `normKey`) maps all of these spellings to
+  DOM `KeyboardEvent.key`: `Up/ArrowUp → ArrowUp` (same for Down/Left/Right), `Return → Enter`,
+  `Esc → Escape`, `Space/" " → " "`, `Del → Delete`, `PgUp/PgDown`, `Plus → +`, `Minus → -`,
+  `Equals, Comma, Period, Slash, Backslash, Semicolon, Colon, Quote, Backtick, OpenBracket,
+  CloseBracket, Questionmark, Exclamationmark, Pipe`, `Num1/Numpad1 → 1`. Still unmapped: Shift +
+  digit/punctuation (the browser reports the shifted character).
+- **Page variable modes.** `variable.setMode {ids:[<page id>], collection, mode}` → `{ok:true}`;
+  `document.json` then holds `var_modes: {"VariableCollectionId:1": "VariableCollectionId:1/mode2"}`
+  on the **page** node; `proto.evaluate {expression:"mode(Theme)", id:<frame on Auto>}` → `"Dark"`; a
+  frame's own explicit mode wins over the page's (`Light` on the frame, `Dark` on the page → `Light`).
+  The exporter reads page `var_modes` (`docfile.extras` tags each top-level layer of such a page
+  with `page`), pins those modes for the page's screens (`variables._pinned`, after the layer's
+  own and its ancestors' modes) and writes the screen's effective modes (page, then the frame's own)
+  as `screens[id].modes`, applied by the player on start, restart, navigate and back.
+- **Default mode.** The collection's default mode is its **first** mode: `variable.moveMode` says
+  "to (index; 0 = the default mode, layers on Auto follow it)"; live, with no explicit mode anywhere,
+  `mode(Theme)` on an Auto frame is `Light` (first); after `variable.moveMode {mode: Dark, to: 0}` it is
+  `Dark` and `variable.list` (and `document.json` `variables.collections[].modes`) list Dark first.
+- **Masks.** A CSS `mask-image: url("assets/…")` is fetched in CORS mode, which Firefox refuses for
+  sibling `file://` files, so the writer inlines every `css.maskSrc` as a `data:` URI in `data.js` and
+  drops mask-only asset files. The mask image is placed with `css.maskBox [x, y, w, h]` = the mask
+  layer's box in the group plus its paint offset (`x + dx`, `y + dy`) and the paint's size. Live
+  (`object.mask {ids:[ellipse, rectangle]}` on a scratch copy): the group "Mask group" (146) takes the
+  mask's bounds, the ellipse (first child, `isMask:true`) sits at 0,0 in it → `maskBox [0, 0, 120, 120]`.

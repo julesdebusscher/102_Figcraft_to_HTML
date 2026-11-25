@@ -34,18 +34,20 @@ par double-clic dans Chrome, Edge ou Firefox, sans connexion ni serveur.
 2. Double-cliquez sur « Ouvrir FigCraft » (.bat sous Windows, .command sur Mac) :
    FigCraft démarre, prêt à être piloté par l'export. Ouvrez votre fichier.
 3. Dans FigCraft, sélectionnez les frames de premier niveau à exporter
-   (Maj+clic pour en choisir plusieurs). Les écrans reliés par des interactions
-   sont ajoutés automatiquement.
+   (Maj+clic pour en choisir plusieurs), ou une section entière. Les écrans
+   reliés par des interactions sont ajoutés automatiquement.
 4. Double-cliquez sur « Exporter la sélection ».
-   Ensuite, ne touchez pas à FigCraft pendant l'export : l'outil modifie
-   temporairement le document pour rendre chaque calque, puis annule tout.
+   Ensuite, ne touchez pas à FigCraft pendant l'export (de quelques secondes à
+   quelques minutes selon la taille du fichier) : l'outil modifie temporairement
+   le document pour rendre chaque calque, puis annule tout.
 5. Choisissez le dossier de destination. Le prototype s'ouvre dans le navigateur.
    Pour le partager, envoyez le dossier entier (index.html, player.js, player.css,
    data.js et assets/), par exemple en archive .zip.
 
 3. En cas de problème
 ---------------------
-- « Python 3 est introuvable » : installez Python (étape 1), puis rouvrez la fenêtre.
+- « Python 3.8 ou plus récent est introuvable » : installez Python (étape 1), puis
+  rouvrez la fenêtre.
 - « Impossible de joindre FigCraft » : FigCraft a été ouvert autrement que par
   « Ouvrir FigCraft ». Fermez-le et relancez-le avec « Ouvrir FigCraft ».
 - « FigCraft est introuvable » : indiquez le chemin de FigCraft.exe quand il est

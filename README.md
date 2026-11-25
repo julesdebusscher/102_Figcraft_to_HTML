@@ -24,8 +24,9 @@ Copiez le dossier `dist/FigCraft Export HTML/` où vous voulez (Bureau, Document
 
 1. Fermez FigCraft s'il est ouvert.
 2. Double-cliquez sur **Ouvrir FigCraft** : FigCraft démarre en mode contrôlé. Ouvrez votre fichier.
-3. Sélectionnez les frames de premier niveau à exporter (Maj+clic pour plusieurs). Les écrans reliés
-   par des interactions sont ajoutés automatiquement.
+3. Sélectionnez les frames de premier niveau à exporter (Maj+clic pour plusieurs) ; une section
+   sélectionnée exporte toutes ses frames (sections imbriquées comprises). Les écrans reliés par des
+   interactions sont ajoutés automatiquement.
 4. Double-cliquez sur **Exporter la sélection**. Ne touchez pas à FigCraft pendant l'export.
 5. Choisissez le dossier de destination : le prototype s'ouvre dans le navigateur. Pour le partager,
    envoyez le dossier entier (par exemple en .zip).
@@ -35,9 +36,10 @@ Ligne de commande équivalente : `python3 -m figcraft_export launch [fichier]` p
 
 ## Ce qui est pris en charge
 
-Frames de premier niveau (et frames dans des sections), auto-layout, textes, formes, vecteurs, images,
+Frames de premier niveau (et frames ou sections entières), auto-layout, textes, formes, vecteurs, images,
 masques, effets, composants et variantes (dont changements de variante interactifs), variables et modes
-(changement de mode, variables numériques/booléennes/couleur, conditions), interactions : navigation,
+(changement de mode, modes fixés sur une frame ou sur la page, variables numériques/booléennes/couleur,
+textes liés à une variable et à une couleur de variable, conditions), interactions : navigation,
 retour, superpositions, défilement vers un calque, liens, minuteries, survol/clic/appui/touche, et
 transitions (instantané, dissolution, déplacement, glissement, Smart Animate) avec courbes et ressorts.
 
@@ -53,27 +55,41 @@ transitions (instantané, dissolution, déplacement, glissement, Smart Animate) 
 - **Masques de luminance** : tout masque est rendu comme un masque alpha, et appliqué à tout son groupe.
 - **Variantes de tailles différentes** : l'instance garde la taille de la variante courante ; une variante
   d'une autre taille ne s'affiche correctement que si l'instance ne rogne pas son contenu.
-- **Ne touchez pas à FigCraft pendant l'export** (5 à 15 secondes) : l'outil modifie temporairement le
+- **Ne touchez pas à FigCraft pendant l'export** (de quelques secondes à quelques minutes selon la taille
+  du fichier) : l'outil modifie temporairement le
   document puis annule ses modifications. Si vous modifiez quelque chose entre-temps, le résumé affiche un
   avertissement et indique quoi annuler (Cmd/Ctrl+Z).
 - **Le document apparaît comme modifié** dans FigCraft après l'export (les modifications et leur annulation
   marquent le document) ; son contenu est identique, ce que le résumé confirme (« inchangé (vérifié) »).
-  L'historique de rétablissement (Cmd/Ctrl+Maj+Z) est vidé.
+  Juste après l'export, Rétablir (Cmd/Ctrl+Maj+Z) ne referait qu'une étape sans effet,
+  « Export HTML (fin) » : aucune modification temporaire de l'export n'y reste. Si cette étape n'a pas
+  pu être posée, le résumé l'indique : « N'utilisez pas Rétablir (Cmd/Ctrl+Maj+Z) juste après l'export. »
 - Les polices doivent être disponibles sur l'ordinateur qui ouvre le prototype pour le texte non rendu en
-  image ; seules les frames de premier niveau sont exportées (les calques isolés sont ignorés et signalés).
+  image ; seules les frames et sections de premier niveau sont exportées (les calques isolés sont ignorés
+  et signalés).
+- **Composants et instances de premier niveau** (hors d'une frame) : ignorés et signalés ; placez-les
+  dans une frame pour les exporter.
+- **Superpositions et redimensionnement** : une superposition ouverte garde sa position si la fenêtre du
+  navigateur change de taille ; elle se replace à sa prochaine ouverture.
+- **Touches** : les touches et combinaisons usuelles sont reconnues (lettres, chiffres, flèches, Entrée,
+  Échap, Espace, Tab, Retour arrière, Suppr., Page préc./suiv., Début/Fin, F1-F12, ponctuation nommée
+  comme « Plus »). Maj + chiffre ou ponctuation (« Shift+1 ») ne se déclenche pas, car le navigateur
+  reçoit alors le caractère obtenu (« ! ») ; les boutons de manette suivent la Gamepad API du navigateur.
 - Sous Windows, `FigCraft.exe --version` n'a pas été vérifié : si rien n'est affiché, le contrôle de
   version est simplement ignoré.
 
 ## Dépannage
 
-- **« Python 3 est introuvable »** : installez Python 3.8+ depuis python.org (Windows : cochez « Add
+- **« Python 3.8 ou plus récent est introuvable »** : installez Python 3.8+ depuis python.org (Windows : cochez « Add
   python.exe to PATH »), puis rouvrez la fenêtre.
 - **« Impossible de joindre FigCraft »** : FigCraft n'a pas été ouvert par « Ouvrir FigCraft ». Fermez-le
   complètement et relancez-le ainsi.
 - **Port occupé** : un autre programme utilise le port 47917. Lancez avec un autre port :
   `python3 -m figcraft_export launch --port 47930` puis `python3 -m figcraft_export export --port 47930`.
 - **« FigCraft est introuvable »** : indiquez le chemin de `FigCraft.exe` quand il est demandé ; il est
-  retenu dans `figcraft_export/config.json` (`{"figcraft_path": "C:\\...\\FigCraft.exe"}`).
+  retenu dans `config.json`, à côté des lanceurs (dans le dossier `FigCraft Export HTML`, pas dans
+  `figcraft_export`) : `{"figcraft_path": "C:\\...\\FigCraft.exe"}`. Ce chemin est essayé avant les
+  emplacements d'installation habituels.
 - **« Le dossier ... ne contient pas un export »** : un dossier du même nom existe déjà ; choisissez
   une autre destination.
 

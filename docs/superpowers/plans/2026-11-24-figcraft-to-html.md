@@ -50,7 +50,9 @@ window.FIGCRAFT_PROTOTYPE = {
   panel: [{ section: string|null, screens: [ScreenId] }],   // page name in `pageName`
   pageName: string,
   screens: { [ScreenId]: { name, width, height, background: css-color, root: NodeId,
-                           overflow: "none"|"horizontal"|"vertical"|"both" } },
+                           overflow: "none"|"horizontal"|"vertical"|"both",
+                           modes?: {[CollId]: ModeId} } },   // effective explicit modes on the screen (its page's, then
+                                                             // its own); state applies them on start, restart, navigate, back
   nodes:   { [NodeId]: Node },
   variables: { collections: { [CollId]: { name, defaultMode: ModeId, modes: {[ModeId]: name} } },
                vars: { [VarId]: { name, collection: CollId, type: "number"|"string"|"boolean"|"color",
@@ -63,8 +65,10 @@ Node = { id, name, kind: "frame"|"group"|"instance"|"leaf"|"text",
   clip: bool, overflow: as screen, position: "scroll"|"fixed"|"sticky",
   paint: Paint|null,                                           // own paint only, never children
   alts: [{ when: { vars?: {[VarId]: value}, modes?: {[CollId]: ModeId} }, paint: Paint }],
-  css: { backdropBlur?: px, layerBlur?: px, blend?: css-blend, radius?: [tl,tr,br,bl], clipPath?: svg-path, maskSrc?: path },
-  liveText: { var: VarId, style: { fontFamily, fontSize, fontWeight, lineHeight, letterSpacing, color, align } } | null,
+  css: { backdropBlur?: px, layerBlur?: px, blend?: css-blend, radius?: [tl,tr,br,bl],
+         maskSrc?: data-uri, maskBox?: [x, y, w, h] },        // mask image inlined (file:// CORS); placed at maskBox in the node box (px)
+  liveText: { var: VarId, colorVar?: VarId,                    // colorVar: colour variable bound to the text fill (style.color = fallback)
+              style: { fontFamily, fontSize, fontWeight, lineHeight, letterSpacing, color, align } } | null,
   bindings: { visible?: VarId },
   instance: { set: string, variant: VariantKey, variants: {[VariantKey]: [NodeId]} } | null, // children per variant
   children: [NodeId],
@@ -179,7 +183,7 @@ Outputs: `tools/fcctl.py`, `docs/figcraft-api-notes.md`, `plugin/tests/fixtures/
 
 **Interfaces:**
 - Consumes: everything above; contract `data.js`.
-- Produces: `FCP.buildScreen(proto, state, screenId) -> HTMLElement` (nested absolute `div`s, `paint` as `<img>` offset by `dx/dy`, `alts` chosen from `state.vars`/`state.modes`, `liveText` as text node, `bindings.visible`, `css.*` mapped to `backdrop-filter`, `filter: blur()`, `mix-blend-mode`, `border-radius`, `clip-path`, `mask-image`; `overflow` → scroll containers; `position: fixed|sticky` kept on top inside the screen viewport).
+- Produces: `FCP.buildScreen(proto, state, screenId) -> HTMLElement` (nested absolute `div`s, `paint` as `<img>` offset by `dx/dy`, `alts` chosen from `state.vars`/`state.modes`, `liveText` as text node, `bindings.visible`, `css.*` mapped to `backdrop-filter`, `filter: blur()`, `mix-blend-mode`, `border-radius`, `mask-image` (+ `mask-position`/`mask-size` from `maskBox`); `overflow` → scroll containers; `position: fixed|sticky` kept on top inside the screen viewport).
 - Produces: `FCP.matchLayers(fromRootId, toRootId, proto) -> [[fromId, toId]]` (pure: same name and same name-path from the root; FigCraft's rule from notes) and `FCP.animate(effect, els) -> Promise` using the Web Animations API with `FCP.easing`/`FCP.spring` sampled into keyframes.
 - Produces: `FCP.boot(proto)` called by `index.html` on `DOMContentLoaded`: stage scaled to fit the window (contain, like the presenter), tall frames scroll; pointer, hover (enter/leave with revert), press (revert on release), drag (directional for move/push/slide, follows pointer then finishes), mouse down/up/enter/leave with `delayMs`, afterDelay (from screen show / overlay open, re-armed each open), keyboard, Gamepad API polling only while a key trigger with `Gamepad` exists; overlay positions incl. `anchor` and `offset`, dimmed background, click-outside close; side panel (collapsible, sections, current screen highlighted, restart button `Redémarrer`) per mockup A.
 
