@@ -57,6 +57,7 @@ class _Walker(object):
         self.actions, self.var_types = [], {}
         self.queue, self.queued, self.missing = deque(), set(), set()
         self.pending, self.inst_links = [], {}
+        self.inst_main, self.families = {}, {}  # {instance node id: main component}, {component: set or itself}
         self.prefix, self.alias = "", {}  # node ids: alias.get(fc) or prefix + fc (render's variant clones)
 
     def _id(self, fc):
@@ -246,6 +247,7 @@ class _Walker(object):
         if t == "INSTANCE":
             inst = nid
             self.inst_links.setdefault(nid, [])
+            self.inst_main[nid] = raw.get("mainComponent")
             key0 = self._key0(raw)
             self.pending.append((raw, hidden, key0))
             job_node, job_kids = self._self_node(raw, node, key0, screen), True
@@ -281,7 +283,8 @@ class _Walker(object):
         for ri in raw.get("interactions") or []:
             lk = interactions.links(ri)
             if inst is not None:
-                self.inst_links[inst].extend(lk["variants"])
+                for d in lk["variants"]:
+                    self.inst_links.setdefault(self._owner(inst, d), []).append(d)
             conv = self._convert(ri, node["name"])
             if conv is not None:
                 node["interactions"].append(conv)
@@ -303,6 +306,35 @@ class _Walker(object):
         return conv
 
     # -- variants ----------------------------------------------------------
+    def _family(self, cid):
+        """A component's set id, or the component itself when it is in no set."""
+        if cid not in self.families:
+            try:
+                s = (self.ctl.execute("component.properties", {"id": cid}) or {}).get("set")
+            except ControlError:
+                s = None
+            self.families[cid] = s if s is not None else cid
+        return self.families[cid]
+
+    def _owner(self, inst, dest):
+        """The instance a "Change to" `dest` switches: the innermost instance, from `inst` up,
+        whose main component is in dest's set (a nested component's layer can switch its
+        parent component's variant); `inst` when none is."""
+        chain, cur, guard = [], inst, 0
+        while cur is not None and guard < 10000:
+            guard += 1
+            if cur in self.inst_main:
+                chain.append(cur)
+            cur = self.parent.get(cur)
+        if dest is None or len(chain) < 2:   # no enclosing instance: nothing to choose
+            return inst
+        fam = self._family(dest)
+        for cur in chain:
+            main = self.inst_main[cur]
+            if main is not None and (main == dest or self._family(main) == fam):
+                return cur
+        return inst
+
     def _component(self, cid):
         """{name, raw (root interactions), screens, variants} of a variant component, cached."""
         if cid not in self.comps:

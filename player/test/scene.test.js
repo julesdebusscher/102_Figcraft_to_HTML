@@ -19,3 +19,11 @@ test("live_text_colour_follows_its_bound_variable", function () {
   assertEq(FCP.liveTextColor({ vars: { c: "rgba(1, 2, 3, 1)" } }, { var: "t", style: { color: "#111111" } }), "#111111");
   assertEq(FCP.liveTextColor({ vars: {} }, { var: "t", style: {} }), "");
 });
+test("instance_box_follows_its_current_variant_size", function () {
+  var proto = { nodes: {
+    "9": { w: 300, h: 120, instance: { variant: "Open=No", variants: { "Open=No": ["9~Open=No~self", "5"], "Open=Yes": ["9~Open=Yes~self"] } } },
+    "9~Open=No~self": { w: 300, h: 120 }, "9~Open=Yes~self": { w: 300, h: 200 }, "5": { w: 10, h: 10 } } };
+  assertEq(FCP.boxOf(proto, { variants: {} }, "9").h, 120);
+  assertEq(FCP.boxOf(proto, { variants: { "9": "Open=Yes" } }, "9").h, 200);
+  assertEq(FCP.boxOf(proto, { variants: {} }, "5").w, 10);
+});

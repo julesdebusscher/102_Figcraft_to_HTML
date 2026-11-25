@@ -329,6 +329,7 @@ class _Renderer(object):
             self.stats["edits"] += 1
             raw = self.ctl.execute("node.get", {"id": fc}) or {}
             vw = _CloneWalker(self.ctl, prefix, inst, fc, self.var_types, self.w.get("extras"))
+            vw.inst_main[inst] = raw.get("mainComponent")
             screen = (self.w.get("screen_of") or {}).get(inst)
             if raw.get("boundVariables"):
                 vw.bound[inst] = dict(raw["boundVariables"])

@@ -27,6 +27,18 @@
     return n.children || [];
   };
 
+  // Box size of a node: an instance takes its current variant's size (its "~self" layer),
+  // as FigCraft resizes an instance when it switches to a variant of another size.
+  FCP.boxOf = function (proto, state, id) {
+    var n = (proto.nodes || {})[id];
+    if (!n) return { w: 0, h: 0 };
+    if (n.instance) {
+      var first = FCP.kidsOf(proto, state, id)[0], self = first && proto.nodes[first];
+      if (self && /~self$/.test(first)) return { w: self.w, h: self.h };
+    }
+    return { w: n.w, h: n.h };
+  };
+
   FCP.isHidden = function (state, n) {
     if (!n || n.visible === false) return true;
     var b = n.bindings && n.bindings.visible;
@@ -164,7 +176,8 @@
   function buildNode(c, id, isRoot) {
     var n = c.proto.nodes[id], el = div("fcp-node"), s = el.style;
     el.setAttribute("data-fcp-id", id);
-    s.left = px(isRoot ? 0 : n.x); s.top = px(isRoot ? 0 : n.y); s.width = px(n.w); s.height = px(n.h);
+    var box = isRoot ? { w: n.w, h: n.h } : FCP.boxOf(c.proto, c.state, id);
+    s.left = px(isRoot ? 0 : n.x); s.top = px(isRoot ? 0 : n.y); s.width = px(box.w); s.height = px(box.h);
     if (n.rotation) s.transform = "rotate(" + (-n.rotation) + "deg)";
     if (n.opacity !== undefined && n.opacity < 1) s.opacity = n.opacity;
     s.pointerEvents = n.kind === "group" ? "none" : "auto";
@@ -235,6 +248,10 @@
     Object.keys(c.reg.byId).forEach(function (k) { before[k] = c.reg.byId[k].el; });
     var nw = variantWrap(c, instId);
     oldWrap.parentNode.appendChild(nw);
+    if (e.el !== screenEl._fcp.rootEl) {
+      var box = FCP.boxOf(c.proto, c.state, instId);
+      e.el.style.width = px(box.w); e.el.style.height = px(box.h);
+    }
     e.varWrap = nw;
     return { oldWrap: oldWrap, newWrap: nw, fromEls: before, toEls: elsOf(c) };
   };

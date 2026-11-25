@@ -421,5 +421,36 @@ class WalkReviewFixTests(unittest.TestCase):
                 self.assertNotEqual(a["variant"], "9999")
 
 
+class NestedOwnerTests(unittest.TestCase):
+    """A "Change to" on a nested component (Button inside Card) that targets a variant of
+    the parent component (Card) switches the Card instance, not the Button."""
+
+    def walker(self):
+        props = lambda cid, st: (("component.properties", canonical({"id": cid})), {"set": st})
+        ctl = FakeControl(dict([props(31, 30), props(41, 40), props(42, 40), props(50, None)]))
+        w = walk._Walker(ctl, {})
+        w.parent = {"159": "1", "160": "159", "161": "160"}
+        w.inst_main = {"159": 41, "160": 31}   # Card (set 40) contains Button (set 30)
+        return w, ctl
+
+    def test_parent_variant_goes_to_the_parent_instance(self):
+        w, _ = self.walker()
+        self.assertEqual(w._owner("160", 42), "159")
+
+    def test_own_set_variant_stays_on_the_nested_instance(self):
+        w, ctl = self.walker()
+        ctl.replies[("component.properties", canonical({"id": 32}))] = {"set": 30}
+        self.assertEqual(w._owner("160", 32), "160")
+
+    def test_unrelated_component_stays_on_the_nearest_instance(self):
+        w, _ = self.walker()
+        self.assertEqual(w._owner("160", 50), "160")
+
+    def test_not_nested_asks_nothing(self):
+        w, ctl = self.walker()
+        self.assertEqual(w._owner("159", 42), "159")
+        self.assertEqual(ctl.calls, [])
+
+
 if __name__ == "__main__":
     unittest.main()
