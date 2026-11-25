@@ -8,7 +8,7 @@ d'écart, notez le numéro de l'étape (voir « Si quelque chose échoue » en b
    « Add python.exe to PATH ».
 2. **Copie.** Copiez le dossier `FigCraft Export HTML` (celui qui contient `Ouvrir FigCraft.bat`) sur le
    Bureau ou dans Documents.
-   Attendu : on y voit 2 fichiers `.bat`, `LISEZMOI.txt`, et le dossier `figcraft_export`.
+   Attendu : on y voit au moins 2 fichiers `.bat` (le dossier contient aussi les fichiers `.command`, pour Mac), `LISEZMOI.txt`, et le dossier `figcraft_export`.
 3. **Ouvrir FigCraft.** Fermez FigCraft, puis double-cliquez sur `Ouvrir FigCraft.bat`.
    Attendu : une fenêtre noire s'ouvre. Si FigCraft n'est pas trouvé automatiquement, elle demande le
    chemin de `FigCraft.exe` (collez-le, avec ou sans guillemets) ; il est ensuite retenu dans
@@ -29,7 +29,7 @@ d'écart, notez le numéro de l'étape (voir « Si quelque chose échoue » en b
 8. **Dossier avec espaces et accents.** Créez et choisissez `C:\Users\<votre nom>\Mes prototypes`.
    Attendu : le résumé est en français, sans caractères déformés (« écrans exportés », « inchangé
    (vérifié) », guillemets « »), avec le chemin complet du dossier. Il se termine par
-   « Le document FigCraft est inchangé (vérifié). ». Le navigateur par défaut s'ouvre sur le prototype.
+   ces deux lignes : « Le document FigCraft est inchangé (vérifié). » puis « FigCraft peut afficher le document comme modifié : son contenu est inchangé (vérifié). ». Le navigateur par défaut s'ouvre sur le prototype.
 9. **Edge.** Fermez le navigateur, puis, dans l'Explorateur, ouvrez
    `C:\Users\<votre nom>\Mes prototypes\<nom-du-prototype>\index.html` par double-clic avec Edge
    (clic droit > Ouvrir avec > Microsoft Edge).
@@ -44,11 +44,11 @@ d'écart, notez le numéro de l'étape (voir « Si quelque chose échoue » en b
     nouveau en français et le prototype s'ouvre.
 13. **FigCraft fermé.** Fermez FigCraft, puis double-cliquez sur `Exporter la sélection.bat`.
     Attendu : le message « Impossible de joindre FigCraft. Ouvrez-le avec « Ouvrir FigCraft ». » (aucun
-    plantage, aucun fichier écrit), puis « Appuyez sur une touche » pour fermer.
+    plantage, aucun fichier écrit), puis la fenêtre attend une touche avant de se fermer (message de Windows).
 
 ## Si quelque chose échoue
 
 Envoyez : (1) le numéro de l'étape, (2) le texte complet de la fenêtre noire (sélectionnez-le avec la
 souris, clic droit pour copier, ou faites une capture d'écran), (3) une capture d'écran de FigCraft et,
 pour un problème d'affichage, du navigateur et de la même frame dans FigCraft, (4) le résultat de
-`py -3 --version` et la version de FigCraft (Aide > À propos).
+`py -3 --version` et la version de FigCraft (dans FigCraft, son menu d'aide ou « À propos », selon la version).

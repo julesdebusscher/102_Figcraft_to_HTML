@@ -82,7 +82,7 @@ transitions (instantané, dissolution, déplacement, glissement, Smart Animate) 
 - Lecteur (`player/`) : `bash player/test/run.sh`.
 - Exporteur : `cd exporter && python3 -m unittest discover -s tests -t .`.
 - Bout en bout (lance son propre FigCraft sur une copie de l'exemple, exporte, rend des PNG de référence
-  dans `<export>/_reference/`, vérifie, puis quitte sans enregistrer) :
+  à côté de l'export, dans `<out>/_reference/`, vérifie, puis quitte sans enregistrer) :
   `python3 tools/e2e.py examples/ridgeline-onboarding.figcraft [--frames "1 Welcome,3 Location"] [--out dossier] [--use-dist]`.
 - Distribution : `python3 tools/make_dist.py` crée `dist/FigCraft Export HTML/`.
 - Notes sur l'API de FigCraft : `docs/figcraft-api-notes.md`. Vérifications sous Windows :

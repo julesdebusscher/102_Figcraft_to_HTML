@@ -8,6 +8,7 @@ rien enregistrer. Python 3.8+, bibliothèque standard seulement.
 
 Sans --frames : toutes les frames de premier niveau de la page courante.
 Sans --out : un dossier temporaire (affiché à la fin).
+Les PNG de référence vont dans <out>/_reference/, à côté de l'export (jamais dedans).
 --use-dist : lance l'export depuis dist/FigCraft Export HTML/ (lancez make_dist.py avant).
 """
 import argparse
@@ -145,7 +146,7 @@ def run(args):
             raise E2EError("Aucun index.html dans %s." % out)
         target = folders[0]
 
-        ref = target / "_reference"
+        ref = out / "_reference"
         ref.mkdir(exist_ok=True)
         used = set()
         for f in chosen:
@@ -174,7 +175,8 @@ def run(args):
                 proc.wait(timeout=8)
             except subprocess.TimeoutExpired:
                 proc.kill()
-        shutil.rmtree(str(copy.parent), ignore_errors=True) if args.out else None
+        if args.out:
+            shutil.rmtree(str(copy.parent), ignore_errors=True)
 
 
 def main(argv=None):
