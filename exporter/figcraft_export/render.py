@@ -17,6 +17,7 @@ from collections import deque
 
 from . import variables, walk
 from .edits import BATCH_LABEL, UNDO_FAILED, EditSession, RenderError  # noqa: F401 (re-exported)
+from .summary import NO_REDO, steps_left
 from .style import effects_css, num
 
 _PNG_EFFECTS = ("layerBlur", "noise", "texture", "glass", "backgroundBlur")
@@ -325,16 +326,56 @@ class _Renderer(object):
         return mini["jobs"][len(own_jobs):]
 
 
+def _screen_fc(walked):
+    """FigCraft id of a top-level frame we rendered (a screen), or None."""
+    parent = walked.get("parent") or {}
+    for j in walked["jobs"]:
+        if j.get("kind") == "own" and parent.get(j["node"], 0) is None:
+            return j["fc_id"]
+    return None
+
+
+def _clear_redo(ctl, walked, baseline):
+    """Our undone steps sit on FigCraft's redo stack: Cmd/Ctrl+Maj+Z would re-apply the last one.
+    When the history is back at the run's baseline, one labelled no-op batch (`visible: true` on a
+    visible screen) clears the redo stack, and its undo leaves only that no-op there (redoing it
+    changes nothing). Never fails the export: a problem becomes a remark."""
+    warnings = walked.setdefault("warnings", [])
+    try:
+        top, depth, redo, _ = EditSession(ctl)._hist()
+        if baseline is None or (top, depth) != tuple(baseline) or not redo:
+            return
+        fc = _screen_fc(walked)
+        info = ctl.execute("node.get", {"id": fc, "fields": ["visible"]}) if fc is not None else None
+        if not isinstance(info, dict) or info.get("visible", True) is False:
+            raise ValueError("no visible screen")
+        with EditSession(ctl) as s:
+            s.batch([("node.set", {"ids": [fc], "props": {"visible": True}})], final=True)
+    except RenderError as e:
+        for m in [str(e)] + ([steps_left(len(e.remaining))] if e.remaining and not e.user_undone else []):
+            if m not in warnings:
+                warnings.append(m)
+    except Exception:
+        if NO_REDO not in warnings:
+            warnings.append(NO_REDO)
+
+
 def render_all(ctl, walked, scale=2):
     """Render every job of `walked` (after variables.add_jobs). Fills `paint`, `alts[i].paint`
     and `css.maskSrc` in walked["proto"]["nodes"], adds the non-current variants' nodes
     ("<inst>~<key>~...") and sets `instance.variants[key]`. Returns [Asset] =
     [{"path": "assets/<sanitised id>[__alt<i>].svg|png", "data": bytes}], one per distinct
     content. Every temporary edit is undone before returning or raising; RenderError (French)
-    when an undo failed. `walked["render_stats"]` = {"jobs", "exports", "edits"}."""
+    when an undo failed. `walked["render_stats"]` = {"jobs", "exports", "edits"}. Afterwards the
+    redo stack holds no temporary step of ours (see _clear_redo)."""
     r = _Renderer(ctl, walked, scale)
+    try:
+        baseline = EditSession(ctl)._hist()[:2] if walked["jobs"] else None
+    except Exception:
+        baseline = None
     for job in list(walked["jobs"]):
         r.run(job)
+    _clear_redo(ctl, walked, baseline)
     for nid in sorted(set(n for n, _ in r.dropped)):
         alts = r.nodes[nid]["alts"]
         r.nodes[nid]["alts"] = [a for i, a in enumerate(alts) if (nid, i) not in r.dropped]

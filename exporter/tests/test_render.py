@@ -1,4 +1,5 @@
 import unittest
+from unittest import mock
 
 from figcraft_export import render
 from figcraft_export.control import ControlError
@@ -135,6 +136,55 @@ class RenderTests(unittest.TestCase):
         self.assertIn(("node.set", {"ids": [4], "props": {"visible": False}}), flat_edits(doc))
         self.assertEqual(doc.snapshot(), start)
         self.assertEqual(doc.history, [])
+
+    def test_redo_holds_only_a_no_op_step_after_render(self):
+        doc, w = make(*basic())
+        start = doc.snapshot()
+        render.render_all(doc, w)
+        self.assertEqual(doc.history, [])
+        self.assertEqual(len(doc.redo), 1)                         # only the final no-op is redoable
+        label, after = doc.redo[0]
+        self.assertRegex(label, r"^Export HTML \(fin\) [0-9a-f]{4}$")
+        self.assertIs(after["nodes"][1].pop("visible"), True)      # redoing it changes nothing
+        self.assertEqual(after, start)
+        self.assertEqual(doc.snapshot(), start)
+        fin = [p for c, p in doc.calls if c == "command.batch" and p["label"].startswith("Export HTML (fin)")]
+        self.assertEqual(fin[0]["commands"], [{"command": "node.set", "params": {"ids": [1], "props": {"visible": True}}}])
+
+    def test_no_final_step_when_the_history_top_moved(self):
+        doc, w = make(*basic())
+        orig = render._Renderer.run
+
+        def run(r, job):
+            orig(r, job)
+            if job["node"] == "4":                                  # the last job: a user step lands
+                doc.user_edit(2, {"name": "user step after our last undo"})
+        with mock.patch.object(render._Renderer, "run", run):
+            render.render_all(doc, w)
+        self.assertEqual([p["label"] for c, p in doc.calls if c == "command.batch"
+                          if p["label"].startswith("Export HTML (fin)")], [])
+        self.assertEqual(doc.history[-1][0], "Set properties")
+        self.assertEqual(w["warnings"], [])
+
+    def test_refused_final_step_becomes_a_remark_not_a_failure(self):
+        doc, w = make(*basic())
+        orig = doc.execute
+
+        def execute(command, params=None, timeout_ms=60000):
+            if command == "command.batch" and params["label"].startswith("Export HTML (fin)"):
+                raise ControlError("refusé")
+            return orig(command, params, timeout_ms)
+        doc.execute = execute
+        render.render_all(doc, w)
+        self.assertEqual(w["warnings"], ["N'utilisez pas Rétablir (Cmd/Ctrl+Maj+Z) juste après l'export."])
+        self.assertEqual(doc.history, [])
+
+    def test_no_final_step_without_temporary_edits(self):
+        doc_nodes = {1: rect("seul")}
+        doc, w = make(doc_nodes, [cnode("1")], [job("1", 1)], {"1": None})
+        render.render_all(doc, w)
+        self.assertEqual(calls(doc, "command.batch"), [])
+        self.assertEqual(doc.redo, [])
 
     def test_hug_container_keeps_its_size_without_children(self):
         doc_nodes, proto, jobs, parent = basic()

@@ -152,6 +152,43 @@ class EditSessionTests(unittest.TestCase):
         self.assertEqual(doc.state["nodes"][1]["name"], "user step after a failed undo")
         self.assertEqual(len(calls(doc, "edit.undo")), 1)
 
+    def test_nested_session_keeps_the_inner_failure_and_merges_remaining(self):
+        # inner paint session (inside a variant switch) cannot undo: both steps are reported
+        doc = SimDoc({1: rect("a"), 2: rect("b")}, fail_undo=2)
+        with self.assertRaises(edits.RenderError) as cm:
+            with edits.EditSession(doc) as outer:
+                outer.apply("node.set", {"ids": [1], "props": {"opacity": 0.5}})
+                with edits.EditSession(doc) as inner:
+                    inner.apply("node.set", {"ids": [2], "props": {"opacity": 0.2}})
+                    labels = [h[0] for h in doc.history]
+        self.assertEqual(str(cm.exception), edits.UNDO_FAILED)
+        self.assertEqual(cm.exception.remaining, labels)          # outer (older) first, then inner
+        self.assertFalse(cm.exception.user_undone)
+        self.assertEqual([h[0] for h in doc.history], labels)      # nothing of the user's undone
+
+    def test_nested_session_keeps_user_undone_from_the_inner_failure(self):
+        doc = SimDoc({1: rect("a"), 2: rect("b")}, undo_script=["user_first"], redo_fails=True)
+        with self.assertRaises(edits.RenderError) as cm:
+            with edits.EditSession(doc) as outer:
+                outer.apply("node.set", {"ids": [1], "props": {"opacity": 0.5}})
+                with edits.EditSession(doc) as inner:
+                    inner.apply("node.set", {"ids": [2], "props": {"opacity": 0.2}})
+                    labels = [h[0] for h in doc.history]
+        self.assertTrue(cm.exception.user_undone)
+        self.assertEqual(str(cm.exception), edits.USER_UNDONE)
+        self.assertEqual(cm.exception.remaining, labels)
+
+    def test_nested_session_inner_failure_outer_still_undoes_what_it_can(self):
+        # the inner step is gone (undone after its failure was raised elsewhere): outer cleans up
+        doc = SimDoc({1: rect("a"), 2: rect("b")})
+        start = doc.snapshot()
+        with self.assertRaises(edits.RenderError) as cm:
+            with edits.EditSession(doc) as outer:
+                outer.apply("node.set", {"ids": [1], "props": {"opacity": 0.5}})
+                raise edits.RenderError(edits.UNDO_FAILED, ["elsewhere"])
+        self.assertEqual(cm.exception.remaining, ["elsewhere"])
+        self.assertEqual(doc.snapshot(), start)
+
 
 if __name__ == "__main__":
     unittest.main()

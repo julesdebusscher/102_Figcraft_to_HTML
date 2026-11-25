@@ -5,6 +5,7 @@ SHOWN = 5
 BIG = 10 * 1000 * 1000
 DIGEST_OK = "Le document FigCraft est inchangé (vérifié)."
 DIRTY_NOTE = "FigCraft peut afficher le document comme modifié : son contenu est inchangé (vérifié)."
+NO_REDO = "N'utilisez pas Rétablir (Cmd/Ctrl+Maj+Z) juste après l'export."
 DIGEST_WARNING = ("Attention : le document FigCraft a peut-être été modifié pendant l'export. "
                   "Vérifiez-le avant de l'enregistrer (Cmd/Ctrl+Z annule les dernières modifications).")
 

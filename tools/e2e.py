@@ -77,6 +77,28 @@ def top_frames(info):
     return out
 
 
+def check_redo(ctl):
+    """After an export, the redo stack may hold only our final no-op ("Export HTML (fin) ...")."""
+    from figcraft_export import docfile
+    from figcraft_export.edits import BATCH_LABEL, FINAL_LABEL
+    hist = ctl.request("document.inspect", {"depth": 0}).get("history") or {}
+    redo = hist.get("redo") or 0
+    redo = len(redo) if isinstance(redo, list) else int(redo)
+    print("Historique après l'export : %d étape(s) à annuler, %d à rétablir." % (len(hist.get("undo") or []), redo))
+    if redo == 0:
+        return
+    if redo != 1:
+        raise E2EError("La pile Rétablir contient %d étapes (au plus 1 attendue)." % redo)
+    d0 = docfile.digest(ctl.execute("file.saveAs", {"data": True}))
+    ctl.execute("edit.redo", {})
+    top = (ctl.request("document.inspect", {"depth": 0}).get("history") or {}).get("undo") or [None]
+    same = docfile.digest(ctl.execute("file.saveAs", {"data": True})) == d0
+    ctl.execute("edit.undo", {})
+    print("Rétablir referait : %s (document inchangé : %s)." % (top[0], "oui" if same else "non"))
+    if not str(top[0]).startswith(FINAL_LABEL) or str(top[0]).startswith(BATCH_LABEL) or not same:
+        raise E2EError("Rétablir juste après l'export referait une modification : %s." % top[0])
+
+
 def close_mine(ctl, copy):
     try:
         for d in ctl.execute("doc.list", {}):
@@ -145,6 +167,7 @@ def run(args):
         if not folders:
             raise E2EError("Aucun index.html dans %s." % out)
         target = folders[0]
+        check_redo(ctl)
 
         ref = out / "_reference"
         ref.mkdir(exist_ok=True)

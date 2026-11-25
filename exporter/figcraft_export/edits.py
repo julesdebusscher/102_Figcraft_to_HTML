@@ -6,6 +6,7 @@ UNDO_FAILED = "Impossible d'annuler toutes les modifications temporaires : véri
 USER_UNDONE = ("L'export a annulé par erreur votre dernière modification dans FigCraft : "
                "rétablissez-la avec Cmd/Ctrl+Maj+Z, puis vérifiez le document.")
 BATCH_LABEL = "Export HTML (temporaire)"
+FINAL_LABEL = "Export HTML (fin)"   # the no-op step that pushes our undone steps off the redo stack
 
 
 _NONCE = binascii.hexlify(os.urandom(2)).decode("ascii")  # one per run: labels never match an older run's
@@ -20,6 +21,14 @@ class RenderError(Exception):
         Exception.__init__(self, message)
         self.remaining = list(remaining)
         self.user_undone = user_undone
+
+
+def merge(outer, inner):
+    """One RenderError for an outer session's failure and a nested session's: `remaining` lists
+    the outer (older) labels first, `user_undone` if either says so (its message wins)."""
+    user_undone = outer.user_undone or inner.user_undone
+    remaining = list(outer.remaining) + [l for l in inner.remaining if l not in outer.remaining]
+    return RenderError(USER_UNDONE if user_undone else str(inner), remaining, user_undone)
 
 
 class EditSession(object):
@@ -51,7 +60,14 @@ class EditSession(object):
         return self
 
     def __exit__(self, exc_type, exc, tb):
-        self.undo_all()
+        if not isinstance(exc, RenderError):
+            self.undo_all()
+            return False
+        # a nested session failed: still undo ours, then report both in one error
+        try:
+            self.undo_all()
+        except RenderError as mine:
+            raise merge(mine, exc)
         return False
 
     def _hist(self):
@@ -70,12 +86,13 @@ class EditSession(object):
     def apply(self, command, params):
         return self.batch([(command, params)])
 
-    def batch(self, commands):
-        """[(command, params)] as one labelled undo step."""
+    def batch(self, commands, final=False):
+        """[(command, params)] as one labelled undo step (`final`: labelled FINAL_LABEL <nonce>)."""
         if not commands:
             return None
         EditSession._count[0] += 1
-        label = "%s %s#%d" % (BATCH_LABEL, _NONCE, EditSession._count[0])
+        label = ("%s %s" % (FINAL_LABEL, _NONCE) if final
+                 else "%s %s#%d" % (BATCH_LABEL, _NONCE, EditSession._count[0]))
         if self.baseline is None:
             self.baseline = self._state()
         try:
