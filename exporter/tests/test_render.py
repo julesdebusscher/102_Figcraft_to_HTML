@@ -380,6 +380,33 @@ class RenderTests(unittest.TestCase):
         self.assertNotIn("rotated", svg_of(assets, nodes["4"]["paint"]))
         self.assertEqual(doc.snapshot(), start)
 
+    def test_rotated_layer_inside_instance_unrotated_through_main_component(self):
+        # FigCraft refuses node.set rotation on a layer inside an instance: the matching
+        # layer of the main component (by child index) is un-rotated instead, then undone
+        doc_nodes = {
+            1: {"type": "FRAME", "name": "Écran", "width": 390, "height": 844, "x": 0, "y": 0,
+                "fills": [{"type": "solid", "color": "#FFFFFF"}], "children": [5]},
+            5: {"type": "INSTANCE", "name": "Carte", "width": 200, "height": 100, "x": 0, "y": 0,
+                "fills": [{"type": "solid", "color": "#EEEEEE"}], "children": [6, 7], "mainComponent": 20},
+            6: rect("Texte", color="#222222", main_of=21),
+            7: rect("Badge", color="#FF0000", main_of=22),
+            20: {"type": "COMPONENT", "name": "Carte", "width": 200, "height": 100, "x": 900, "y": 0,
+                 "fills": [{"type": "solid", "color": "#EEEEEE"}], "children": [21, 22]},
+            21: rect("Texte", color="#222222"),
+            22: rect("Badge", color="#FF0000", rotation=15),
+        }
+        proto = [cnode("1", "frame", 390, 844, ["5"]), cnode("5", "instance", 200, 100, ["6", "7"]),
+                 cnode("6"), cnode("7", rotation=15)]
+        jobs = [job("1", 1, hide=True), job("6", 6), job("7", 7)]
+        parent = {"1": None, "5": "1", "6": "5", "7": "5"}
+        doc, w = make(doc_nodes, proto, jobs, parent)
+        start = doc.snapshot()
+        assets = render.render_all(doc, w)
+        self.assertNotIn("rotated", svg_of(assets, w["proto"]["nodes"]["7"]["paint"]))
+        self.assertIn(("node.set", {"ids": [22], "props": {"rotation": 0}}), flat_edits(doc))
+        self.assertEqual(doc.snapshot(), start)
+        self.assertEqual(w["proto"]["report"]["approximated"], [])
+
     def test_strip_effects_blend_opacity_and_unhide(self):
         doc_nodes, proto, jobs, parent = basic()
         doc_nodes[2].update({"opacity": 0.5, "blend": "multiply", "visible": False,

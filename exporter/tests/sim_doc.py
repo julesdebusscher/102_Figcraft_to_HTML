@@ -13,8 +13,10 @@ class SimDoc(object):
     """nodes: {fc: {"type", "name", "width", "height", "x", "y", "visible"?, "rotation"?,
     "opacity"?, "blend"?, "effects"?, "fills"?, "children"?: [fc], "bound"?: var,
     "modes"?: {coll: mode}, "variants"?: {key: {"children", "fills", "width", "height"}},
-    "mainComponentName"?}}; vars: {var: {"collection", "values": {mode: colour}}};
-    defaults: {coll: mode}."""
+    "mainComponentName"?, "mainComponent"?: fc, "main_of"?: fc}}; vars: {var: {"collection", "values": {mode: colour}}};
+    defaults: {coll: mode}.
+    "main_of": a layer inside an instance; its rotation is the main component layer's and
+    node.set rotation on it is refused, like FigCraft."""
 
     def __init__(self, nodes, vars_=None, defaults=None, fail_export=None, fail_undo=0, undo_script=None,
                  on_export=None, timeout_edit=None, redo_fails=False, inspect_fail_after_undo=0):
@@ -120,6 +122,10 @@ class SimDoc(object):
             for i in p["ids"]:
                 if i not in nodes:
                     raise ControlError("no such node %s" % i)
+                if "rotation" in p["props"] and nodes[i].get("main_of") is not None:
+                    raise ControlError("command `node.set` is not available right now: A layer's position "
+                                       "comes from the main component in an instance: edit the main "
+                                       "component, or detach the instance")
                 props = copy.deepcopy(p["props"])
                 for axis, key in (("horizontal", "sizingH"), ("vertical", "sizingV")):
                     if key in props:
@@ -156,7 +162,9 @@ class SimDoc(object):
     def _public(self, fc):
         n = self.state["nodes"][fc]
         out = {k: copy.deepcopy(v) for k, v in n.items()
-               if k not in ("children", "bound", "modes", "variants", "parent")}
+               if k not in ("children", "bound", "modes", "variants", "parent", "main_of")}
+        if n.get("main_of") is not None:
+            out["rotation"] = self.state["nodes"][n["main_of"]].get("rotation", 0)
         out["id"] = fc
         if n.get("bound"):
             out["boundVariables"] = {"fill": n["bound"]}
@@ -201,7 +209,8 @@ class SimDoc(object):
     def rotated(self, fc):
         cur = fc
         while cur is not None:
-            if self.state["nodes"][cur].get("rotation"):
+            n = self.state["nodes"][cur]
+            if (self.state["nodes"][n["main_of"]] if n.get("main_of") is not None else n).get("rotation"):
                 return True
             cur = self.state["nodes"][cur].get("parent")
         return False

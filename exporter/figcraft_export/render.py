@@ -148,17 +148,65 @@ class _Renderer(object):
         return path
 
     def _rotated(self, nid, fc, own_rotation):
-        ids = [fc] if own_rotation else []
+        """FigCraft ids whose rotation is set to 0 for this paint: the node and its rotated
+        ancestors. Inside an instance FigCraft refuses to rotate a layer (its position comes
+        from the main component), so those go to the main component's matching layer."""
+        found = [(nid, fc)] if own_rotation else []
         parent = self.w.get("parent") or {}
         cur, guard = parent.get(nid), 0
         while cur is not None and guard < 10000:
             guard += 1
             n = self.nodes.get(cur)
             f = self.fc_of(cur)
-            if n and n.get("rotation") and f is not None and f not in ids:
-                ids.append(f)
+            if n and n.get("rotation") and f is not None:
+                found.append((cur, f))
             cur = parent.get(cur)
+        ids = []
+        for n_id, f in found:
+            target = self._editable(n_id, f)
+            if target is None:
+                name = (self.nodes.get(n_id) or {}).get("name", n_id)
+                self._approx("« %s » : rotation dans une instance non annulable (approximation)" % name)
+            elif target not in ids:
+                ids.append(target)
         return ids
+
+    def _outline(self, fc):
+        return (self.ctl.execute("node.get", {"id": fc, "outline": True}) or {}).get("children") or []
+
+    def _editable(self, nid, fc):
+        """`fc` itself, or, for a layer inside an instance, the same layer in the instance's
+        main component (followed by child index). None when it can't be matched."""
+        parent = self.w.get("parent") or {}
+        chain, cur, guard = [(nid, fc)], parent.get(nid), 0
+        while cur is not None and guard < 10000:
+            guard += 1
+            n = self.nodes.get(cur) or {}
+            if n.get("kind") == "instance":
+                break
+            chain.append((cur, self.fc_of(cur)))
+            cur = parent.get(cur)
+        else:
+            return fc
+        inst_fc = self.fc_of(cur)
+        main = (self.ctl.execute("node.get", {"id": inst_fc}) or {}).get("mainComponent")
+        if inst_fc is None or main is None or any(f is None for _, f in chain):
+            return None
+        path, up = [], inst_fc
+        for _, f in reversed(chain):
+            kids = self._outline(up)
+            idx = [k.get("id") for k in kids].index(f) if f in [k.get("id") for k in kids] else None
+            if idx is None:
+                return None
+            path.append((idx, kids[idx].get("type")))
+            up = f
+        target = main
+        for idx, typ in path:
+            kids = self._outline(target)
+            if idx >= len(kids) or kids[idx].get("type") != typ:
+                return None
+            target = kids[idx].get("id")
+        return target
 
     def _mode_target(self, nid):
         screen = (self.w.get("screen_of") or {}).get(nid)
