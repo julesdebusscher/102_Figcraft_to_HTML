@@ -31,7 +31,21 @@ FCP.createState = function (proto) {
     overrides = {};
     clearObj(State.vars); clearObj(State.modes);
     Object.keys(colls).forEach(function (c) { State.modes[c] = colls[c].defaultMode; });
+    screenModes(proto.start);
     recompute();
+  }
+  // screens[id].modes (optional): the modes in effect on that screen (its page's, then its own
+  // explicit ones), applied on start, restart and on reaching it (navigate, back).
+  function screenModes(id) {
+    var m = screens[id] && screens[id].modes;
+    if (!m) return false;
+    var changed = false;
+    Object.keys(m).forEach(function (c) {
+      if (!Object.prototype.hasOwnProperty.call(colls, c) || !colls[c].modes ||
+          !Object.prototype.hasOwnProperty.call(colls[c].modes, m[c])) return;
+      if (State.modes[c] !== m[c]) { State.modes[c] = m[c]; changed = true; }
+    });
+    return changed;
   }
   function overlayEntry(a, ctx) {
     return { id: a.dest, sourceNodeId: ctx && ctx.nodeId, position: a.position, anchor: a.anchor,
@@ -70,6 +84,7 @@ FCP.createState = function (proto) {
         history.push({ screen: State.screen, transition: a.transition });
         fx.push({ kind: "screen", from: State.screen, to: a.dest, transition: a.transition, preserveScroll: !!a.preserveScroll });
         State.screen = a.dest;
+        if (screenModes(a.dest)) recompute();
         return;
       case "back":
         if (State.overlays.length) {
@@ -79,6 +94,7 @@ FCP.createState = function (proto) {
           var h = history.pop();
           fx.push({ kind: "screen", from: State.screen, to: h.screen, transition: h.transition, reverse: true });
           State.screen = h.screen;
+          if (screenModes(h.screen)) recompute();
         }
         return;
       case "closeOverlay":

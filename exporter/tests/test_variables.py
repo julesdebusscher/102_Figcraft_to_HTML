@@ -203,9 +203,24 @@ class AddJobsTests(unittest.TestCase):
         n = len([j for j in w["jobs"] if j["node"] == "2" and j["kind"] != "own"])
         self.assertEqual(n, 32)
         self.assertIn("Alternatives limitées à 32 pour le calque « Carte » : rendu approximé.", w["warnings"])
-        self.assertIn("La variable « surface » change par une expression : seules ses valeurs connues sont pré-rendues.",
-                      w["warnings"])
+        msg = "La variable « surface » change par une expression : seules ses valeurs connues sont pré-rendues."
+        self.assertIn(msg, w["proto"]["report"]["approximated"])     # an approximation, not a remark
+        self.assertNotIn(msg, w["warnings"])
         self.assertEqual(len(w["proto"]["nodes"]["2"]["alts"]), 32)
+
+    def test_page_mode_pins_its_screens(self):
+        v, w = scene([{"type": "setVariableMode", "collection": THEME, "mode": D}])
+        w["screen_of"] = {"1": "1", "2": "1", "3": "1"}
+        w["page_modes"] = {"1": {THEME: D}}
+        variables.add_jobs(w, v, variables.reachable(v, w["actions"]))
+        self.assertEqual([j for j in w["jobs"] if j["kind"] != "own"], [])
+        self.assertTrue(all(j["pinned_modes"] == {THEME: D} for j in w["jobs"]))
+
+    def test_frame_mode_wins_over_the_page_mode(self):
+        v, w = scene([], explicit={"1": {THEME: L}})
+        w["screen_of"] = {"1": "1", "2": "1", "3": "1"}
+        w["page_modes"] = {"1": {THEME: D}}
+        self.assertEqual(variables._pinned(w, "2"), {THEME: L})
 
 
 if __name__ == "__main__":

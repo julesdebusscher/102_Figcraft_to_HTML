@@ -242,7 +242,13 @@ class _Renderer(object):
         else:
             self.nodes[nid]["paint"] = paint
             if job.get("mask_for") and paint and job["mask_for"] in self.nodes:
-                self.nodes[job["mask_for"]]["css"]["maskSrc"] = paint["src"]
+                # the mask layer is drawn by no parent: its paint becomes the group's mask image,
+                # placed at the mask layer's box in the group plus the paint's offset
+                n = self.nodes[nid]
+                self.nodes[job["mask_for"]]["css"].update({
+                    "maskSrc": paint["src"],
+                    "maskBox": [_r(n["x"] + paint["dx"]), _r(n["y"] + paint["dy"]), paint["w"], paint["h"]]})
+                n["paint"] = None
 
     def _paint(self, nid, fc, alt, png, info):
         svg = self._export(fc, "svg")
@@ -317,7 +323,8 @@ class _Renderer(object):
         if self.reach is None:
             self.reach = variables.reachable(vs, self.w.get("actions"))
         mini = {"proto": self.proto, "jobs": list(own_jobs), "bound": bound, "parent": self.w.get("parent") or {},
-                "explicit_modes": self.w.get("explicit_modes") or {}, "warnings": [], "actions": []}
+                "explicit_modes": self.w.get("explicit_modes") or {}, "warnings": [], "actions": [],
+                "screen_of": self.w.get("screen_of") or {}, "page_modes": self.w.get("page_modes") or {}}
         variables.add_jobs(mini, vs, self.reach)
         warnings = self.w.setdefault("warnings", [])
         for m in mini["warnings"]:
@@ -362,7 +369,7 @@ def _clear_redo(ctl, walked, baseline):
 
 def render_all(ctl, walked, scale=2):
     """Render every job of `walked` (after variables.add_jobs). Fills `paint`, `alts[i].paint`
-    and `css.maskSrc` in walked["proto"]["nodes"], adds the non-current variants' nodes
+    and `css.maskSrc`/`css.maskBox` in walked["proto"]["nodes"], adds the non-current variants' nodes
     ("<inst>~<key>~...") and sets `instance.variants[key]`. Returns [Asset] =
     [{"path": "assets/<sanitised id>[__alt<i>].svg|png", "data": bytes}], one per distinct
     content. Every temporary edit is undone before returning or raising; RenderError (French)

@@ -179,3 +179,29 @@ test("close_overlay_at_closes_that_one_not_the_top", function () {
   assertEq(st.overlays.length, 1); assertEq(st.overlays[0].id, "O2");
   assertEq(st.run([{ type: "closeOverlay" }], {})[0].transition, undefined);
 });
+test("screen_modes_seed_start_restart_and_navigate", function () {
+  var p = mkProto();
+  p.screens.A.modes = { c1: "m2" };
+  p.screens.B.modes = { c1: "m1", nope: "x" };
+  p.screens.O1.modes = { c1: "bad" };
+  var s = FCP.createState(p);
+  assertEq(s.modes.c1, "m2"); assertEq(s.vars.count, 5);
+  s.run([nav("B")], ctx);
+  assertEq(s.modes.c1, "m1"); assertEq(s.vars.count, 0);
+  assertEq(s.modes.nope, undefined);                       // unknown collection ignored
+  s.run([{ type: "setVariableMode", collection: "c1", mode: "m2" }], ctx);
+  s.run([nav("C")], ctx);
+  assertEq(s.modes.c1, "m2");                               // a screen without modes keeps them
+  s.run([{ type: "back" }], ctx);
+  assertEq(s.modes.c1, "m1");                               // back to B: its modes again
+  s.run([ov("openOverlay", "O1")], ctx);
+  assertEq(s.modes.c1, "m1");                               // overlays don't change modes
+  s.restart();
+  assertEq(s.modes.c1, "m2"); assertEq(s.vars.count, 5);
+});
+test("no_screen_modes_keeps_default_modes", function () {
+  var s = FCP.createState(mkProto());
+  assertEq(s.modes.c1, "m1");
+  s.run([nav("B")], ctx);
+  assertEq(s.modes.c1, "m1");
+});

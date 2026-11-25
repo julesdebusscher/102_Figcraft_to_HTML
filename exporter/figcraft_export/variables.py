@@ -36,7 +36,8 @@ def _value(vtype, entry):
 
 def parse(raw):
     """variable.list reply -> {"collections": {...}, "vars": {...}} (contract). The default
-    mode of a collection is its first mode."""
+    mode of a collection is its first mode (FigCraft: `variable.moveMode` index 0 = the default
+    mode, which layers on Auto follow; verified live)."""
     colls, vs = {}, {}
     for c in (raw or {}).get("collections") or []:
         modes = c.get("modes") or []
@@ -144,6 +145,8 @@ def alternatives(bound_vars, modes_used, reach, cap=CAP):
 
 
 def _pinned(walked, nid):
+    """Explicit modes over a layer: its own and its ancestors' (nearest wins), then its screen's
+    page (`walked["page_modes"]`: {screen id: {coll: mode}})."""
     out, cur, guard = {}, nid, 0
     parent = walked.get("parent") or {}
     while cur is not None and guard < 10000:
@@ -151,6 +154,9 @@ def _pinned(walked, nid):
         for c, m in (walked.get("explicit_modes", {}).get(cur) or {}).items():
             out.setdefault(c, m)
         cur = parent.get(cur)
+    screen = (walked.get("screen_of") or {}).get(nid)
+    for c, m in ((walked.get("page_modes") or {}).get(screen) or {}).items():
+        out.setdefault(c, m)
     return out
 
 
@@ -171,6 +177,7 @@ def add_jobs(walked, variables, reach, cap=CAP):
     proto["variables"] = variables
     _normalise_actions(variables, walked.get("actions"))
     warn = walked["warnings"]
+    approx = proto.setdefault("report", {}).setdefault("approximated", [])
     new_jobs, open_seen = [], []
     for job in list(walked["jobs"]):
         if job.get("kind") != "own":
@@ -185,8 +192,10 @@ def add_jobs(walked, variables, reach, cap=CAP):
         for v in colour_vars(bound, reach):
             if v in reach["open"] and v not in open_seen:
                 open_seen.append(v)
-                warn.append("La variable « %s » change par une expression : seules ses valeurs connues sont pré-rendues."
-                            % variables["vars"][v]["name"])
+                msg = ("La variable « %s » change par une expression : seules ses valeurs connues sont pré-rendues."
+                       % variables["vars"][v]["name"])
+                if msg not in approx:
+                    approx.append(msg)
         used = [c for c in reach["modes"] if c not in pinned]
         whens, capped = alternatives(bound, used, reach, cap)
         if capped:

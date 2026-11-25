@@ -74,8 +74,28 @@
         e.img.style.width = pct(p.w, n.w); e.img.style.height = pct(p.h, n.h);
       }
     }
-    if (e.txt) e.txt.textContent = fmt(st.vars[n.liveText.var]);
+    if (e.txt) {
+      e.txt.textContent = fmt(st.vars[n.liveText.var]);
+      e.txt.style.color = FCP.liveTextColor(st, n.liveText);
+    }
   }
+
+  // liveText colour: its bound colour variable's current value (liveText.colorVar), else style.color.
+  FCP.liveTextColor = function (state, lt) {
+    var v = lt && lt.colorVar !== undefined && state && state.vars ? state.vars[lt.colorVar] : undefined;
+    if (typeof v === "string" && v) return v;
+    return (lt && lt.style && lt.style.color) || "";
+  };
+
+  // css.maskSrc (a data: URI) placed at css.maskBox [x, y, w, h] in the layer's box (px);
+  // without a box the mask covers the layer. null when there is no mask.
+  FCP.maskCss = function (css) {
+    if (!css || !css.maskSrc) return null;
+    var b = css.maskBox;
+    return { image: "url(\"" + String(css.maskSrc).replace(/"/g, "%22") + "\")",
+             position: b ? px(b[0]) + " " + px(b[1]) : "0px 0px",
+             size: b ? px(b[2]) + " " + px(b[3]) : "100% 100%" };
+  };
 
   function applyCss(el, n) {
     var c = n.css || {}, s = el.style;
@@ -83,11 +103,11 @@
     if (c.backdropBlur) { s.backdropFilter = "blur(" + px(c.backdropBlur) + ")"; s.webkitBackdropFilter = s.backdropFilter; }
     if (c.layerBlur) s.filter = "blur(" + px(c.layerBlur) + ")";
     if (c.blend) s.mixBlendMode = c.blend;
-    if (c.clipPath) s.clipPath = "path('" + String(c.clipPath).replace(/'/g, "") + "')";
-    if (c.maskSrc) {
-      var m = "url(\"" + String(c.maskSrc).replace(/"/g, "%22") + "\")";
-      s.maskImage = m; s.webkitMaskImage = m;
-      s.maskSize = s.webkitMaskSize = "100% 100%";
+    var m = FCP.maskCss(c);
+    if (m) {
+      s.maskImage = s.webkitMaskImage = m.image;
+      s.maskPosition = s.webkitMaskPosition = m.position;
+      s.maskSize = s.webkitMaskSize = m.size;
       s.maskRepeat = s.webkitMaskRepeat = "no-repeat";
     }
   }

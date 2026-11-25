@@ -33,13 +33,30 @@ def digest(saveas_reply):
     return hashlib.sha256(document_bytes(saveas_reply)).hexdigest()
 
 
+def _page_of(nodes, n):
+    """Id (str) of the page a top-level layer sits on (through sections), else None."""
+    cur, guard = nodes.get(str(n.get("parent"))), 0
+    while isinstance(cur, dict) and guard < 1000:
+        guard += 1
+        if cur.get("type") == "page":
+            return str(cur.get("id"))
+        if cur.get("type") != "section":
+            return None
+        cur = nodes.get(str(cur.get("parent")))
+    return None
+
+
 def extras(saveas_reply):
-    """{layer id (str): {"overflow", "position", "varModes"}} for layers that set any of them."""
+    """{layer id (str): {"overflow", "position", "varModes", "page"?}} for layers that set any of
+    them; "page" (the page id) for the top-level layers of a page that sets modes itself
+    (`var_modes` on the page, as `variable.setMode {ids:[page]}` writes)."""
     try:
         doc = json.loads(document_bytes(saveas_reply).decode("utf-8"))
         nodes = doc.get("nodes") or {}
     except (ValueError, UnicodeDecodeError, AttributeError):
         raise DocFileError("Impossible de lire le document FigCraft (document.json illisible).")
+    moded = set(str(k) for k, n in nodes.items()
+                if isinstance(n, dict) and n.get("type") == "page" and n.get("var_modes"))
     out = {}
     for key, n in nodes.items():
         if not isinstance(n, dict):
@@ -47,11 +64,16 @@ def extras(saveas_reply):
         overflow = n.get("overflow")
         position = n.get("scroll_position")
         modes = n.get("var_modes")
-        if overflow is None and position is None and not modes:
+        page = _page_of(nodes, n) if moded and n.get("type") not in ("page", "section") else None
+        if page not in moded:
+            page = None
+        if overflow is None and position is None and not modes and page is None:
             continue
         out[str(key)] = {
             "overflow": overflow or "none",
             "position": _POSITIONS.get(position, "scroll"),
             "varModes": {str(k): v for k, v in (modes or {}).items() if v is not None},
         }
+        if page is not None:
+            out[str(key)]["page"] = page
     return out

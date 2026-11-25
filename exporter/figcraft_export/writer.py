@@ -1,4 +1,5 @@
 """Output folder: index.html, player.js, player.css, data.js, assets/ (opens from file://)."""
+import base64
 import html
 import json
 import os
@@ -33,6 +34,32 @@ def to_data_js(proto):
     body = json.dumps(proto, ensure_ascii=False, separators=(",", ":"))
     body = body.replace("</", "<\\/").replace("\u2028", "\\u2028").replace("\u2029", "\\u2029")
     return DATA_PREFIX + body + ";\n"
+
+
+_MIME = {"svg": "image/svg+xml", "png": "image/png"}
+
+
+def inline_masks(proto, assets):
+    """Every `css.maskSrc` becomes a data: URI (a CSS mask-image is fetched in CORS mode, which
+    Firefox refuses for sibling file:// files). Returns the assets still needed: a file used only
+    as a mask is dropped. Idempotent."""
+    by_path = {a["path"]: a for a in assets}
+    nodes = (proto.get("nodes") or {}).values()
+    masks = set()
+    for n in nodes:
+        css = n.get("css") or {}
+        src = css.get("maskSrc")
+        if isinstance(src, str) and src in by_path:
+            ext = src.rsplit(".", 1)[-1].lower()
+            css["maskSrc"] = "data:%s;base64,%s" % (_MIME.get(ext, "application/octet-stream"),
+                                                    base64.b64encode(by_path[src]["data"]).decode("ascii"))
+            masks.add(src)
+    used = set()
+    for n in nodes:
+        for p in [n.get("paint")] + [a.get("paint") for a in n.get("alts") or []]:
+            if isinstance(p, dict):
+                used.add(p.get("src"))
+    return [a for a in assets if a["path"] not in masks or a["path"] in used]
 
 
 def _read(path):
@@ -90,7 +117,8 @@ def _is_export(folder):
 
 
 def write(out_dir, proto, assets, player_root):
-    """Write the export into out_dir/<slug(title)>/ and return that folder.
+    """Write the export into out_dir/<slug(title)>/ and return that folder (masks inlined first,
+    see inline_masks).
 
     Everything is written into a hidden sibling folder `.<slug>.export-<pid>` first, then
     swapped in: an earlier export is renamed `.<slug>.old-<pid>`, the new one renamed to
@@ -99,6 +127,7 @@ def write(out_dir, proto, assets, player_root):
     folders of an interrupted run are removed. An existing target is replaced only when it is
     empty or holds an earlier export (data.js starting with DATA_PREFIX); otherwise WriteError."""
     out_dir = Path(out_dir)
+    assets = inline_masks(proto, assets)
     name = slug(proto.get("title"))
     target = out_dir / name
     if target.exists():

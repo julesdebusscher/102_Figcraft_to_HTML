@@ -26,18 +26,29 @@
   }
 
   var MODS = { shift: "shift", ctrl: "ctrl", control: "ctrl", alt: "alt", option: "alt", meta: "meta", cmd: "meta", command: "meta" };
+  // FigCraft key names (as typed in the setter, or as its key recorder writes them) -> the
+  // lower-cased DOM KeyboardEvent.key value; DOM values map to themselves.
+  var KEY_ALIASES = { " ": " ", space: " ", spacebar: " ", up: "arrowup", down: "arrowdown", left: "arrowleft",
+    right: "arrowright", "return": "enter", esc: "escape", del: "delete", pgup: "pageup", pgdown: "pagedown",
+    ins: "insert", plus: "+", minus: "-", equals: "=", comma: ",", period: ".", slash: "/", backslash: "\\",
+    semicolon: ";", colon: ":", quote: "'", backtick: "`", openbracket: "[", closebracket: "]",
+    questionmark: "?", exclamationmark: "!", pipe: "|" };
   function normKey(k) {
     k = String(k);
-    if (k === " ") return "space";
-    return k.toLowerCase();
+    var l = k === " " ? " " : k.toLowerCase();
+    if (Object.prototype.hasOwnProperty.call(KEY_ALIASES, l)) return KEY_ALIASES[l];
+    var num = /^num(?:pad)?([0-9])$/.exec(l);
+    return num ? num[1] : l;
   }
   FCP.keyMatches = function (spec, ev) {
     if (typeof spec !== "string" || !ev) return false;
     var g = /^gamepad\s+(.+)$/i.exec(spec);
     if (g) return ev.gamepad !== undefined && String(ev.gamepad).toLowerCase() === g[1].trim().toLowerCase();
     if (ev.gamepad !== undefined || ev.key === undefined) return false;
-    var parts = spec.split("+").map(function (s) { return s.trim(); });
+    var raw = spec.split("+"), last = raw[raw.length - 1];
+    var parts = raw.map(function (s) { return s.trim(); });
     var key = parts.pop();
+    if (key === "" && last.length) key = " ";   // the space bar given as " "
     if (key === "" && parts.length && parts[parts.length - 1] === "") { parts.pop(); key = "+"; }
     var want = { shift: false, ctrl: false, alt: false, meta: false };
     for (var i = 0; i < parts.length; i++) {

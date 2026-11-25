@@ -49,6 +49,37 @@ class DataJsTests(unittest.TestCase):
             self.assertEqual(parse_data_js(text)["screens"]["1"]["name"], NAME)
 
 
+class MaskTests(unittest.TestCase):
+    def masked(self):
+        p = proto()
+        p["nodes"] = {
+            "g": {"id": "g", "css": {"maskSrc": "assets/m.svg", "maskBox": [0, 0, 10, 10]}, "paint": None, "alts": []},
+            "h": {"id": "h", "css": {"maskSrc": "assets/shared.png"}, "paint": None, "alts": []},
+            "k": {"id": "k", "css": {}, "paint": None, "alts": [{"when": {}, "paint": {"src": "assets/shared.png"}}]},
+        }
+        assets = [{"path": "assets/m.svg", "data": b"<svg/>"}, {"path": "assets/shared.png", "data": b"\x89PNG"},
+                  {"path": "assets/1.svg", "data": b"<svg/>"}]
+        return p, assets
+
+    def test_mask_sources_inlined_as_data_uris(self):
+        p, assets = self.masked()
+        kept = writer.inline_masks(p, assets)
+        self.assertEqual(p["nodes"]["g"]["css"]["maskSrc"], "data:image/svg+xml;base64,PHN2Zy8+")
+        self.assertEqual(p["nodes"]["h"]["css"]["maskSrc"], "data:image/png;base64,iVBORw==")
+        # the mask-only file is no longer needed; a file a paint still uses is kept
+        self.assertEqual([a["path"] for a in kept], ["assets/shared.png", "assets/1.svg"])
+        self.assertEqual(writer.inline_masks(p, kept), kept)     # idempotent
+
+    def test_written_export_has_no_mask_file_and_data_js_carries_it(self):
+        p, assets = self.masked()
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = writer.write(Path(tmp), p, assets, PLAYER)
+            self.assertFalse((folder / "assets" / "m.svg").exists())
+            self.assertTrue((folder / "assets" / "shared.png").exists())
+            data = parse_data_js((folder / "data.js").read_text(encoding="utf-8"))
+            self.assertTrue(data["nodes"]["g"]["css"]["maskSrc"].startswith("data:image/svg+xml;base64,"))
+
+
 class PlayerJsTests(unittest.TestCase):
     def test_player_js_concatenates_src_in_order(self):
         js = writer.player_js(PLAYER)

@@ -473,7 +473,8 @@ window.FIGCRAFT_PROTOTYPE = {
      "letterSpacing": 0,
      "color": "#1a1a2e",
      "align": "center"
-    }
+    },
+    "colorVar": "v.ink"
    },
    "bindings": {},
    "instance": null,
@@ -757,7 +758,8 @@ window.FIGCRAFT_PROTOTYPE = {
     "2.fuzzy",
     "2.drag",
     "2.back",
-    "2.next"
+    "2.next",
+    "2.mask"
    ],
    "interactions": []
   },
@@ -2229,6 +2231,68 @@ window.FIGCRAFT_PROTOTYPE = {
     "1.loop~A~bg"
    ],
    "interactions": []
+  },
+  "2.mask": {
+   "id": "2.mask",
+   "name": "Mask group",
+   "kind": "group",
+   "x": 300,
+   "y": 40,
+   "w": 70,
+   "h": 70,
+   "rotation": 0,
+   "opacity": 1,
+   "visible": true,
+   "clip": false,
+   "overflow": "none",
+   "position": "scroll",
+   "paint": null,
+   "alts": [],
+   "css": {
+    "maskSrc": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIzMCIgZmlsbD0iIzAwMCIvPjwvc3ZnPg==",
+    "maskBox": [
+     10,
+     10,
+     60,
+     60
+    ]
+   },
+   "liveText": null,
+   "bindings": {},
+   "instance": null,
+   "children": [
+    "2.mask.img"
+   ],
+   "interactions": []
+  },
+  "2.mask.img": {
+   "id": "2.mask.img",
+   "name": "Photo",
+   "kind": "leaf",
+   "x": 0,
+   "y": 0,
+   "w": 70,
+   "h": 70,
+   "rotation": 0,
+   "opacity": 1,
+   "visible": true,
+   "clip": false,
+   "overflow": "none",
+   "position": "scroll",
+   "paint": {
+    "src": "assets/btn_theme.svg",
+    "dx": 0,
+    "dy": 0,
+    "w": 70,
+    "h": 70
+   },
+   "alts": [],
+   "css": {},
+   "liveText": null,
+   "bindings": {},
+   "instance": null,
+   "children": [],
+   "interactions": []
   }
  },
  "variables": {
@@ -2277,6 +2341,15 @@ window.FIGCRAFT_PROTOTYPE = {
     "valuesByMode": {
      "m.light": false,
      "m.dark": false
+    }
+   },
+   "v.ink": {
+    "name": "ink",
+    "collection": "c.theme",
+    "type": "color",
+    "valuesByMode": {
+     "m.light": "rgba(26, 26, 46, 1)",
+     "m.dark": "rgba(245, 245, 255, 1)"
     }
    }
   }

@@ -53,6 +53,7 @@ class _Walker(object):
         self.nodes, self.screens, self.jobs = {}, {}, []
         self.warnings, self.skipped, self.approx = [], [], []
         self.bound, self.parent, self.screen_of, self.modes = {}, {}, {}, {}
+        self.page_modes = {}   # {screen id: its page's explicit modes}
         self.actions, self.var_types = [], {}
         self.queue, self.queued, self.missing = deque(), set(), set()
         self.pending, self.inst_links = [], {}
@@ -77,17 +78,22 @@ class _Walker(object):
             self.skipped.append(msg)
 
     # -- selection ---------------------------------------------------------
-    def _top_frames(self, container, section, boxes, section_of, tops, ox=0.0, oy=0.0):
-        # boxes in page coordinates (a section's children are relative to the section)
+    def _top_frames(self, container, section, boxes, section_of, tops, ox=0.0, oy=0.0, chain=(), within=None):
+        # boxes in page coordinates (a section's children are relative to the section);
+        # within: {frame id: (enclosing section ids, innermost first)}
+        within = {} if within is None else within
         for c in container.get("children") or []:
             tops[c["id"]] = c
             x, y = ox + num(c.get("x", 0)), oy + num(c.get("y", 0))
             if c.get("type") == "FRAME":
                 boxes[c["id"]] = (x, y, num(c.get("width", 0)), num(c.get("height", 0)))
                 section_of[c["id"]] = section
+                within[c["id"]] = chain
             elif c.get("type") == "SECTION" and c.get("childCount", len(c.get("children") or [])):
                 sec = self.get(c["id"]) or {}
-                self._top_frames(sec, (c["id"], c.get("name")), boxes, section_of, tops, x, y)
+                self._top_frames(sec, (c["id"], c.get("name")), boxes, section_of, tops, x, y,
+                                 (c["id"],) + tuple(chain), within)
+        return within
 
     def run(self):
         insp = self.ctl.request("document.inspect", {"depth": 0}) or {}
@@ -97,14 +103,21 @@ class _Walker(object):
         page_id = insp.get("currentPage")
         page = self.get(page_id) or {}
         boxes, section_of, tops = {}, {}, {}
-        self._top_frames(page, None, boxes, section_of, tops)
+        within = self._top_frames(page, None, boxes, section_of, tops)
+        # a selected section stands for every frame in it (nested sections too)
+        wanted = set(sel)
+        picked = {i: b for i, b in boxes.items() if i in wanted or any(s in wanted for s in within.get(i, ()))}
         # canvas reading order (ruling R14); panel groups follow their first frame in it
-        selected = reading_order({i: b for i, b in boxes.items() if i in sel})
+        selected = reading_order(picked)
         for i in sel:
             if i in selected:
                 continue
-            if i in tops:
-                self.warn("« %s » ignoré : seules les frames de premier niveau sont exportées." % tops[i].get("name", i))
+            if i in tops and tops[i].get("type") == "SECTION":
+                if not any(i in within.get(f, ()) for f in selected):
+                    self.warn("« %s » ignoré : cette section ne contient aucune frame." % tops[i].get("name", i))
+            elif i in tops:
+                self.warn("« %s » ignoré : seules les frames et sections de premier niveau sont exportées."
+                          % tops[i].get("name", i))
             else:
                 name = (self.get(i) or {}).get("name", i)
                 self.warn("« %s » ignoré : ce calque est dans une frame ; sélectionnez la frame de premier niveau." % name)
@@ -136,7 +149,7 @@ class _Walker(object):
         return {"proto": proto, "jobs": self.jobs, "warnings": self.warnings, "page_id": str(page_id),
                 "bound": self.bound, "explicit_modes": self.modes, "parent": self.parent,
                 "screen_of": self.screen_of, "variables_raw": vl, "actions": self.actions,
-                "extras": self.extras}
+                "extras": self.extras, "page_modes": self.page_modes}
 
     # -- closure -----------------------------------------------------------
     def enqueue(self, dest, source):
@@ -153,10 +166,17 @@ class _Walker(object):
     def _screen(self, sid, raw):
         nid = str(sid)
         fill = solid(raw)
+        ex = self.extras.get(nid, {})
         self.screens[nid] = {"name": raw.get("name", ""), "width": num(raw.get("width", 0)),
                              "height": num(raw.get("height", 0)),
                              "background": css_color(fill) if fill else "transparent", "root": nid,
-                             "overflow": self.extras.get(nid, {}).get("overflow", "none")}
+                             "overflow": ex.get("overflow", "none")}
+        page = dict((self.extras.get(str(ex.get("page")), {}) or {}).get("varModes") or {}) if ex.get("page") else {}
+        if page:
+            self.page_modes[nid] = dict(page)
+        page.update(ex.get("varModes") or {})   # the screen frame's own explicit modes win
+        if page:
+            self.screens[nid]["modes"] = page
         if nid in self.nodes:
             return
         todo = deque([(raw, None, None, [])])
@@ -203,6 +223,8 @@ class _Walker(object):
         live = None
         if t == "TEXT" and self.var_types.get(bv.get("characters")) in ("string", "number"):
             live = {"var": bv["characters"], "style": text_style(raw)}
+            if self.var_types.get(bv.get("fill")) == "color":
+                live["colorVar"] = bv["fill"]   # style.color stays the fallback
         bindings = {}
         if self.var_types.get(bv.get("visible")) == "boolean":
             bindings["visible"] = bv["visible"]
@@ -395,7 +417,7 @@ def walk(ctl, extras):
     """Walk the current page's selected top-level frames and everything they link to.
 
     Returns Walked = {"proto", "jobs", "warnings", "page_id", "bound", "explicit_modes",
-    "parent", "screen_of", "variables_raw", "actions"}: see task-7-report.md for the
+    "parent", "screen_of", "variables_raw", "actions", "extras", "page_modes"}: see task-7-report.md for the
     exact shapes and what Tasks 8 (mode/varValue jobs, variables) and 9 (paints,
     non-current variant subtrees) must fill in. Raises WalkError (French) when nothing
     exportable is selected.

@@ -37,6 +37,25 @@ class DocfileTests(unittest.TestCase):
         self.assertEqual(ex["5"]["position"], "sticky")
         self.assertEqual(ex["6"], {"overflow": "both", "position": "scroll", "varModes": {}})
 
+    def test_top_level_layers_know_their_page_when_the_page_sets_modes(self):
+        doc = {"nodes": {
+            "1": {"id": 1, "type": "page", "children": [2, 3], "var_modes": {"C": "C/mode2"}},
+            "2": {"id": 2, "type": "frame", "parent": 1},
+            "3": {"id": 3, "type": "section", "parent": 1, "children": [4]},
+            "4": {"id": 4, "type": "section", "parent": 3, "children": [5]},
+            "5": {"id": 5, "type": "frame", "parent": 4, "overflow": "vertical"},
+            "6": {"id": 6, "type": "rectangle", "parent": 5},
+            "7": {"id": 7, "type": "page", "children": [8]},
+            "8": {"id": 8, "type": "frame", "parent": 7},
+        }}
+        ex = docfile.extras(_reply_with(doc))
+        self.assertEqual(ex["1"]["varModes"], {"C": "C/mode2"})
+        self.assertEqual(ex["2"], {"overflow": "none", "position": "scroll", "varModes": {}, "page": "1"})
+        self.assertEqual(ex["5"]["page"], "1")          # inside nested sections
+        self.assertEqual(ex["5"]["overflow"], "vertical")
+        self.assertNotIn("6", ex)                         # not top-level
+        self.assertNotIn("8", ex)                         # its page sets no mode
+
     def test_digest_is_sha256_of_document_json(self):
         self.assertEqual(docfile.digest(self.fx["reply"]), self.fx["document_sha256"])
         raw = base64.b64decode(self.fx["reply"]["data"])

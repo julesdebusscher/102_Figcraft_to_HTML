@@ -68,6 +68,23 @@ test("key_shift_k_does_not_fire_for_k", function () {
   assertEq(FCP.keyMatches("Enter", { key: "Enter" }), true);
   assertEq(FCP.keyMatches("Space", { key: " " }), true);
 });
+test("figcraft_key_names_map_to_dom_key_values", function () {
+  // FigCraft stores the name as given (setter) or as its key recorder writes it (egui names)
+  [["Up", "ArrowUp"], ["ArrowUp", "ArrowUp"], ["Down", "ArrowDown"], ["Left", "ArrowLeft"], ["Right", "ArrowRight"],
+   ["Enter", "Enter"], ["Return", "Enter"], ["Escape", "Escape"], ["Esc", "Escape"], ["Space", " "], [" ", " "],
+   ["Tab", "Tab"], ["Backspace", "Backspace"], ["Delete", "Delete"], ["Del", "Delete"], ["PageUp", "PageUp"],
+   ["PageDown", "PageDown"], ["Home", "Home"], ["End", "End"], ["Plus", "+"], ["Minus", "-"], ["Equals", "="],
+   ["Comma", ","], ["Period", "."], ["Slash", "/"], ["Num1", "1"], ["1", "1"], ["F1", "F1"]
+  ].forEach(function (p) {
+    assertEq(FCP.keyMatches(p[0], { key: p[1] }), true, p[0] + " vs " + JSON.stringify(p[1]));
+  });
+  assertEq(FCP.keyMatches("Up", { key: "ArrowDown" }), false);
+  assertEq(FCP.keyMatches("Shift+Enter", { key: "Enter", shift: true }), true);
+  assertEq(FCP.keyMatches("Ctrl+Left", { key: "ArrowLeft", ctrl: true }), true);
+  assertEq(FCP.keyMatches("Shift+Tab", { key: "Tab" }), false);
+  assertEq(FCP.keyMatches("Ctrl+Plus", { key: "+", ctrl: true }), true);
+  assertEq(FCP.keyMatches("Ctrl++", { key: "+", ctrl: true }), true);
+});
 test("gamepad_key_spec_parsed", function () {
   assertEq(FCP.keyMatches("Gamepad A", { gamepad: "A" }), true);
   assertEq(FCP.keyMatches("Gamepad A", { gamepad: "B" }), false);

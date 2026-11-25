@@ -182,6 +182,7 @@ def _export(ctl, args):
     if not folder:
         return _fail("Aucun dossier choisi : export annulé. " + NOTHING_WRITTEN)
     try:
+        assets = writer.inline_masks(proto, assets)   # before the summary counts the sizes
         out = Path(folder).expanduser()
         out.mkdir(parents=True, exist_ok=True)
         target = writer.write(out, proto, assets, player_root())

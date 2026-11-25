@@ -78,6 +78,34 @@ class WalkSelectionTests(unittest.TestCase):
             {"section": None, "screens": ["163", "146"]},
         ])
 
+    def test_selected_section_expands_to_its_frames(self):
+        w = walk.walk(scenario(selection=[169]), EXTRAS)
+        self.assertEqual(w["proto"]["panel"], [{"section": "Parcours", "screens": ["160", "161"]}])
+        self.assertFalse([m for m in w["warnings"] if "Parcours" in m])
+        # with other frames: no duplicates, reading order kept
+        w = walk.walk(scenario(selection=[146, 169, 160]), EXTRAS)
+        self.assertEqual(w["proto"]["panel"], [{"section": None, "screens": ["146"]},
+                                               {"section": "Parcours", "screens": ["160", "161"]}])
+
+    def test_nested_sections_expand_recursively(self):
+        def nest(byid):
+            sec = node_get(byid, 169)
+            fin = [c for c in sec["children"] if c["id"] == 161][0]
+            sub = {"id": 900, "name": "Sous-partie", "type": "SECTION", "x": 500.0, "y": 0.0,
+                   "width": 450.0, "height": 900.0, "childCount": 1}
+            sec["children"] = [c for c in sec["children"] if c["id"] != 161] + [sub]
+            byid[("node.get", 900)] = dict(sub, children=[dict(fin, x=40.0, y=40.0)])
+        w = walk.walk(scenario(selection=[169], edit=nest), EXTRAS)
+        self.assertEqual(w["proto"]["panel"], [{"section": "Parcours", "screens": ["160"]},
+                                               {"section": "Sous-partie", "screens": ["161"]}])
+        w = walk.walk(scenario(selection=[900], edit=nest), EXTRAS)
+        self.assertEqual(w["proto"]["panel"], [{"section": "Sous-partie", "screens": ["161"]}])
+
+    def test_skip_message_names_frames_and_sections(self):
+        w = walk.walk(scenario(), EXTRAS)
+        self.assertIn("« Rectangle libre » ignoré : seules les frames et sections de premier niveau sont exportées.",
+                      w["proto"]["report"]["skipped"])
+
     def test_reading_order_rows_then_x(self):
         boxes = {"A": (0, 0, 100, 100), "B": (200, 10, 100, 100), "C": (0, 300, 100, 100),
                  "D": (500, -50, 100, 60), "E": (-100, 320, 50, 50)}
@@ -235,6 +263,28 @@ class WalkNodeTests(unittest.TestCase):
         self.assertNotIn("147", self.jobs)  # live text is not rendered
         self.assertIsNone(self.nodes["151"]["liveText"])  # unbound text stays a rendered paint
         self.assertIn("151", self.jobs)
+
+    def test_live_text_with_a_bound_colour_names_its_variable(self):
+        def bind(byid):
+            child(byid, 146, 147).setdefault("boundVariables", {})["fill"] = "VariableID:4"
+        w = walk.walk(scenario(edit=bind), EXTRAS)
+        lt = w["proto"]["nodes"]["147"]["liveText"]
+        self.assertEqual(lt["colorVar"], "VariableID:4")
+        self.assertEqual(lt["style"]["color"], "#222222")            # fallback colour kept
+        self.assertNotIn("colorVar", self.nodes["148"]["liveText"])
+
+    def test_screen_modes_from_its_page_and_its_own_explicit_modes(self):
+        th = "VariableCollectionId:2"
+        ex = copy.deepcopy(EXTRAS)
+        ex["145"] = {"overflow": "none", "position": "scroll", "varModes": {th: th + "/mode2"}}
+        ex.setdefault("146", {"overflow": "none", "position": "scroll", "varModes": {}})["page"] = "145"
+        ex["163"]["page"] = "145"
+        ex["163"]["varModes"] = {th: th + "/mode1"}
+        w = walk.walk(scenario(), ex)
+        self.assertEqual(w["proto"]["screens"]["146"]["modes"], {th: th + "/mode2"})
+        self.assertEqual(w["proto"]["screens"]["163"]["modes"], {th: th + "/mode1"})   # frame wins
+        self.assertEqual(w["page_modes"]["146"], {th: th + "/mode2"})
+        self.assertNotIn("modes", w["proto"]["screens"]["160"])
 
     def test_visible_bound_to_boolean_var_sets_bindings_visible(self):
         b = self.nodes["149"]

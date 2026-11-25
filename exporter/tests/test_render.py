@@ -405,9 +405,22 @@ class RenderTests(unittest.TestCase):
         assets = render.render_all(doc, w)
         nodes = w["proto"]["nodes"]
         self.assertIsNone(nodes["3"]["paint"])
-        self.assertEqual(nodes["3"]["css"]["maskSrc"], nodes["4"]["paint"]["src"])
-        self.assertIn("#222222", svg_of(assets, nodes["4"]["paint"]))
+        src = nodes["3"]["css"]["maskSrc"]
+        self.assertIn("#222222", {a["path"]: a["data"] for a in assets}[src].decode("utf-8"))
+        self.assertIsNone(nodes["4"]["paint"])      # the mask layer is drawn by no parent: css only
+        self.assertEqual(nodes["3"]["css"]["maskBox"], [0, 0, 100, 60])
         self.assertEqual(doc.snapshot(), start)
+
+    def test_mask_box_uses_the_mask_layer_place_and_paint_offset(self):
+        doc_nodes, proto, jobs, parent = basic()
+        doc_nodes[3]["fills"] = []
+        doc_nodes[4].update({"isMask": True, "effects": [{"type": "dropShadow", "radius": 2, "offset": [0, 4]}]})
+        proto[3].update({"x": 12, "y": 7})
+        jobs[3]["mask_for"] = "3"
+        doc, w = make(doc_nodes, proto, jobs, parent)
+        render.render_all(doc, w)
+        # the shadow widens the paint: dx = -3, dy = 0 → mask at (12 - 3, 7 + 0), sized like the paint
+        self.assertEqual(w["proto"]["nodes"]["3"]["css"]["maskBox"], [9, 7, 106, 67])
 
     def test_gradient_fill_or_stroke_rendered_as_png(self):
         # FigCraft's SVG writes gradients in user space: wrong angle on non-square layers
