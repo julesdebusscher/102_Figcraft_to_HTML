@@ -16,6 +16,7 @@ import re
 from collections import deque
 
 from . import variables, walk
+from .control import ControlError
 from .edits import BATCH_LABEL, UNDO_FAILED, EditSession, RenderError  # noqa: F401 (re-exported)
 from .summary import NO_REDO, steps_left
 from .style import effects_css, num
@@ -324,7 +325,7 @@ class _Renderer(object):
         prefix = "%s~%s~" % (inst, key)
         hidden = list(job.get("unhide") or [])
         with EditSession(self.ctl) as s:
-            s.apply("instance.setProperties", {"ids": [fc], "properties": job["properties"]})
+            s.apply(*self._switch(fc, job))
             self.stats["edits"] += 1
             raw = self.ctl.execute("node.get", {"id": fc}) or {}
             vw = _CloneWalker(self.ctl, prefix, inst, fc, self.var_types, self.w.get("extras"))
@@ -362,6 +363,20 @@ class _Renderer(object):
             jobs += self._alt_jobs([j for j in jobs if j["kind"] == "own"], vw.bound)
             for j in jobs:
                 self.run(j)
+
+    def _switch(self, fc, job):
+        """instance.setProperties when the instance's own set has these values; otherwise
+        (a "Change to" a component outside its set, which FigCraft refuses as setProperties)
+        instance.swap to the destination component."""
+        props = job.get("properties") or {}
+        try:
+            known = {p.get("name"): p.get("options") or []
+                     for p in (self.ctl.execute("component.properties", {"id": fc}) or {}).get("properties") or []}
+        except ControlError:
+            known = {}
+        if props and all(v in known.get(k, ()) for k, v in props.items()):
+            return "instance.setProperties", {"ids": [fc], "properties": props}
+        return "instance.swap", {"ids": [fc], "component": job["variant_fc_id"]}
 
     def _alt_jobs(self, own_jobs, bound):
         """Task 8's alternatives for the clone nodes (their colours may be bound too)."""

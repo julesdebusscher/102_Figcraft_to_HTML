@@ -13,10 +13,12 @@ class SimDoc(object):
     """nodes: {fc: {"type", "name", "width", "height", "x", "y", "visible"?, "rotation"?,
     "opacity"?, "blend"?, "effects"?, "fills"?, "children"?: [fc], "bound"?: var,
     "modes"?: {coll: mode}, "variants"?: {key: {"children", "fills", "width", "height"}},
-    "mainComponentName"?, "mainComponent"?: fc, "main_of"?: fc}}; vars: {var: {"collection", "values": {mode: colour}}};
+    "mainComponentName"?, "mainComponent"?: fc, "main_of"?: fc, "standalone"?: bool}}; vars: {var: {"collection", "values": {mode: colour}}};
     defaults: {coll: mode}.
     "main_of": a layer inside an instance; its rotation is the main component layer's and
-    node.set rotation on it is refused, like FigCraft."""
+    node.set rotation on it is refused, like FigCraft.
+    "standalone": an instance whose main component is in no set: no properties, so
+    setProperties is refused; instance.swap {component} picks the variant whose "component" matches."""
 
     def __init__(self, nodes, vars_=None, defaults=None, fail_export=None, fail_undo=0, undo_script=None,
                  on_export=None, timeout_edit=None, redo_fails=False, inspect_fail_after_undo=0):
@@ -92,7 +94,18 @@ class SimDoc(object):
             self.history.append((label, self.snapshot()))
             self.state = after
             return {"redone": True}
-        if command in ("node.set", "instance.setProperties", "variable.setMode", "variable.set", "command.batch"):
+        if command == "component.properties":
+            n = self.state["nodes"][params["id"]]
+            if n.get("standalone"):
+                return {"properties": [], "set": None}
+            opts = {}
+            for key in n.get("variants") or {}:
+                for part in key.split(","):
+                    k, v = part.split("=", 1)
+                    opts.setdefault(k.strip(), []).append(v.strip())
+            return {"properties": [{"name": k, "type": "variant", "options": o} for k, o in opts.items()]}
+        if command in ("node.set", "instance.setProperties", "instance.swap", "variable.setMode", "variable.set",
+                       "command.batch"):
             before = self.snapshot()
             try:
                 self._mutate(command, params)
@@ -132,10 +145,16 @@ class SimDoc(object):
                         nodes[i].setdefault("sizing", {})[axis] = props.pop(key)
                 nodes[i].update(props)
                 self._relayout()
-        elif command == "instance.setProperties":
+        elif command in ("instance.setProperties", "instance.swap"):
             for i in p["ids"]:
                 n = nodes[i]
-                key = ", ".join("%s=%s" % kv for kv in sorted(p["properties"].items()))
+                if command == "instance.swap":
+                    key = [k for k, v in n["variants"].items() if v.get("component") == p["component"]][0]
+                else:
+                    if n.get("standalone"):
+                        raise ControlError("invalid parameters for `instance.setProperties`: unknown property "
+                                           "`%s` (known: )" % sorted(p["properties"])[0])
+                    key = ", ".join("%s=%s" % kv for kv in sorted(p["properties"].items()))
                 v = n["variants"][key]
                 n.update({"children": list(v["children"]), "fills": v["fills"], "width": v["width"],
                           "height": v["height"], "mainComponentName": key})
@@ -162,7 +181,7 @@ class SimDoc(object):
     def _public(self, fc):
         n = self.state["nodes"][fc]
         out = {k: copy.deepcopy(v) for k, v in n.items()
-               if k not in ("children", "bound", "modes", "variants", "parent", "main_of")}
+               if k not in ("children", "bound", "modes", "variants", "parent", "main_of", "standalone")}
         if n.get("main_of") is not None:
             out["rotation"] = self.state["nodes"][n["main_of"]].get("rotation", 0)
         out["id"] = fc

@@ -88,7 +88,7 @@ def variant_scene(doc_edit=None, w_edit=None, **sim):
              "variants": {"Mode=A": {"children": [11], "fills": [{"type": "solid", "color": "#0000AA"}],
                                      "width": 200, "height": 100},
                           "Mode=B": {"children": [12, 13], "fills": [{"type": "solid", "color": "#00BB00"}],
-                                     "width": 240, "height": 120}}},
+                                     "width": 240, "height": 120, "component": 30}}},
         11: rect("Titre A", 50, 20, "#111111", x=10, y=10),
         12: rect("Titre B", 60, 20, "#222222", x=12, y=14),
         13: rect("Pied B", 60, 20, "#333333", x=12, y=80, visible=False),
@@ -307,6 +307,22 @@ class RenderTests(unittest.TestCase):
         self.assertIn(("instance.setProperties", {"ids": [10], "properties": {"Mode": "B"}}), flat_edits(doc))
         self.assertEqual(doc.snapshot(), start)
         self.assertEqual(doc.history, [])
+
+    def test_variant_uses_set_properties_when_the_set_has_the_value(self):
+        doc, w = variant_scene()
+        render.render_all(doc, w)
+        self.assertIn(("instance.setProperties", {"ids": [10], "properties": {"Mode": "B"}}), flat_edits(doc))
+
+    def test_variant_outside_the_instances_set_is_swapped_in(self):
+        # "Change to" a component outside the instance's set: FigCraft knows no property
+        # Mode on the instance and refuses setProperties, so the instance is swapped
+        doc, w = variant_scene(lambda d: d[10].update({"standalone": True}))
+        start = doc.snapshot()
+        assets = render.render_all(doc, w)
+        self.assertIn(("instance.swap", {"ids": [10], "component": 30}), flat_edits(doc))
+        self.assertNotIn("instance.setProperties", [c for c, _ in flat_edits(doc)])
+        self.assertIn("#00BB00", svg_of(assets, w["proto"]["nodes"]["10~Mode=B~self"]["paint"]))
+        self.assertEqual(doc.snapshot(), start)
 
     def test_variant_clone_gets_alternatives_and_extras_and_its_warnings(self):
         def doc_edit(doc_nodes):
